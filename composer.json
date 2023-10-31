@@ -12,7 +12,8 @@
         "laravel/framework": "^8.75",
         "laravel/sanctum": "^2.11",
         "laravel/telescope": "^4.10",
-        "laravel/tinker": "^2.5"
+        "laravel/tinker": "^2.5",
+        "phpoffice/phpword": "^1.1"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.6",
