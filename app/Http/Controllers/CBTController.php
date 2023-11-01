@@ -26,8 +26,54 @@ class CBTController extends Controller
         return inertia('cbt/questions',compact('subjects','classes','questions'));
     }
 
+    function convertToPhpArray($text) {
+        $questions = explode("</ol>", $text);
+        $data = [];
+   
+        foreach ($questions as $question) {
+            $lines = explode("<ol>", $question);
+            //if the first element is empty go to the next or get the first element
+            $currentLine = $lines[0] ==""? next($lines) : $lines[0];
+           
+                $currentQuestion = strip_tags(trim($currentLine));
+              
+               $newLine = next($lines);
+                if(isset($newLine) && $newLine !=""){
+                    
+                    $options = explode("<li>", $newLine);
+                    //remove empty elements
+                    $options =  array_filter($options, function ($value) {
+                        return $value !== "" && $value !== null;
+                    });
+                    //reset the array index
+                    $options = array_values($options);
+
+                    $list = ['a','b','c','d','e','f'];
+                    $position = 0;
+                   
+                    foreach ($options as $index=> $option) {
+                       
+                        if(strpos($option, '<strong>') !== false){
+                            $position = $index;
+                        }
+                        $option = trim(strip_tags($option));
+                        if (!empty($option)) {
+                           
+                            $data[$currentQuestion][$list[$index]] = $option;
+                        }
+                    }
+                    $data[$currentQuestion]['answer'] = $list[$position];
+                }
+           // }
+            
+        }
+    
+        return $data;
+    }
+    
+
     public function saveQuestions(Request $request){
-        //dd($request->all());
+        dd($this->convertToPhpArray($request->question));
         $request->validate([
             'question'=>'required',
             'grade' =>'required',
@@ -215,7 +261,7 @@ class CBTController extends Controller
     }
 
     public function uploadQuestions(Request $request){
-       
+       dd($request->all());
         $request->validate([
             'file' => 'required|mimes:docx|max:10240', // Adjust the max file size as needed
         ]);
@@ -257,6 +303,7 @@ class CBTController extends Controller
                     }
                 }
                 else if (method_exists($element, 'getText')) {
+                    array_push($content,  $childElement->getText());
                     //$content .= $element->getText() . ' ';
                 }
 
