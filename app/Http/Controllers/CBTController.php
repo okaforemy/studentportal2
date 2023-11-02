@@ -73,7 +73,29 @@ class CBTController extends Controller
     
 
     public function saveQuestions(Request $request){
-        dd($this->convertToPhpArray($request->question));
+       
+        if($request->isRichText){
+            $richText = $this->convertToPhpArray($request->question);
+            $data = [];
+            foreach($richText as $index => $rts){
+               $arr = [
+                'question' => $index,
+                'answer_to_question' => "option_".$rts['answer'],
+                'option_a' => $rts['a'],
+                'option_b' => $rts['b'],
+                'option_c' => $rts['c'],
+                'option_d' => $rts['d'],
+                'option_e' => isset($rts['e'])? $rts['e']:'',
+                'subject' => $request->subject,
+                'grade' => $request->grade,
+               ];
+               array_push($data, $arr);
+            }
+           //dd($data);
+            Question::insert($data);
+            return redirect()->route('add-question');
+        }
+        
         $request->validate([
             'question'=>'required',
             'grade' =>'required',
@@ -265,58 +287,58 @@ class CBTController extends Controller
         return inertia('cbt/upload');
     }
 
-    public function uploadQuestions(Request $request){
-       dd($request->all());
-        $request->validate([
-            'file' => 'required|mimes:docx|max:10240', // Adjust the max file size as needed
-        ]);
+    // public function uploadQuestions(Request $request){
+    //    dd($request->all());
+    //     $request->validate([
+    //         'file' => 'required|mimes:docx|max:10240', // Adjust the max file size as needed
+    //     ]);
 
-        $file = $request->file('file');
-        $path = $file->storeAs('file', $file->getClientOriginalName());
+    //     $file = $request->file('file');
+    //     $path = $file->storeAs('file', $file->getClientOriginalName());
 
-        // Load the Word document
-        $phpWord = IOFactory::load(storage_path("app/$path"));
-        $content =[];
+    //     // Load the Word document
+    //     $phpWord = IOFactory::load(storage_path("app/$path"));
+    //     $content =[];
 
-        // Iterate through paragraphs
-        foreach ($phpWord->getSections() as $section) {
-            foreach ($section->getElements() as $element) {
-                // if ($element instanceof \PhpOffice\PhpWord\Element\Text) {
-                //     // Extract text from paragraphs
-                //     $text = $element->getText();
+    //     // Iterate through paragraphs
+    //     foreach ($phpWord->getSections() as $section) {
+    //         foreach ($section->getElements() as $element) {
+    //             // if ($element instanceof \PhpOffice\PhpWord\Element\Text) {
+    //             //     // Extract text from paragraphs
+    //             //     $text = $element->getText();
 
-                //     // Implement your own logic to parse the text and extract data
-                //     $data = parse_text($text);
+    //             //     // Implement your own logic to parse the text and extract data
+    //             //     $data = parse_text($text);
 
-                //     // Example: Insert into the database
-                //    // Question::create($data);
-                //    dd('got this');
-                // }
+    //             //     // Example: Insert into the database
+    //             //    // Question::create($data);
+    //             //    dd('got this');
+    //             // }
 
-                if (method_exists($element, 'getElements')) {
-                    foreach($element->getElements() as $childElement) {
-                        if (method_exists($childElement, 'getText')) {
-                           // $content .= $childElement->getText() . ' ';
-                           // dd($content);
-                            array_push($content,  $childElement->getText());
-                        }
-                        else if (method_exists($childElement, 'getContent')) {
-                            //$content .= $childElement->getContent() . ' ';
-                            array_push($content,  $childElement->getContent());
-                            //dd($content);
-                        }
-                    }
-                }
-                else if (method_exists($element, 'getText')) {
-                    array_push($content,  $childElement->getText());
-                    //$content .= $element->getText() . ' ';
-                }
+    //             if (method_exists($element, 'getElements')) {
+    //                 foreach($element->getElements() as $childElement) {
+    //                     if (method_exists($childElement, 'getText')) {
+    //                        // $content .= $childElement->getText() . ' ';
+    //                        // dd($content);
+    //                         array_push($content,  $childElement->getText());
+    //                     }
+    //                     else if (method_exists($childElement, 'getContent')) {
+    //                         //$content .= $childElement->getContent() . ' ';
+    //                         array_push($content,  $childElement->getContent());
+    //                         //dd($content);
+    //                     }
+    //                 }
+    //             }
+    //             else if (method_exists($element, 'getText')) {
+    //                 array_push($content,  $childElement->getText());
+    //                 //$content .= $element->getText() . ' ';
+    //             }
 
-                dd($content);
-            }
-        }
+    //             dd($content);
+    //         }
+    //     }
 
-        return redirect()->back()->with('success', 'Word document uploaded and parsed successfully.');
-    }
+    //     return redirect()->back()->with('success', 'Word document uploaded and parsed successfully.');
+    // }
     
 }

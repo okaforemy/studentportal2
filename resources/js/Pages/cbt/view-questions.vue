@@ -33,7 +33,7 @@
                         </thead>
                         <tbody>
                             <tr v-for="(question, index) in questions" :key="index">
-                                <td>{{ question.id+1 }}</td>
+                                <td>{{ index+1 }}</td>
                                 <td v-html="question.question"></td>
                                 <td>
                                     <ol type="a">

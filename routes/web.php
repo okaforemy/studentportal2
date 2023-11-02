@@ -95,8 +95,8 @@ Route::post('/cbt-settings', [CBTController::class, 'saveSettings']);
 Route::get('/start-exam-setting', [CBTController::class,'startExam']);
 Route::get('/cbt-login', [CBTController::class, 'CBTLogin'])->name('cbt-login');
 Route::post('/cbt-login', [CBTController::class, 'CBTLoginValidate'])->name('post-cbt-login');
-Route::get('/upload-question', [CBTController::class, 'getUploadQuestion']);
-Route::post('/upload-question', [CBTController::class, 'uploadQuestions']);
+// Route::get('/upload-question', [CBTController::class, 'getUploadQuestion']);
+// Route::post('/upload-question', [CBTController::class, 'uploadQuestions']);
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/cbt-exam', [CBTController::class, 'exam'])->name('exam');

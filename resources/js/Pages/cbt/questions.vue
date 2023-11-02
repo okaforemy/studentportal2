@@ -63,7 +63,7 @@
                          <!-- <a href="" class="float-right"><i class="fas fa-plus"></i></i></a> -->
                          <label class="toggle-container ">
                             <!-- The hidden checkbox -->
-                            <input type="checkbox" v-model="isRichText">
+                            <input type="checkbox" v-model="form.isRichText">
                             <!-- The toggle slider -->
                             <span class="toggle-slider"></span>
                         </label>
@@ -94,7 +94,7 @@
                             <ckeditor :editor="editor" v-model="form.question" :config="editorConfig"></ckeditor>
                             <div v-if="errors.question" class="text-danger">{{ errors.question }}</div>
                         </div>
-                       <div v-if="isRichText ==false">
+                       <div v-if="form.isRichText ==false">
                         <div class="mt-3 ml-2 form-group row">
                             <label for="">A.</label>
                             <div class="col-md-8">
@@ -140,7 +140,7 @@
                                 <input type="radio" name="correct_option" value="option_e" v-model="form.answer" id="" class="form-check-input ml-4 mt-3">
                             </div>
                         </div>
-                        <input type="hidden" name="is_richtext" :value="isRichText">
+                        <input type="hidden" name="is_richtext" :value="form.isRichText">
                        </div>
                         <div class="mt-3 text-center">
                             <button class="btn btn-primary">Add question</button>
@@ -177,7 +177,6 @@ export default {
                 editorConfig: {
                     // The configuration of the editor.
                 },
-                isRichText: false,
                 form: this.$inertia.form({
                    grade: '',
                    subject:'',
@@ -188,7 +187,7 @@ export default {
                    option_d:'',
                    option_e:'',
                     answer: '',
-                    isRichText: this.isRichText
+                    isRichText: false
                 })
         };
     },
