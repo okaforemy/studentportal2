@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="col-md-8 pt-3">
+        <div class="col-md-10 pt-3">
             <div class="card">
                 <div class="card-header">
                     <span>Settings</span>
@@ -12,6 +12,7 @@
                             <tr>
                             <th>S/N</th>
                             <th>Subject</th>
+                            <th>Section</th>
                             <th>Date</th>
                             <th>Duration</th>
                             
@@ -22,8 +23,9 @@
                                 <td>{{ index+1 }}</td>
                                 <td>{{ subject.subject }}
                                     <input type="hidden" name="subject[]" :value="subject.subject">
-                                    
+                                    <input type="hidden" name="section[]" :value="subject.section">
                                 </td>
+                                <td>{{ subject.section.split("_").join(" ") }}</td>
                                 <td><input type="date" name="date[]" class="form-control" id=""></td>
                                 <td><input type="text" name="duration[]" class="form-control" placeholder="duration" id=""></td>
                                 
@@ -35,6 +37,7 @@
                             <tr>
                             <th>S/N</th>
                             <th>Subject</th>
+                            <th>Section</th>
                             <th>Date</th>
                             <th>Duration</th>
                             <th>Action</th>
@@ -46,7 +49,9 @@
                                 <td>{{ setting.subject }}
                                     <input type="hidden" name="subject[]" :value="setting.subject">
                                     <input type="hidden" name="id[]" :value="setting.id">
+                                    <input type="hidden" name="section[]" :value="setting.section">
                                 </td>
+                                <td>{{ setting.section.split('_').join(" ") }}</td>
                                 <td><input type="date" :value="setting.date" name="date[]" class="form-control" id=""></td>
                                 <td><input type="text" :value="setting.duration" name="duration[]" class="form-control" placeholder="duration" id=""></td>
                                 <td>
@@ -77,15 +82,17 @@ export default {
     methods:{
         saveSettings(){
             let form = $('#settings_form').serialize();
-            console.log(form)
-            axios.post('/cbt-settings', form).then((response)=>{
-                toastr.success('settings updated successfully!', 'Success')
-                console.log(response.data)
-            })
+            this.$inertia.post('/cbt-settings', form, {
+                onSuccess: (response)=> {
+                    toastr.success('Settings saved successfully!', 'Success')
+                }
+            });
         },
         startExam(index){
-            this.$inertia.get('/start-exam-setting',{id: index}).then((response)=>{
-                
+            this.$inertia.get('/start-exam-setting',{id: index}, {
+                onSuccess: (response)=>{
+                    toastr.success('Exam started successfully!', 'Success')
+                }
             })
         }
     }

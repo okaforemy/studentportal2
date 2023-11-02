@@ -16,8 +16,8 @@ class CreateCbtSettingsTable extends Migration
         Schema::create('cbt_settings', function (Blueprint $table) {
             $table->id();
             $table->string('subject');
-            $table->date('date');
-            $table->integer('duration');
+            $table->date('date')->nullable();
+            $table->integer('duration')->nullable();
             $table->boolean('is_started');
             $table->timestamps();
         });

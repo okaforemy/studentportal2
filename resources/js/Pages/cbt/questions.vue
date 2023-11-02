@@ -1,3 +1,56 @@
+<style scoped>
+.toggle-container {
+            display: inline-block;
+            position: relative;
+            width: 40px;
+            height: 20px;
+        }
+
+        /* Toggle slider */
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            border-radius: 20px;
+            transition: .4s;
+        }
+
+        /* Slider handle */
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            border-radius: 50%;
+            transition: .4s;
+        }
+
+        /* Toggle switch checked state */
+        .toggle-container input:checked + .toggle-slider {
+            background-color: #2196F3;
+        }
+
+        .toggle-container input:focus + .toggle-slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+
+        /* Toggle slider handle position for checked state */
+        .toggle-container input:checked + .toggle-slider:before {
+            transform: translateX(16px);
+        }
+
+        /* Hide the default checkbox */
+        .toggle-container input {
+            display: none;
+        }
+</style>
 <template>
     <div class="pt-3 row">
         <Head title="Add Question" />
@@ -5,8 +58,16 @@
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">Add Question</h3>
-                    <div class="col-md-">
-                        <a href="" class="float-right"><i class="fas fa-plus"></i></i></a>
+                    <div class="col-md-10">
+                       <div class="float-right">
+                         <!-- <a href="" class="float-right"><i class="fas fa-plus"></i></i></a> -->
+                         <label class="toggle-container ">
+                            <!-- The hidden checkbox -->
+                            <input type="checkbox" v-model="isRichText">
+                            <!-- The toggle slider -->
+                            <span class="toggle-slider"></span>
+                        </label>
+                       </div>
                     </div>
                 </div>
                 <div class="card-body">
@@ -33,6 +94,7 @@
                             <ckeditor :editor="editor" v-model="form.question" :config="editorConfig"></ckeditor>
                             <div v-if="errors.question" class="text-danger">{{ errors.question }}</div>
                         </div>
+                       <div v-if="isRichText ==false">
                         <div class="mt-3 ml-2 form-group row">
                             <label for="">A.</label>
                             <div class="col-md-8">
@@ -78,6 +140,8 @@
                                 <input type="radio" name="correct_option" value="option_e" v-model="form.answer" id="" class="form-check-input ml-4 mt-3">
                             </div>
                         </div>
+                        <input type="hidden" name="is_richtext" :value="isRichText">
+                       </div>
                         <div class="mt-3 text-center">
                             <button class="btn btn-primary">Add question</button>
                         </div>
@@ -113,6 +177,7 @@ export default {
                 editorConfig: {
                     // The configuration of the editor.
                 },
+                isRichText: false,
                 form: this.$inertia.form({
                    grade: '',
                    subject:'',
@@ -122,7 +187,8 @@ export default {
                    option_c:'',
                    option_d:'',
                    option_e:'',
-                    answer: ''
+                    answer: '',
+                    isRichText: this.isRichText
                 })
         };
     },
@@ -137,10 +203,15 @@ export default {
                 this.form.option_d = ''; 
                 this.form.option_e = '';
                 this.form.answer = '';
+                this.form.isRichText = false;
                    toastr.success('questions added successfully!', 'Success')
             }}).then((response)=>{
                
             })
+        },
+        changeRichText(){
+            alert(this.isRichText)
+            return !this.isRichText;
         }
     }
 

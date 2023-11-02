@@ -157,19 +157,20 @@ class CBTController extends Controller
     }
 
     public function settings(){
-        $subjects = Subjects::all();
+        $subjects = Subjects::where('section','junior_secondary')->orWhere('section','senior_secondary')->get();
         $settings = DB::table('cbt_settings')->get();
         return inertia('cbt/settings', compact('subjects','settings'));
     }
 
-    public function saveSettings(Request $request){
+    public function saveSettings(Request $request){//dd($request->all());
         $data = [];
         foreach($request->subject as $index => $subject){
             $arr = [
                 'subject'=>$subject,
                 'date' => $request->date[$index],
                 'duration' => $request->duration[$index],
-                //'is_started' => isset($request->is_started[$index])? 1: 0,
+                'is_started' =>  0,
+                'section' => $request->section[$index],
                 'id'=> isset($request->id[$index])? $request->id[$index]:0,
             ];
             array_push($data, $arr);
@@ -213,34 +214,38 @@ class CBTController extends Controller
         //$subject = Subject::find($student->subject);
         $active_subject = CBTSetting::where('is_started',1)->first();
         $subject = Subjects::where('subject',$active_subject->subject)->first();
-        $questions = Question::where('grade', $student->grade)->where('subject',$subject->id)->get();
-        $shuffled = $questions->shuffle();
+        $questions = Question::where('grade', $student->grade)->where('subject_id',$subject->id)->get();
+        if($questions){
+            $shuffled = $questions->shuffle();
 
-        session(['student_id'=>$request->student_id, 'subject'=>$subject->id]);
-        $data = [];
-        foreach($shuffled as $sh){
-            $ar = [
-                'subject' =>$sh->subject,
-                'question' => $sh->question,
-                'option_a' => $sh->option_a,
-                'option_b' => $sh->option_b,
-                'option_c' => $sh->option_c,
-                'option_d' => $sh->option_d,
-                'option_e' => $sh->option_e,
-                'correct_answer' => $sh->answer_to_question,
-                'student_id' => $student->student_id,
-            ];
-            array_push($data, $ar);
+            session(['student_id'=>$request->student_id, 'subject'=>$subject->id]);
+            $data = [];
+            foreach($shuffled as $sh){
+                $ar = [
+                    'subject' =>$sh->subject,
+                    'question' => $sh->question,
+                    'option_a' => $sh->option_a,
+                    'option_b' => $sh->option_b,
+                    'option_c' => $sh->option_c,
+                    'option_d' => $sh->option_d,
+                    'option_e' => $sh->option_e,
+                    'correct_answer' => $sh->answer_to_question,
+                    'student_id' => $student->student_id,
+                ];
+                array_push($data, $ar);
+            }
+    
+            $user_questions = DB::table('student_questions')->where('student_id',$student->student_id)->where('subject', $subject->id)->get();
+            if(count($user_questions) <= 0){
+                 DB::table('student_questions')->insert($data);
+                 $user_questions = DB::table('student_questions')->where('student_id',$student->student_id)->where('subject', $subject->id)->get();
+            }
+          
+            return response()->json($user_questions);
+        }else{
+            abort(404);
         }
-
-        $user_questions = DB::table('student_questions')->where('student_id',$student->student_id)->where('subject', $subject->id)->get();
-        if(count($user_questions) <= 0){
-             DB::table('student_questions')->insert($data);
-             $user_questions = DB::table('student_questions')->where('student_id',$student->student_id)->where('subject', $subject->id)->get();
-        }
-      
        
-        return response()->json($user_questions);
     }
 
     public function answerQuestion(Request $request){
