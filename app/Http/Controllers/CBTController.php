@@ -87,6 +87,7 @@ class CBTController extends Controller
                 'option_d' => $rts['d'],
                 'option_e' => isset($rts['e'])? $rts['e']:'',
                 'subject' => $request->subject,
+                'subject_id' => $request->subject,
                 'grade' => $request->grade,
                ];
                array_push($data, $arr);
@@ -111,6 +112,7 @@ class CBTController extends Controller
         
         $q->grade = $request->grade;
         $q->subject = $request->subject;
+        $q->subject_id = $request->subject;
         $q->question = $request->question;
         $q->option_a = $request->option_a;
         $q->option_b = $request->option_b;
@@ -190,6 +192,7 @@ class CBTController extends Controller
             $arr = [
                 'subject'=>$subject,
                 'date' => $request->date[$index],
+                'time'=> $request->time[$index]?$request->time[$index]: \Carbon\Carbon::now(),
                 'duration' => $request->duration[$index],
                 'is_started' =>  0,
                 'section' => $request->section[$index],
@@ -198,7 +201,7 @@ class CBTController extends Controller
             array_push($data, $arr);
         }
       
-        CBTSetting::upsert($data,['id'],['date','duration', 'is_started']);
+        CBTSetting::upsert($data,['id'],['date','duration','time', 'is_started']);
         return redirect()->back();
     }
 
@@ -212,11 +215,17 @@ class CBTController extends Controller
         return view('cbt-login');
     }
 
+    public function CBTHome(){
+        $subjects = CBTSetting::whereDate('date',now()->toDateString())->get();
+        $fullname = auth()->user()->lastname." ".auth()->user()->firstname;
+        return inertia('cbt/exam-home', compact('subjects','fullname'));
+    }
+
     public function CBTLoginValidate(Request $request){
         $user = CBTStudents::where('student_id', $request->student_id)->first();
         if($user){
             if(Auth::loginUsingId($user->id)){
-                return redirect()->route('exam');
+                return redirect()->route('exam-home');
             }
         }
         
@@ -227,20 +236,24 @@ class CBTController extends Controller
     public function exam(){
         $fullname = auth()->user()->lastname." ".auth()->user()->firstname;
         $student_id = auth()->user()->student_id;
-        return inertia('cbt/exam', compact('fullname','student_id'));
+        $questions = DB::table('student_questions')->where('student_id',request()->student_id)->where('subject', request()->subject_id)->get();
+       if($questions->isEmpty()){
+        return redirect()->back();
+       }
+        return inertia('cbt/exam', compact('fullname','student_id','questions'));
        //return view('exam',compact('fullname','student_id'));
     }
 
     public function prepareQuestion(Request $request){
-        $student = CBTStudents::where('student_id',$request->student_id)->first();
-        //$subject = Subject::find($student->subject);
-        $active_subject = CBTSetting::where('is_started',1)->first();
-        $subject = Subjects::where('subject',$active_subject->subject)->first();
+        $student = CBTStudents::find(auth()->user()->id);
+        $subject = Subjects::where('subject',$request->subject)->where('section',$request->section)->first();
+        
         $questions = Question::where('grade', $student->grade)->where('subject_id',$subject->id)->get();
+        
         if($questions){
             $shuffled = $questions->shuffle();
 
-            session(['student_id'=>$request->student_id, 'subject'=>$subject->id]);
+            session(['student_id'=>$student->student_id, 'subject'=>$subject->id, 'grade'=>$student->grade, 'fullname'=>auth()->user()->firstname." ".auth()->user()->lastname]);
             $data = [];
             foreach($shuffled as $sh){
                 $ar = [
@@ -263,24 +276,29 @@ class CBTController extends Controller
                  $user_questions = DB::table('student_questions')->where('student_id',$student->student_id)->where('subject', $subject->id)->get();
             }
           
-            return response()->json($user_questions);
+           // return response()->json($user_questions);
+           $questions = $user_questions;
+           $fullname = auth()->user()->lastname." ".auth()->user()->firstname;
+           //return inertia('cbt/exam',compact('questions','fullname'));
+           return redirect("cbt-exam?subject_id=$subject->id&&student_id=$student->student_id")->with('questions');
         }else{
-            abort(404);
+            return response()->json([]);
         }
        
     }
 
     public function answerQuestion(Request $request){
-        DB::table('student_questions')->where('id', $request->question_id)->update([
+        $state = DB::table('student_questions')->where('id', $request->question_id)->update([
             'your_answer' => $request->your_answer
         ]);
-        return response()->json(['success'=>true]);
+        return response()->json($state);
     }
 
     public function result(Request $request){
         $result = DB::table('student_questions')->where('student_id',session('student_id'))->where('subject',session('subject'))->get();
+        $fullname = session('fullname');
         Auth::logout();
-        return view('result', compact('result'));
+        return view('result', compact('result','fullname'));
     }
 
     public function getUploadQuestion(){

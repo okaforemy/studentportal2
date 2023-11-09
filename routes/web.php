@@ -96,7 +96,12 @@ Route::get('/start-exam-setting', [CBTController::class,'startExam']);
 Route::get('/cbt-login', [CBTController::class, 'CBTLogin'])->name('cbt-login');
 Route::post('/cbt-login', [CBTController::class, 'CBTLoginValidate'])->name('post-cbt-login');
 
+//general
+Route::get('/settings', [HomeController::class, 'Settings']);
+Route::post('/settings', [HomeController::class, 'saveSettings']);
+
 Route::middleware(['auth'])->group(function () {
+    Route::get('/cbt-home', [CBTController::class, 'CBTHome'])->name('exam-home');
     Route::get('/cbt-exam', [CBTController::class, 'exam'])->name('exam');
     Route::get('/prepare-exam', [CBTController::class, 'prepareQuestion']);
     Route::post('/answer-question', [CBTController::class, 'answerQuestion']);

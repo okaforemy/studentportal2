@@ -39,8 +39,10 @@
                             <th>Subject</th>
                             <th>Section</th>
                             <th>Date</th>
+                            <th>Time</th>
                             <th>Duration</th>
-                            <th>Action</th>
+                            <!-- <th>Action</th> -->
+
                         </tr>
                         </thead>
                         <tbody>
@@ -53,11 +55,12 @@
                                 </td>
                                 <td>{{ setting.section.split('_').join(" ") }}</td>
                                 <td><input type="date" :value="setting.date" name="date[]" class="form-control" id=""></td>
+                                <td><input type="time" name="" id="" :value="setting.time" name="time[]" class="form-control"></td>
                                 <td><input type="text" :value="setting.duration" name="duration[]" class="form-control" placeholder="duration" id=""></td>
-                                <td>
+                                <!-- <td>
                                     <a href="" v-if="setting.is_started ==1" class="btn btn-success btn-sm">Started</a>
                                     <a href="" v-else class="btn btn-danger btn-sm" @click.prevent="startExam(setting.id)">Start</a>
-                                </td>
+                                </td> -->
                             </tr>
                         </tbody>
                     </table>

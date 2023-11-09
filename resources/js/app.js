@@ -21,7 +21,7 @@ createInertiaApp({
     resolve: name => {
         const page = require(`./Pages/${name}`).default
 
-        if(window.location.pathname.startsWith('/cbt-exam')){
+        if(window.location.pathname.startsWith('/cbt-exam')|| window.location.pathname.startsWith('/cbt-home')){
           page.layout = page.layout || Layout2
         }else{
           page.layout = page.layout || Layout

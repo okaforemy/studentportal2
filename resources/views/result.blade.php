@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>CBT Log in</title>
+    <title>CBT result</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link rel="stylesheet" href="../../dist/css/adminlte.min.css?v=3.2.0">
     <script type="text/javascript"
@@ -88,12 +88,13 @@
 <body class="hold-transition login-page">
    <div class="col-md-10 mx-auto pt-4">
         <div class="card">
+            <div class="py-3 text-center"><h4>{{$fullname}}</h4></div>
             <table class="table">
             <thead>
                 <tr>
                     <th>No</th>
                     <th>Question</th>
-                    <th>Coreect answer</th>
+                    <th>Corect answer</th>
                     <th>Your answer</th>
                     <th>mark</th>
                 </tr>
@@ -126,7 +127,7 @@
             <tfoot>
                 <tr>
                     <td colspan="4"><h4>Total score</h4></td>
-                    <td class="font-weight-bold"><h4>{{$count*2}}</h4></td>
+                    <td class="font-weight-bold"><h4><sup>{{$count*2}}</sup>/<sub>{{count($result)*2}}</sub></h4></td>
                 </tr>
             </tfoot>
         </table>
