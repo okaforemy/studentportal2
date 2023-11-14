@@ -14,6 +14,7 @@
                             <th>Subject</th>
                             <th>Section</th>
                             <th>Date</th>
+                            <th>Time</th>
                             <th>Duration</th>
                             
                         </tr>
@@ -24,9 +25,11 @@
                                 <td>{{ subject.subject }}
                                     <input type="hidden" name="subject[]" :value="subject.subject">
                                     <input type="hidden" name="section[]" :value="subject.section">
+                                    <input type="hidden" name="subject_id[]" :value="subject.id">
                                 </td>
                                 <td>{{ subject.section.split("_").join(" ") }}</td>
                                 <td><input type="date" name="date[]" class="form-control" id=""></td>
+                                <td><input type="time" id=""  name="time[]" step="60" class="form-control"></td>
                                 <td><input type="text" name="duration[]" class="form-control" placeholder="duration" id=""></td>
                                 
                             </tr>
@@ -52,10 +55,11 @@
                                     <input type="hidden" name="subject[]" :value="setting.subject">
                                     <input type="hidden" name="id[]" :value="setting.id">
                                     <input type="hidden" name="section[]" :value="setting.section">
+                                    <input type="hidden" name="subject_id[]" :value="setting.subject_id">
                                 </td>
                                 <td>{{ setting.section.split('_').join(" ") }}</td>
                                 <td><input type="date" :value="setting.date" name="date[]" class="form-control" id=""></td>
-                                <td><input type="time" name="" id="" :value="setting.time" name="time[]" class="form-control"></td>
+                                <td><input type="time" id="" :value="setting.time" step="60" name="time[]" class="form-control"></td>
                                 <td><input type="text" :value="setting.duration" name="duration[]" class="form-control" placeholder="duration" id=""></td>
                                 <!-- <td>
                                     <a href="" v-if="setting.is_started ==1" class="btn btn-success btn-sm">Started</a>

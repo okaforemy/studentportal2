@@ -13,6 +13,8 @@ use Session;
 use App\Models\CBTStudents;
 use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpWord\IOFactory;
+use App\Models\Setting;
+use App\Models\CBTResult;
 
 class CBTController extends Controller
 {
@@ -73,7 +75,7 @@ class CBTController extends Controller
     
 
     public function saveQuestions(Request $request){
-       
+       $settings = Setting::first();
         if($request->isRichText){
             $richText = $this->convertToPhpArray($request->question);
             $data = [];
@@ -89,6 +91,8 @@ class CBTController extends Controller
                 'subject' => $request->subject,
                 'subject_id' => $request->subject,
                 'grade' => $request->grade,
+                'session' => $settings->session,
+                'term' => $settings->term,
                ];
                array_push($data, $arr);
             }
@@ -120,6 +124,8 @@ class CBTController extends Controller
         $q->option_d = $request->option_d;
         $q->option_e = $request->option_e;
         $q->answer_to_question = $request->answer;
+        $q->session = $settings->session;
+        $q->term = $settings->term;
         $q->save();
 
         session(['grade'=>$request->grade, 'subject'=>$request->subject]);
@@ -192,10 +198,11 @@ class CBTController extends Controller
             $arr = [
                 'subject'=>$subject,
                 'date' => $request->date[$index],
-                'time'=> $request->time[$index]?$request->time[$index]: \Carbon\Carbon::now(),
+                'time'=> $request->time[$index]?$request->time[$index]: "",
                 'duration' => $request->duration[$index],
                 'is_started' =>  0,
                 'section' => $request->section[$index],
+                'subject_id' => $request->subject_id[$index],
                 'id'=> isset($request->id[$index])? $request->id[$index]:0,
             ];
             array_push($data, $arr);
@@ -236,19 +243,43 @@ class CBTController extends Controller
     public function exam(){
         $fullname = auth()->user()->lastname." ".auth()->user()->firstname;
         $student_id = auth()->user()->student_id;
-        $questions = DB::table('student_questions')->where('student_id',request()->student_id)->where('subject', request()->subject_id)->get();
+        $settings = Setting::first();
+        $questions = DB::table('student_questions')
+                    ->where('student_id',request()->student_id)
+                    ->where('subject', request()->subject_id)
+                    ->where('session',$settings->session)
+                    ->where('term', $settings->term)
+                    ->get();
        if($questions->isEmpty()){
         return redirect()->back();
        }
-        return inertia('cbt/exam', compact('fullname','student_id','questions'));
-       //return view('exam',compact('fullname','student_id'));
+      $cbt_settings = CBTSetting::where('subject_id',$questions[0]->subject)->first();
+       $duration = $cbt_settings->duration;
+       if(!$duration){
+        Abort(401);
+       }
+        return inertia('cbt/exam', compact('fullname','student_id','questions','duration'));
     }
 
     public function prepareQuestion(Request $request){
         $student = CBTStudents::find(auth()->user()->id);
-        $subject = Subjects::where('subject',$request->subject)->where('section',$request->section)->first();
-        
-        $questions = Question::where('grade', $student->grade)->where('subject_id',$subject->id)->get();
+        $subject = Subjects::where('subject',$request->subject)
+                    ->where('section',$request->section)
+                    ->first();
+        $settings = Setting::first();
+        $student_score = CBTResult::where('subject_id', $subject->id)
+                    ->where('student_id', session('student_id'))
+                    ->where('term',$settings->term)
+                    ->where('session', $settings->session)
+                    ->first();
+        if($student_score){
+            return redirect()->back()->with('error','Test taken for this subject');
+        }
+        $questions = Question::where('grade', $student->grade)
+                    ->where('subject_id',$subject->id)
+                    ->where('session', $settings->session)
+                    ->where('term', $settings->term)
+                    ->get();
         
         if($questions){
             $shuffled = $questions->shuffle();
@@ -266,6 +297,8 @@ class CBTController extends Controller
                     'option_e' => $sh->option_e,
                     'correct_answer' => $sh->answer_to_question,
                     'student_id' => $student->student_id,
+                    'session' => $settings->session,
+                    'term' => $settings->term
                 ];
                 array_push($data, $ar);
             }
@@ -288,14 +321,51 @@ class CBTController extends Controller
     }
 
     public function answerQuestion(Request $request){
+        $settings = Setting::first();
         $state = DB::table('student_questions')->where('id', $request->question_id)->update([
-            'your_answer' => $request->your_answer
+            'your_answer' => $request->your_answer,
+            'session' => $settings->session,
+            'term' => $settings->term
         ]);
         return response()->json($state);
     }
 
-    public function result(Request $request){
-        $result = DB::table('student_questions')->where('student_id',session('student_id'))->where('subject',session('subject'))->get();
+    public function totalCBTMark($result){
+        $count = 0;
+        foreach($result as $r){
+            if($r->correct_answer == $r->your_answer){
+                $count++;
+            }
+        }
+        return ($count * 2);
+    }
+
+    public function result(Request $request){ 
+        $settings = Setting::first();
+        $result = DB::table('student_questions')
+                    ->where('student_id',session('student_id'))
+                    ->where('subject',session('subject'))
+                    ->where('session', $settings->session)
+                    ->where('term', $settings->term)
+                    ->get();
+        $cbt_result = CBTResult::where('student_id', session('student_id'))
+                    ->where('term', $settings->term)
+                    ->where('session', $settings->session)
+                    ->where('grade', session('grade'))
+                    ->where('subject_id', session('subject'))
+                    ->first();
+        if(!$cbt_result){
+            CBTResult::create([
+                'fullname' => session('fullname'),
+                'subject_id' => session('subject'),
+                'student_id' => session('student_id'),
+                'marks_obtainable' => (count($result) * 2),
+                'marks_obtained' => $this->totalCBTMark($result),
+                'grade' => session('grade'),
+                'term' => $settings->term,
+                'session' => $settings->session,
+            ]);
+        }
         $fullname = session('fullname');
         Auth::logout();
         return view('result', compact('result','fullname'));

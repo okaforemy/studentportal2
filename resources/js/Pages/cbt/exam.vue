@@ -20,6 +20,9 @@
                 <button class="btn  btn-success" @click.prevent="startExam" ref="start_btn">Start Exam/Test</button>
             </div> -->
        </div>
+       <div class="float-right">
+        <h2 class="font-weight-bold"><span id="timer"></span></h2>
+       </div>
        <div class="my-4">
         <h4 class="text-center my-3 font-weight-bold" v-if="total !=0">Welcome to Purplins School CBT</h4>
         <h5 class="ml-4"><strong>Fullname:</strong> {{ fullname }}</h5>
@@ -96,14 +99,15 @@
 
 <script>
 export default {
-    props: ['fullname','student_id','questions'],
+    props: ['fullname','student_id','questions','duration'],
     data(){
         return{
           //  questions: [],
             question:[],
             index:0,
             total:0,
-            isAnsweredAll: false
+            isAnsweredAll: false,
+            current_duration: null,
         }
     },
     methods:{
@@ -170,7 +174,46 @@ export default {
             this.question = this.questions[index];
             this.index = index;
             this.unanswered()
+        },
+
+         formatTime(minutes, seconds) {
+            console.log('testing')
+            console.log(`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`)
+             return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        },
+
+         updateTimer(minutes, seconds) {
+            console.log('update timeer')
+            document.getElementById('timer').innerText = this.formatTime(minutes, seconds);
+        },
+
+         saveToLocalStorage(minutes, seconds) {
+            if (seconds % 10 === 0) {
+                const timeObject = { minutes, seconds };
+                localStorage.setItem('timerData', JSON.stringify(timeObject));
+                console.log('saved to localstorage')
+            }
+        },
+
+         startCountdown(durationInMinutes) {
+            let totalSeconds = durationInMinutes * 60;
+            let that = this;
+            const countdownInterval = setInterval(function() {
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+
+                that.updateTimer(minutes, seconds);
+                that.saveToLocalStorage(minutes, seconds);
+
+                if (totalSeconds <= 0) {
+                clearInterval(countdownInterval);
+                console.log('Countdown finished!');
+                } else {
+                totalSeconds--;
+                }
+            }, 1000);
         }
+
     },
     computed: {
         is_next() {
@@ -188,6 +231,14 @@ export default {
         //this.getQuestions()
         this.question = this.questions[0];
         this.total = this.questions.length;
+    },
+    mounted(){
+        let current_time = localStorage.getItem('timerData');
+        current_time = JSON.parse(current_time);
+        let mins = current_time.minutes;
+        let secs = current_time.seconds;
+        this.current_duration = parseInt(mins+"."+secs);
+        this.startCountdown(this.current_duration)
     }
 }
 </script>
