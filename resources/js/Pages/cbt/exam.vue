@@ -171,7 +171,7 @@ export default {
             }
         },
         submitQuestion(){
-            localStorage.setItem('timerData', 0);
+            localStorage.setItem('timerData', 0.0);
             window.location.href = '/cbt-result';
         },
         selectQuestion(index){
@@ -182,8 +182,8 @@ export default {
 
          formatTime(minutes, seconds) {
             console.log('testing')
-            console.log(`${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`)
-             return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            console.log(`${String(minutes).padStart(2, '0')}:${parseInt(String(seconds).padStart(2, '0'))}`)
+             return `${String(minutes).padStart(2, '0')}:${parseInt(String(seconds).padStart(2, '0'))}`;
         },
 
          updateTimer(minutes, seconds) {
@@ -220,6 +220,7 @@ export default {
 
         checkUserInput(event){
             let pressed = event.key
+            console.log(event.code)
             if(pressed == 'a'){
                 this.saveSelectedAnswer('option_a')
             }
@@ -234,6 +235,9 @@ export default {
             }
             if(pressed == 'e'){
                 this.saveSelectedAnswer('option_e')
+            }
+            if(event.code =="ArrowLeft"){
+                alert('left key')
             }
         }
 
@@ -257,6 +261,7 @@ export default {
     },
     mounted(){
         let current_time = localStorage.getItem('timerData');
+        console.log(current_time)
         let time = 0;
        if(current_time){
          current_time = JSON.parse(current_time);
@@ -265,7 +270,7 @@ export default {
             time = parseFloat(mins+"."+secs).toFixed(2);
             console.log(time)
        }
-        this.current_duration = time? time: this.duration ;
+        this.current_duration = (time != null && time !=0.0)? time: this.duration ;
     
         this.startCountdown(this.current_duration)
 
