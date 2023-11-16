@@ -17,7 +17,7 @@ class CreateQuestionTable extends Migration
             $table->id();
             $table->unsignedBigInteger('subject_id');
             $table->text('question');
-            $table->text('answer');
+           // $table->text('answer');
             $table->string('answer_to_question');
             $table->unsignedBigInteger('teacher_id')->nullable();
            // $table->boolean('is_complete');

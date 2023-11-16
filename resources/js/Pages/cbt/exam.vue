@@ -48,7 +48,7 @@
                                 <input type="text" readonly v-model="question.option_a" @click="answerQuestion" name="option_a" required id="" class="form-control">
                             </div>
                             <div class="col-md-2">
-                                <input type="radio" name="correct_option" @click="answerQuestion" v-model="question.your_answer" value="option_a" id="" class="form-check-input ml-4 mt-3">
+                                <input type="radio" name="correct_option" disabled v-model="question.your_answer" value="option_a" id="" class="form-check-input ml-4 mt-3">
                             </div>
                         </div>
                         <div class="mt-3 ml-2 form-group row">
@@ -57,7 +57,7 @@
                                 <input type="text" readonly v-model="question.option_b" @click="answerQuestion" name="option_b" class="form-control">
                             </div>
                             <div class="col-md-2">
-                                <input type="radio" name="correct_option" @click="answerQuestion" value="option_b" v-model="question.your_answer" id="" class="form-check-input ml-4 mt-3">
+                                <input type="radio" disabled name="correct_option"  value="option_b" v-model="question.your_answer" id="" class="form-check-input ml-4 mt-3">
                             </div>
                         </div>
                         <div class="mt-3 ml-2 form-group row">
@@ -66,7 +66,7 @@
                                 <input type="text" readonly v-model="question.option_c" @click="answerQuestion"  name="option_c" class="form-control">
                             </div>
                             <div class="col-md-2">
-                                <input type="radio" @click="answerQuestion" name="correct_option" value="option_c" v-model="question.your_answer" id="" class="form-check-input ml-4 mt-3">
+                                <input type="radio" disabled name="correct_option" value="option_c" v-model="question.your_answer" id="" class="form-check-input ml-4 mt-3">
                             </div>
                         </div>
                         <div class="mt-3 ml-2 form-group row">
@@ -75,7 +75,7 @@
                                 <input type="text" readonly v-model="question.option_d" @click="answerQuestion" name="option_d" class="form-control">
                             </div>
                             <div class="col-md-2">
-                                <input type="radio" @click="answerQuestion" name="correct_option" value="option_d" v-model="question.your_answer" id="" class="form-check-input ml-4 mt-3">
+                                <input type="radio" disabled  name="correct_option" value="option_d" v-model="question.your_answer" id="" class="form-check-input ml-4 mt-3">
                             </div>
                         </div>
                         <div class="mt-3 ml-2 form-group row" v-if="question.option_e">
@@ -84,7 +84,7 @@
                                 <input type="text" readonly v-model="question.option_e" name="option_e" @click="answerQuestion" class="form-control">
                             </div>
                             <div class="col-md-2">
-                                <input type="radio" name="correct_option" value="option_e" v-model="question.your_answer" id="" class="form-check-input ml-4 mt-3">
+                                <input type="radio" disabled name="correct_option" value="option_e" v-model="question.your_answer" id="" class="form-check-input ml-4 mt-3">
                             </div>
                         </div>
                         <div class="mt-3 text-center pb-4">
@@ -142,10 +142,8 @@ export default {
             this.question = this.questions[this.index];
         },
 
-        answerQuestion(event){
+        saveSelectedAnswer(answer){
             let question_id = this.question.id
-            let clicked_option = event.target.name;
-            let answer = clicked_option?clicked_option: $('input[name="correct_option"]:checked').val()
             axios.post('/answer-question',{question_id: question_id, your_answer: answer}).then((response)=>{
                let found = this.questions.findIndex(val=>{
                 return val.id == this.question.id
@@ -153,11 +151,17 @@ export default {
                this.questions[found].your_answer = answer
             })
         },
+
+        answerQuestion(event){
+            let clicked_option = event.target.name;
+            let answer = clicked_option?clicked_option: $('input[name="correct_option"]:checked').val()
+            this.saveSelectedAnswer(answer)
+           
+        },
         unanswered(){
             let unanswered = this.questions.filter(val=>{
                 return val.your_answer==null;
             })
-            console.log(unanswered.length)
             if(unanswered.length > 0 && (this.index +1) != this.total){
                this.isAnsweredAll = false;
             }else if(unanswered.length == 0 && (this.index +1) === this.total){
@@ -167,7 +171,7 @@ export default {
             }
         },
         submitQuestion(){
-            
+            localStorage.setItem('timerData', 0);
             window.location.href = '/cbt-result';
         },
         selectQuestion(index){
@@ -212,6 +216,25 @@ export default {
                 totalSeconds--;
                 }
             }, 1000);
+        },
+
+        checkUserInput(event){
+            let pressed = event.key
+            if(pressed == 'a'){
+                this.saveSelectedAnswer('option_a')
+            }
+            if(pressed == 'b'){
+                this.saveSelectedAnswer('option_b')
+            }
+            if(pressed == 'c'){
+                this.saveSelectedAnswer('option_c')
+            }
+            if(pressed == 'd'){
+                this.saveSelectedAnswer('option_d')
+            }
+            if(pressed == 'e'){
+                this.saveSelectedAnswer('option_e')
+            }
         }
 
     },
@@ -234,11 +257,19 @@ export default {
     },
     mounted(){
         let current_time = localStorage.getItem('timerData');
-        current_time = JSON.parse(current_time);
-        let mins = current_time.minutes;
-        let secs = current_time.seconds;
-        this.current_duration = parseInt(mins+"."+secs);
+        let time = 0;
+       if(current_time){
+         current_time = JSON.parse(current_time);
+            let mins = current_time.minutes;
+            let secs = current_time.seconds;
+            time = parseFloat(mins+"."+secs).toFixed(2);
+            console.log(time)
+       }
+        this.current_duration = time? time: this.duration ;
+    
         this.startCountdown(this.current_duration)
+
+        window.addEventListener('keypress', this.checkUserInput)
     }
 }
 </script>

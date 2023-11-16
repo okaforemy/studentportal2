@@ -11,6 +11,7 @@ import CKEditor from '@ckeditor/ckeditor5-vue2';
 //import { library } from '@fortawesome/fontawesome-svg-core'
 //import { faHatWizard } from '@fortawesome/free-solid-svg-icons'
 //import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+
  
 Vue.use(Autocomplete)
 Vue.use( CKEditor )

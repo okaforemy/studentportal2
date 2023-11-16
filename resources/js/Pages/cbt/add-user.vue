@@ -61,12 +61,13 @@ export default {
     },
     methods:{
         addStudent(){
-            this.$inertia.post('/add-cbt-student',this.form).then((response)=>{
-                    toastr.success('user added successfully!', 'Success')
-                    this.grade= '';
-                    this.firstname = '';
-                    this.lastname = '';
-            })
+            this.$inertia.post('/add-cbt-student',this.form,{onSuccess: ()=>{
+                toastr.success('user added successfully!', 'Success')
+                    this.form.grade= '';
+                    this.form.firstname = '';
+                    this.form.lastname = '';
+            }})
+            
         },
         deleteStudent(id){
             this.$inertia.get('/delete-cbt-student',{id:id}).then((response)=>{

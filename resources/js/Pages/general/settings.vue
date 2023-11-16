@@ -60,7 +60,9 @@ export default {
         }
     },
     created(){
-        this.form = this.settings;
+        if(this.settings){
+            this.form = this.settings;
+        }
     }
 }
 </script>

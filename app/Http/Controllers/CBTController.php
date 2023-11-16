@@ -19,13 +19,18 @@ use App\Models\CBTResult;
 class CBTController extends Controller
 {
     public function addQuestion(){
-        $subjects = Subjects::all();
+       // $subjects = Subjects::all();
         $classes = Classes::all();
         $questions = [];
         if(Session::has('grade')){
-            $questions = Question::where('grade',session('grade'))->where('subject', session('subject'))->orderBy('created_at','DESC')->get();
+            $questions = Question::where('grade',session('grade'))->where('subject_id', session('subject'))->orderBy('created_at','DESC')->get();
         }
-        return inertia('cbt/questions',compact('subjects','classes','questions'));
+        return inertia('cbt/questions',compact('classes','questions'));
+    }
+
+    public function questionSubjects(Request $request){
+        $subjects = Subjects::where('section', $request->section)->get();
+        return response()->json($subjects);
     }
 
     function convertToPhpArray($text) {
@@ -74,7 +79,7 @@ class CBTController extends Controller
     }
     
 
-    public function saveQuestions(Request $request){
+    public function saveQuestions(Request $request){ 
        $settings = Setting::first();
         if($request->isRichText){
             $richText = $this->convertToPhpArray($request->question);
@@ -88,7 +93,7 @@ class CBTController extends Controller
                 'option_c' => $rts['c'],
                 'option_d' => $rts['d'],
                 'option_e' => isset($rts['e'])? $rts['e']:'',
-                'subject' => $request->subject,
+               // 'subject' => $request->subject,
                 'subject_id' => $request->subject,
                 'grade' => $request->grade,
                 'session' => $settings->session,
@@ -177,7 +182,7 @@ class CBTController extends Controller
     }
 
     public function getQuestions(Request $request){
-        $questions = Question::where('subject', $request->subject)->where('grade', $request->grade)->get();
+        $questions = Question::where('subject_id', $request->subject)->where('grade', $request->grade)->get();
         return response()->json($questions);
     }
 
@@ -198,7 +203,7 @@ class CBTController extends Controller
             $arr = [
                 'subject'=>$subject,
                 'date' => $request->date[$index],
-                'time'=> $request->time[$index]?$request->time[$index]: "",
+                'time'=> $request->time[$index]?$request->time[$index]: null,
                 'duration' => $request->duration[$index],
                 'is_started' =>  0,
                 'section' => $request->section[$index],
@@ -207,7 +212,7 @@ class CBTController extends Controller
             ];
             array_push($data, $arr);
         }
-      
+      //dd($data);
         CBTSetting::upsert($data,['id'],['date','duration','time', 'is_started']);
         return redirect()->back();
     }
@@ -280,7 +285,6 @@ class CBTController extends Controller
                     ->where('session', $settings->session)
                     ->where('term', $settings->term)
                     ->get();
-        
         if($questions){
             $shuffled = $questions->shuffle();
 
@@ -288,7 +292,7 @@ class CBTController extends Controller
             $data = [];
             foreach($shuffled as $sh){
                 $ar = [
-                    'subject' =>$sh->subject,
+                    'subject' =>$sh->subject_id,
                     'question' => $sh->question,
                     'option_a' => $sh->option_a,
                     'option_b' => $sh->option_b,

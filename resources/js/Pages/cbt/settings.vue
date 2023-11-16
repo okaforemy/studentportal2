@@ -29,7 +29,9 @@
                                 </td>
                                 <td>{{ subject.section.split("_").join(" ") }}</td>
                                 <td><input type="date" name="date[]" class="form-control" id=""></td>
-                                <td><input type="time" id=""  name="time[]" step="60" class="form-control"></td>
+                                <td>
+                                   <input type="time" id=""  name="time[]" class="form-control">
+                                </td>
                                 <td><input type="text" name="duration[]" class="form-control" placeholder="duration" id=""></td>
                                 
                             </tr>
@@ -59,7 +61,9 @@
                                 </td>
                                 <td>{{ setting.section.split('_').join(" ") }}</td>
                                 <td><input type="date" :value="setting.date" name="date[]" class="form-control" id=""></td>
-                                <td><input type="time" id="" :value="setting.time" step="60" name="time[]" class="form-control"></td>
+                                <td>
+                                    <input type="time" id="" :value="setting.time" name="time[]" class="form-control">
+                                </td>
                                 <td><input type="text" :value="setting.duration" name="duration[]" class="form-control" placeholder="duration" id=""></td>
                                 <!-- <td>
                                     <a href="" v-if="setting.is_started ==1" class="btn btn-success btn-sm">Started</a>
@@ -79,6 +83,7 @@
 </template>
 
 <script>
+
 export default {
     props: [ 'subjects','settings'],
     data(){

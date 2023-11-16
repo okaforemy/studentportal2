@@ -75,9 +75,9 @@
                     <form action="" @submit.prevent="saveQuestion">
                         <div>
                             <label for="">Class</label>
-                            <select name="grade" id="" required v-model="form.grade" class="form-control">
+                            <select name="grade" ref="mySelect" @change="getSubjects" required v-model="form.grade" class="form-control">
                                 <option value="">select class</option>
-                                <option v-for="(cls, index) in classes" :key="index" :value="cls.class_name">{{ cls.class_name }}</option>
+                                <option v-for="(cls, index) in classes" :data-id="cls.section" :key="index" :value="cls.class_name">{{ cls.class_name }}</option>
                             </select>
                             <div v-if="errors.grade" class="text-danger">{{ errors.grade }}</div>
                         </div>
@@ -168,7 +168,7 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { Head } from "@inertiajs/inertia-vue";
 
 export default {
-    props:['subjects','classes','errors','questions'],
+    props:['classes','errors','questions'],
     components: { Head},
     data(){
         return {
@@ -177,6 +177,7 @@ export default {
                 editorConfig: {
                     // The configuration of the editor.
                 },
+                subjects: [],
                 form: this.$inertia.form({
                    grade: '',
                    subject:'',
@@ -204,10 +205,17 @@ export default {
                 this.form.answer = '';
                 this.form.isRichText = false;
                    toastr.success('questions added successfully!', 'Success')
-            }}).then((response)=>{
-               
+            }})
+            
+        },
+
+        getSubjects(){
+            let section = this.$refs.mySelect.options[this.$refs.mySelect.selectedIndex].getAttribute('data-id')
+            axios.get('/cbt-question-subjects', {params:{section:section}}).then((response)=>{
+                this.subjects = response.data
             })
         },
+
         changeRichText(){
             alert(this.isRichText)
             return !this.isRichText;

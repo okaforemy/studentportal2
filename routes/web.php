@@ -83,6 +83,7 @@ Route::post('/holiday-assessment', [ResultController::class, 'saveHolidayAssessm
 //CBT
 Route::get('/add-question', [CBTController::class, 'addQuestion'])->name('add-question');
 Route::post('/add-question', [CBTController::class, 'saveQuestions']);
+Route::get('/cbt-question-subjects', [CBTController::class, 'questionSubjects']);
 Route::get('/add-cbt-student', [CBTController::class, 'addStudent']);
 Route::post('/add-cbt-student', [CBTController::class, 'saveStudent'])->name('save-cbt-students');
 Route::get('/delete-cbt-student', [CBTController::class, 'deleteCBTStudent']);

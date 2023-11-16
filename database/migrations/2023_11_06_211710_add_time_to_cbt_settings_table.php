@@ -14,7 +14,7 @@ class AddTimeToCbtSettingsTable extends Migration
     public function up()
     {
         Schema::table('cbt_settings', function (Blueprint $table) {
-            $table->time('time');
+            $table->time('time')->nullable();
         });
     }
 
