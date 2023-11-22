@@ -13,4 +13,6 @@ class CBTStudents extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
 
     protected $table = 'cbtstudents';
+
+    protected $fillable = ['device_token'];
 }

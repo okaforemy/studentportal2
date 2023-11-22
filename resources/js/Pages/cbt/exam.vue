@@ -21,6 +21,7 @@
             </div> -->
        </div>
        <div class="float-right">
+        <button class="mb-2 btn btn-success" @click="logOut">Log out</button>
         <h2 class="font-weight-bold"><span id="timer"></span></h2>
        </div>
        <div class="my-4">
@@ -131,15 +132,15 @@ export default {
         next(){
             if(this.index <= this.total){
                 this.index++
-                this.unanswered()
                 this.question = this.questions[this.index];
+                this.unanswered()
             }
         },
 
         previous(){
             this.index--
-            this.unanswered()
             this.question = this.questions[this.index];
+            this.unanswered()
         },
 
         saveSelectedAnswer(answer){
@@ -149,6 +150,7 @@ export default {
                 return val.id == this.question.id
                });
                this.questions[found].your_answer = answer
+               this.unanswered()
             })
         },
 
@@ -162,6 +164,7 @@ export default {
             let unanswered = this.questions.filter(val=>{
                 return val.your_answer==null;
             })
+    
             if(unanswered.length > 0 && (this.index +1) != this.total){
                this.isAnsweredAll = false;
             }else if(unanswered.length == 0 && (this.index +1) === this.total){
@@ -181,13 +184,10 @@ export default {
         },
 
          formatTime(minutes, seconds) {
-            console.log('testing')
-            console.log(`${String(minutes).padStart(2, '0')}:${parseInt(String(seconds).padStart(2, '0'))}`)
              return `${String(minutes).padStart(2, '0')}:${parseInt(String(seconds).padStart(2, '0'))}`;
         },
 
          updateTimer(minutes, seconds) {
-            console.log('update timeer')
             document.getElementById('timer').innerText = this.formatTime(minutes, seconds);
         },
 
@@ -195,23 +195,46 @@ export default {
             if (seconds % 10 === 0) {
                 const timeObject = { minutes, seconds };
                 localStorage.setItem('timerData', JSON.stringify(timeObject));
-                console.log('saved to localstorage')
             }
         },
 
          startCountdown(durationInMinutes) {
             let totalSeconds = durationInMinutes * 60;
             let that = this;
+            let first_warning = Math.floor(totalSeconds * 0.3);
+            let second_warning = Math.floor(totalSeconds * 0.2);
+            let last_warning = Math.floor(totalSeconds * 0.1);
+           
             const countdownInterval = setInterval(function() {
                 const minutes = Math.floor(totalSeconds / 60);
                 const seconds = totalSeconds % 60;
 
+                let rounded_seconds = Math.floor(totalSeconds);
+
                 that.updateTimer(minutes, seconds);
                 that.saveToLocalStorage(minutes, seconds);
 
+                if(rounded_seconds == first_warning){
+                    let minute = first_warning / 60;
+                    let seconds = first_warning % 60;
+                    toastr.error('You have '+Math.floor(minute)+' minutes and '+Math.floor(seconds)+' seconds remaining', 'Error')
+                }
+
+                if(rounded_seconds == second_warning){
+                    let minute = second_warning / 60;
+                    let seconds = second_warning % 60;
+                    toastr.error('You have '+Math.floor(minute)+' minutes and '+Math.floor(seconds)+' seconds remaining', 'Error')
+                }
+
+                if(rounded_seconds == last_warning){
+                    let minute = last_warning / 60;
+                    let seconds = last_warning % 60;
+                    toastr.error('You have '+Math.floor(minute)+' minutes and '+Math.floor(seconds)+' seconds remaining', 'Error')
+                }
+
                 if (totalSeconds <= 0) {
+                    that.submitQuestion()
                 clearInterval(countdownInterval);
-                console.log('Countdown finished!');
                 } else {
                 totalSeconds--;
                 }
@@ -220,7 +243,6 @@ export default {
 
         checkUserInput(event){
             let pressed = event.key
-            console.log(event.code)
             if(pressed == 'a'){
                 this.saveSelectedAnswer('option_a')
             }
@@ -233,12 +255,20 @@ export default {
             if(pressed == 'd'){
                 this.saveSelectedAnswer('option_d')
             }
-            if(pressed == 'e'){
+            if(this.question.option_e && pressed == 'e'){
                 this.saveSelectedAnswer('option_e')
             }
-            if(event.code =="ArrowLeft"){
-                alert('left key')
+            if(pressed == 'n'){
+                this.next()
             }
+            if(pressed == 'p'){
+                this.previous()
+            }
+           
+        },
+
+        logOut(){
+            window.location.href = '/log-out'
         }
 
     },
@@ -261,14 +291,13 @@ export default {
     },
     mounted(){
         let current_time = localStorage.getItem('timerData');
-        console.log(current_time)
+
         let time = 0;
-       if(current_time){
+       if(current_time != null && current_time != 0){
          current_time = JSON.parse(current_time);
             let mins = current_time.minutes;
             let secs = current_time.seconds;
             time = parseFloat(mins+"."+secs).toFixed(2);
-            console.log(time)
        }
         this.current_duration = (time != null && time !=0.0)? time: this.duration ;
     

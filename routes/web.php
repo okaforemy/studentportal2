@@ -87,7 +87,7 @@ Route::get('/cbt-question-subjects', [CBTController::class, 'questionSubjects'])
 Route::get('/add-cbt-student', [CBTController::class, 'addStudent']);
 Route::post('/add-cbt-student', [CBTController::class, 'saveStudent'])->name('save-cbt-students');
 Route::get('/delete-cbt-student', [CBTController::class, 'deleteCBTStudent']);
-Route::get('/cbt-students', [CBTController::class, 'CBTUsers']);
+Route::get('/cbt-students', [CBTController::class, 'CBTUsers'])->name('cbt-students');
 Route::get('/view-questions', [CBTController::class, 'viewQuestions'])->name('view-cbt-questions');
 Route::get('/get-questions', [CBTController::class, 'getQuestions']);
 Route::get('/delete-question', [CBTController::class, 'deleteQuestion']);
@@ -101,11 +101,12 @@ Route::post('/cbt-login', [CBTController::class, 'CBTLoginValidate'])->name('pos
 Route::get('/settings', [HomeController::class, 'Settings']);
 Route::post('/settings', [HomeController::class, 'saveSettings']);
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'is_logged_in'])->group(function () {
     Route::get('/cbt-home', [CBTController::class, 'CBTHome'])->name('exam-home');
     Route::get('/cbt-exam', [CBTController::class, 'exam'])->name('exam');
     Route::get('/prepare-exam', [CBTController::class, 'prepareQuestion']);
     Route::post('/answer-question', [CBTController::class, 'answerQuestion']);
+    Route::get('/log-out', [CBTController::class, 'logOutStudent']);
 });
 
 Route::get('/cbt-result', [CBTController::class, 'result'])->name('cbt-result');

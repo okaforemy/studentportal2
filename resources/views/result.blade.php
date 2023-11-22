@@ -89,6 +89,9 @@
    <div class="col-md-10 mx-auto pt-4">
         <div class="card">
             <div class="py-3 text-center"><h4>{{$fullname}}</h4></div>
+            <div class="float-right">
+               <a href="{{route('cbt-login')}}">Go to Login page</a>
+            </div>
             <table class="table">
             <thead>
                 <tr>

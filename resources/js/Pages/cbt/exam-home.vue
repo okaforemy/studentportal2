@@ -21,6 +21,9 @@
 </style>
 <template>
     <div>
+        <div class="float-right">
+            <button class="my-2 btn btn-success" @click="logOut">Log out</button>
+        </div>
         <div class="text-center">
             <img src="/images/midterm.png" alt="" class="w-50 pt-4">
         </div>
@@ -75,6 +78,9 @@ export default {
             if(current){
                 window.location.href = "/prepare-exam?subject="+subject+"&section="+section;
             }
+        },
+        logOut(){
+            window.location.href = '/log-out'
         }
     },
 }

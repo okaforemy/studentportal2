@@ -1,3 +1,10 @@
+<style scoped>
+.pwd {
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    cursor: pointer;
+}
+</style>
 <template>
     <div class="col-md-12 pt-3">
         <div class="row">
@@ -37,6 +44,7 @@
                     <div class="card-body">
                         <ol>
                             <li v-for="(student, index) in students" :key="index">{{ student.lastname+" "+student.firstname }}
+                                <span class="px-2 mx-2 pwd" @click="copyToClipboard(student.student_id)">{{ student.student_id }}</span>
                                 <button class="btn ml-2 btn-sm" @click.prevent="deleteStudent(student.id)"><i class="fas fa-trash text-danger"></i></button>
                             </li>
                         </ol>
@@ -73,6 +81,10 @@ export default {
             this.$inertia.get('/delete-cbt-student',{id:id}).then((response)=>{
                 
             })
+        },
+         copyToClipboard(id) {
+            navigator.clipboard.writeText(id)
+            toastr.success('copied to clipboard!', 'Success')
         }
     }
 }

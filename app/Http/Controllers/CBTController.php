@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpWord\IOFactory;
 use App\Models\Setting;
 use App\Models\CBTResult;
+use Str;
 
 class CBTController extends Controller
 {
@@ -167,7 +168,7 @@ class CBTController extends Controller
 
     public function deleteCBTStudent(Request $request){
         DB::table('cbtstudents')->where('id',$request->id)->delete();
-        return redirect()->route('save-cbt-students');
+        return redirect()->route('cbt-students');
     }
 
     public function CBTUsers(){
@@ -237,6 +238,10 @@ class CBTController extends Controller
         $user = CBTStudents::where('student_id', $request->student_id)->first();
         if($user){
             if(Auth::loginUsingId($user->id)){
+                $deviceToken = Str::random(32);
+                $user->update(['device_token' => $deviceToken]);
+                $request->session()->put('device_token', $deviceToken);
+
                 return redirect()->route('exam-home');
             }
         }
@@ -277,6 +282,7 @@ class CBTController extends Controller
                     ->where('term',$settings->term)
                     ->where('session', $settings->session)
                     ->first();
+        
         if($student_score){
             return redirect()->back()->with('error','Test taken for this subject');
         }
@@ -346,6 +352,10 @@ class CBTController extends Controller
 
     public function result(Request $request){ 
         $settings = Setting::first();
+        //if the user is logged out, return to login page
+        if(!session('student_id')){
+            return redirect()->route('cbt-login');
+        }
         $result = DB::table('student_questions')
                     ->where('student_id',session('student_id'))
                     ->where('subject',session('subject'))
@@ -371,8 +381,20 @@ class CBTController extends Controller
             ]);
         }
         $fullname = session('fullname');
-        Auth::logout();
+        $this->LogOut();
         return view('result', compact('result','fullname'));
+    }
+
+    public function LogOut(){
+        Auth::logout();
+        session::forget('grade');
+        session::forget('subject');
+        session::forget('student_id');
+    }
+
+    public function logOutStudent(){
+        $this->LogOut();
+        return redirect()->route('cbt-login');
     }
 
     public function getUploadQuestion(){
