@@ -100,7 +100,8 @@ class ResultController extends Controller
                 $query->where('session', '2020/2021')->where('term', 'second term');
             }])->where('id',$request->student_id)->first();
 
-            dd($student);
+            $prenurseryexam = collect($student->prenurseryexam)->groupBy('category');
+            return response()->json(['student'=>$student, 'prenurseryexam'=>$prenurseryexam]);
         }
       }
 }

@@ -400,5 +400,20 @@ class CBTController extends Controller
     public function getUploadQuestion(){
         return inertia('cbt/upload');
     }
+
+    public function CBTResults(Request $request){
+        $settings = Setting::first();
+        $results = DB::table('student_questions')
+                    ->join('subjects', 'student_questions.subject', '=', 'subjects.id')
+                    ->where('student_id',$request->student_id)
+                    ->where('session', $settings->session)
+                    ->where('term', $settings->term)
+                    ->get();
+
+        $results = $results->groupBy('subject');
+        $keys = collect($results)->keys()->all();
+        
+        return response()->json(['results'=>$results,'keys'=>$keys]);
+    }
     
 }

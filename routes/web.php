@@ -96,6 +96,7 @@ Route::post('/cbt-settings', [CBTController::class, 'saveSettings']);
 Route::get('/start-exam-setting', [CBTController::class,'startExam']);
 Route::get('/cbt-login', [CBTController::class, 'CBTLogin'])->name('cbt-login');
 Route::post('/cbt-login', [CBTController::class, 'CBTLoginValidate'])->name('post-cbt-login');
+Route::get('/cbt-results', [CBTController::class, 'CBTResults']);
 
 //general
 Route::get('/settings', [HomeController::class, 'Settings']);
