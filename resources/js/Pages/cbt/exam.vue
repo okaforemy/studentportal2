@@ -22,7 +22,7 @@
        </div>
        <div class="float-right">
         <button class="mb-2 btn btn-success" @click="logOut">Log out</button>
-        <h2 class="font-weight-bold"><span id="timer"></span></h2>
+        <h2 class="font-weight-bold"><span id="timer" ref="timer"></span></h2>
        </div>
        <div class="my-4">
         <h4 class="text-center my-3 font-weight-bold" v-if="total !=0">Welcome to Purplins School CBT</h4>
@@ -145,7 +145,11 @@ export default {
 
         saveSelectedAnswer(answer){
             let question_id = this.question.id
-            axios.post('/answer-question',{question_id: question_id, your_answer: answer}).then((response)=>{
+            let time_left = this.$refs['timer'].textContent
+            const [hours, minutes] = time_left.split(':');
+            let time = `${parseInt(hours, 10)}.${minutes}`;
+            
+            axios.post('/answer-question',{question_id: question_id, your_answer: answer, duration: time}).then((response)=>{
                let found = this.questions.findIndex(val=>{
                 return val.id == this.question.id
                });
@@ -174,7 +178,6 @@ export default {
             }
         },
         submitQuestion(){
-            localStorage.setItem('timerData', 0.0);
             window.location.href = '/cbt-result';
         },
         selectQuestion(index){
@@ -191,12 +194,12 @@ export default {
             document.getElementById('timer').innerText = this.formatTime(minutes, seconds);
         },
 
-         saveToLocalStorage(minutes, seconds) {
-            if (seconds % 10 === 0) {
-                const timeObject = { minutes, seconds };
-                localStorage.setItem('timerData', JSON.stringify(timeObject));
-            }
-        },
+        //  saveToLocalStorage(minutes, seconds) {
+        //     if (seconds % 10 === 0) {
+        //         const timeObject = { minutes, seconds };
+        //         localStorage.setItem('timerData', JSON.stringify(timeObject));
+        //     }
+        // },
 
          startCountdown(durationInMinutes) {
             let totalSeconds = durationInMinutes * 60;
@@ -212,7 +215,7 @@ export default {
                 let rounded_seconds = Math.floor(totalSeconds);
 
                 that.updateTimer(minutes, seconds);
-                that.saveToLocalStorage(minutes, seconds);
+                //that.saveToLocalStorage(minutes, seconds);
 
                 if(rounded_seconds == first_warning){
                     let minute = first_warning / 60;
@@ -290,18 +293,19 @@ export default {
         this.total = this.questions.length;
     },
     mounted(){
-        let current_time = localStorage.getItem('timerData');
+    //     let current_time = localStorage.getItem('timerData');
 
-        let time = 0;
-       if(current_time != null && current_time != 0){
-         current_time = JSON.parse(current_time);
-            let mins = current_time.minutes;
-            let secs = current_time.seconds;
-            time = parseFloat(mins+"."+secs).toFixed(2);
-       }
-        this.current_duration = (time != null && time !=0.0)? time: this.duration ;
+    //     let time = 0;
+    //    if(current_time != null && current_time != 0){
+    //      current_time = JSON.parse(current_time);
+    //         let mins = current_time.minutes;
+    //         let secs = current_time.seconds;
+    //         time = parseFloat(mins+"."+secs).toFixed(2);
+    //    }
+    //     this.current_duration = (time != null && time !=0.0)? time: this.duration ;
     
-        this.startCountdown(this.current_duration)
+    //     this.startCountdown(this.current_duration)
+    this.startCountdown(this.duration)
 
         window.addEventListener('keypress', this.checkUserInput)
     }

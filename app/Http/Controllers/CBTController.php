@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpWord\IOFactory;
 use App\Models\Setting;
 use App\Models\CBTResult;
+use App\Events\ResultSubmitted;
+use App\Models\StudentQuestion;
 use Str;
 
 class CBTController extends Controller
@@ -89,11 +91,11 @@ class CBTController extends Controller
                $arr = [
                 'question' => $index,
                 'answer_to_question' => "option_".$rts['answer'],
-                'option_a' => $rts['a'],
-                'option_b' => $rts['b'],
-                'option_c' => $rts['c'],
-                'option_d' => $rts['d'],
-                'option_e' => isset($rts['e'])? $rts['e']:'',
+                'option_a' => html_entity_decode(strip_tags($rts['a'])),
+                'option_b' => html_entity_decode(strip_tags($rts['b'])),
+                'option_c' => html_entity_decode(strip_tags($rts['c'])),
+                'option_d' => html_entity_decode(strip_tags($rts['d'])),
+                'option_e' => isset($rts['e'])? html_entity_decode(strip_tags($rts['e'])):'',
                // 'subject' => $request->subject,
                 'subject_id' => $request->subject,
                 'grade' => $request->grade,
@@ -204,7 +206,7 @@ class CBTController extends Controller
             $arr = [
                 'subject'=>$subject,
                 'date' => $request->date[$index],
-                'time'=> $request->time[$index]?$request->time[$index]: null,
+                'time'=> '00:00',
                 'duration' => $request->duration[$index],
                 'is_started' =>  0,
                 'section' => $request->section[$index],
@@ -214,13 +216,17 @@ class CBTController extends Controller
             array_push($data, $arr);
         }
       //dd($data);
-        CBTSetting::upsert($data,['id'],['date','duration','time', 'is_started']);
+        CBTSetting::upsert($data,['id'],['date','duration', 'is_started']);
         return redirect()->back();
     }
 
     public function startExam(Request $request){
-        DB::table('cbt_settings')->update(['is_started'=>0]);
-        CBTSetting::where('id', $request->id)->update(['is_started'=> 1]);
+       // DB::table('cbt_settings')->update(['is_started'=>0]);
+        if($request->is_started == 1){
+            CBTSetting::where('id', $request->id)->update(['is_started'=> 0]);
+        }else{
+            CBTSetting::where('id', $request->id)->update(['is_started'=> 1]);
+        }
         return redirect()->back();
     }
 
@@ -229,15 +235,18 @@ class CBTController extends Controller
     }
 
     public function CBTHome(){
-        $subjects = CBTSetting::whereDate('date',now()->toDateString())->get();
+        //$subjects = CBTSetting::whereDate('date',now()->toDateString())->get();
+        $subjects = CBTSetting::where('is_started',1)->get();
         $fullname = auth()->user()->lastname." ".auth()->user()->firstname;
         return inertia('cbt/exam-home', compact('subjects','fullname'));
     }
 
     public function CBTLoginValidate(Request $request){
         $user = CBTStudents::where('student_id', $request->student_id)->first();
+
         if($user){
-            if(Auth::loginUsingId($user->id)){
+            if(Auth::guard('cbt')->loginUsingId($user->id)){
+                
                 $deviceToken = Str::random(32);
                 $user->update(['device_token' => $deviceToken]);
                 $request->session()->put('device_token', $deviceToken);
@@ -255,19 +264,21 @@ class CBTController extends Controller
         $student_id = auth()->user()->student_id;
         $settings = Setting::first();
         $questions = DB::table('student_questions')
-                    ->where('student_id',request()->student_id)
+                    ->where('student_id',auth()->user()->student_id)
                     ->where('subject', request()->subject_id)
                     ->where('session',$settings->session)
                     ->where('term', $settings->term)
                     ->get();
+       
        if($questions->isEmpty()){
         return redirect()->back();
        }
       $cbt_settings = CBTSetting::where('subject_id',$questions[0]->subject)->first();
-       $duration = $cbt_settings->duration;
-       if(!$duration){
-        Abort(401);
-       }
+      // $duration = $cbt_settings->duration;
+      $duration = auth()->user()->timer;
+    //    if(!$duration){
+    //     Abort(401);
+    //    }
         return inertia('cbt/exam', compact('fullname','student_id','questions','duration'));
     }
 
@@ -278,54 +289,60 @@ class CBTController extends Controller
                     ->first();
         $settings = Setting::first();
         $student_score = CBTResult::where('subject_id', $subject->id)
-                    ->where('student_id', session('student_id'))
+                    ->where('student_id', auth()->user()->student_id)
                     ->where('term',$settings->term)
                     ->where('session', $settings->session)
                     ->first();
         
-        if($student_score){
-            return redirect()->back()->with('error','Test taken for this subject');
-        }
-        $questions = Question::where('grade', $student->grade)
+        if(is_null($student_score) == true){
+            $questions = Question::where('grade', $student->grade)
                     ->where('subject_id',$subject->id)
                     ->where('session', $settings->session)
                     ->where('term', $settings->term)
                     ->get();
-        if($questions){
-            $shuffled = $questions->shuffle();
+                 
+            if(!$questions->isEmpty()){
+                $shuffled = $questions->shuffle();
 
-            session(['student_id'=>$student->student_id, 'subject'=>$subject->id, 'grade'=>$student->grade, 'fullname'=>auth()->user()->firstname." ".auth()->user()->lastname]);
-            $data = [];
-            foreach($shuffled as $sh){
-                $ar = [
-                    'subject' =>$sh->subject_id,
-                    'question' => $sh->question,
-                    'option_a' => $sh->option_a,
-                    'option_b' => $sh->option_b,
-                    'option_c' => $sh->option_c,
-                    'option_d' => $sh->option_d,
-                    'option_e' => $sh->option_e,
-                    'correct_answer' => $sh->answer_to_question,
-                    'student_id' => $student->student_id,
-                    'session' => $settings->session,
-                    'term' => $settings->term
-                ];
-                array_push($data, $ar);
+                session(['student_id'=>auth()->user()->student_id, 'subject'=>$subject->id, 'grade'=>$student->grade, 'fullname'=>auth()->user()->firstname." ".auth()->user()->lastname]);
+                $data = [];
+                foreach($shuffled as $sh){
+                    $ar = [
+                        'subject' =>$sh->subject_id,
+                        'question' => $sh->question,
+                        'option_a' => $sh->option_a,
+                        'option_b' => $sh->option_b,
+                        'option_c' => $sh->option_c,
+                        'option_d' => $sh->option_d,
+                        'option_e' => $sh->option_e,
+                        'correct_answer' => $sh->answer_to_question,
+                        'student_id' => auth()->user()->student_id,
+                        'session' => $settings->session,
+                        'term' => $settings->term
+                    ];
+                    array_push($data, $ar);
+                }
+        
+                $user_questions = DB::table('student_questions')->where('student_id',auth()->user()->student_id)->where('subject', $subject->id)->get();
+                if(count($user_questions) <= 0){
+                    DB::table('student_questions')->insert($data);
+                    $user_questions = DB::table('student_questions')->where('student_id',auth()->user()->student_id)->where('subject', $subject->id)->get();
+                }
+
+                //insert timer to the user table
+                $cbt_setting = CBTSetting::where('subject_id', $subject->id)->first();
+               
+                CBTStudents::where('id', auth()->user()->id)->update(['timer'=>$cbt_setting->duration]);
+               
+                $questions = $user_questions;
+                $fullname = auth()->user()->lastname." ".auth()->user()->firstname;
+              
+                return redirect("cbt-exam?subject_id=$subject->id&&student_id=$student->student_id")->with('questions');
+               
             }
-    
-            $user_questions = DB::table('student_questions')->where('student_id',$student->student_id)->where('subject', $subject->id)->get();
-            if(count($user_questions) <= 0){
-                 DB::table('student_questions')->insert($data);
-                 $user_questions = DB::table('student_questions')->where('student_id',$student->student_id)->where('subject', $subject->id)->get();
-            }
-          
-           // return response()->json($user_questions);
-           $questions = $user_questions;
-           $fullname = auth()->user()->lastname." ".auth()->user()->firstname;
-           //return inertia('cbt/exam',compact('questions','fullname'));
-           return redirect("cbt-exam?subject_id=$subject->id&&student_id=$student->student_id")->with('questions');
+        
         }else{
-            return response()->json([]);
+            return redirect()->back()->with('error','Test taken for this subject');
         }
        
     }
@@ -337,6 +354,8 @@ class CBTController extends Controller
             'session' => $settings->session,
             'term' => $settings->term
         ]);
+
+        CBTStudents::where('id', auth()->user()->id)->update(['timer'=>$request->duration]);
         return response()->json($state);
     }
 
@@ -380,9 +399,13 @@ class CBTController extends Controller
                 'session' => $settings->session,
             ]);
         }
+
+        //event(new ResultSubmitted(auth()->user()->firstname." ".auth()->user()->lastname));
+
         $fullname = session('fullname');
         $this->LogOut();
-        return view('result', compact('result','fullname'));
+        return redirect()->route('cbt-login')->with('success','Exam submitted successfully, Goodluck!!!');
+        //return view('result', compact('result','fullname'));
     }
 
     public function LogOut(){
@@ -415,5 +438,50 @@ class CBTController extends Controller
         
         return response()->json(['results'=>$results,'keys'=>$keys]);
     }
+
+    public function getResults(){
+        $grades = Classes::where('section','junior_secondary')->orWhere('section','senior_secondary')->get();
+        return inertia('cbt/results',compact('grades'));
+    }
+
+    public function getStudentsInAClass(Request $request){
+        $students = CBTStudents::where('grade', $request->grade)->get();
+        return response()->json($students);
+    }
     
+    public function StudentResult(Request $request){
+        $settings = Setting::first();
+        $result = CBTResult::with('subject')->where('student_id', $request->student_id)->where('term',$settings->term)->where('session', $settings->session)->get();
+        return response()->json($result);
+    }
+
+    public function CBTResultsBySubjects(Request $request){
+        $settings = Setting::first();
+    //    $results= DB::table('student_questions')
+    //         ->leftJoin('cbtstudents', 'student_questions.student_id','=', 'cbtstudents.student_id')
+    //         ->select('cbtstudents.*', 'cbtstudents.firstname as student_name')
+    //         ->where('subject', $request->subject)
+    //         ->where('session', $settings->session)
+    //         ->where('term', $settings->term)
+    //         ->get();
+
+        $results = StudentQuestion::with(['cbtstudents'=>function($query) use($request){
+            $query->where('grade',$request->grade);
+        }])
+                ->where('subject', $request->subject)
+                ->where('session', $settings->session)
+                ->where('term', $settings->term)
+                ->get();
+        
+        $results = $results->groupBy('cbtstudents.lastname');
+
+        $results= $results->map(function($val){
+            $score = $this->totalCBTMark($val);
+            $name = $val->first()->cbtstudents;
+            $mark_obtainable = count($val) * 2;
+            return ['score'=>$score, 'name'=>$name, 'mark_obtainable'=>$mark_obtainable];
+        });
+
+        return response()->json($results);
+    }
 }

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Section;
 use App\Models\Subjects;
-use App\models\Student;
+use App\Models\Student;
 use App\Models\StudentSubjects;
 use Illuminate\Support\Facades\DB;
 use App\Models\Classes;

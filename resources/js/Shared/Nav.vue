@@ -168,6 +168,14 @@
                     </Link>
                   </li>
                   <li class="nav-item">
+                    <Link href="/results" class="nav-link">
+                      <i class="fas fa-user-plus"></i>
+                      <p>
+                        Results
+                      </p>
+                    </Link>
+                  </li>
+                  <li class="nav-item">
                     <Link href="/cbt-settings" class="nav-link">
                       <i class="fas fa-user-plus"></i>
                       <p>

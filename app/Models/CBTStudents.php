@@ -15,4 +15,14 @@ class CBTStudents extends Authenticatable
     protected $table = 'cbtstudents';
 
     protected $fillable = ['device_token'];
+
+    /**
+     * Get all of the studentquestion for the CBTStudents
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function studentquestion()
+    {
+        return $this->belongsTo(StudentQuestion::class);
+    }
 }

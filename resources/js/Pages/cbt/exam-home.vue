@@ -32,7 +32,7 @@
         </div>
         <div class="my-4">
             <div class="row">
-                <div class="col-md-3 subject-box" @click="startExam(subj.time, subj.subject, subj.section)" :style="{cursor: compareTime(subj.time)? 'pointer': 'auto'}" v-for="(subj, index) in subjects" :key="index">
+                <div class="col-md-3 subject-box" @click="startExam( subj.subject, subj.section)"  v-for="(subj, index) in subjects" :key="index">
                     {{ subj.subject }}
                 </div>
             </div>
@@ -73,11 +73,8 @@ export default {
                 return true;
             }
         },
-        startExam(time,subject, section){
-            let current = this.compareTime(time)
-            if(current){
+        startExam(subject, section){
                 window.location.href = "/prepare-exam?subject="+subject+"&section="+section;
-            }
         },
         logOut(){
             window.location.href = '/log-out'

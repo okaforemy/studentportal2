@@ -41,10 +41,10 @@ return [
             'provider' => 'users',
         ],
 
-        // 'cbt' => [
-        //     'driver' => 'session',
-        //     'provider' => 'cbts',
-        // ],
+        'cbt' => [
+            'driver' => 'session',
+            'provider' => 'cbts',
+        ],
     ],
 
     /*
@@ -67,13 +67,13 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => App\Models\CBTStudents::class,
+            'model' => App\Models\User::class,
         ],
 
-        // 'cbts' => [
-        //     'driver' => 'eloquent',
-        //     'model' => App\Models\CBTStudents::class,
-        // ],
+        'cbts' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\CBTStudents::class,
+        ],
 
         // 'users' => [
         //     'driver' => 'database',

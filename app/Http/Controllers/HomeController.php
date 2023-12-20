@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Setting;
+use App\Models\User;
+use Hash;
 
 class HomeController extends Controller
 {
@@ -38,5 +40,23 @@ class HomeController extends Controller
         $setting->save();
         
         return redirect()->back()->with('success',true);
+    }
+
+    public function register(){
+        return view('addUser');
+    }
+
+    public function addUser(Request $request){
+        $request->validate([
+            'fullname'=>'required',
+            'email' => 'required|email|unique:users'
+        ]);
+
+        $user  = new User();
+        $user->name = $request->fullname;
+        $user->email = $request->email;
+        $user->password = Hash::make('cbtphs2023');
+        $user->save();
+        return redirect()->back()->with('success','saved successfully');
     }
 }

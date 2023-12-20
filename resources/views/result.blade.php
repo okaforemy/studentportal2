@@ -113,8 +113,8 @@
                     <tr class="@if($r->correct_answer == $r->your_answer) alert-success @else alert-warning @endif" >
                         <td>{{$i++}}</td>
                         <td>{!! $r->question !!}</td>
-                        <td>{{$re[$r->correct_answer]}}</td>
-                        <td>{{$re[$r->your_answer]}}</td>
+                        <td>{{isset($re[$r->correct_answer])? $re[$r->correct_answer]: ''}}</td>
+                        <td>{{isset($re[$r->your_answer])? $re[$r->your_answer]: ''}}</td>
                         <td>{{$r->correct_answer == $r->your_answer? 2: 0}}</td>
                     </tr>
                 @endforeach

@@ -86,12 +86,28 @@
 </head>
 
 <body class="hold-transition login-page">
+
+    
     <div class="login-box">
         <div class="login-logo">
             <a href="{{route('cbt-login')}}" class="text-black font-weight-bold">Purplins High School</a>
         </div>
 
+        @if(Session::has('success'))
+                <div class="alert alert-success py-4">{{Session::get('success')}}</div>
+        @endif
+
         <div class="card">
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul>
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <div class="card-body login-card-body">
                 <p class="login-box-msg" style="font:black;">Sign in to start your session</p>
                 <form action="{{route('post-cbt-login')}}" method="post">
