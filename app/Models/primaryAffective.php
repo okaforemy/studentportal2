@@ -25,6 +25,7 @@ class primaryAffective extends Model
         'studentid',
         'term',
         'session',
+        'cooperation'
     ];
 
     /**

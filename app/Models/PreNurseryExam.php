@@ -12,4 +12,13 @@ class PreNurseryExam extends Model
     public function student(){
         return $this->belongsTo(Student::class);
     }
+
+    protected $fillable = [
+        'student_id',
+        'subject',
+        'category',
+        'value',
+        'session',
+        'term'
+    ];
 }

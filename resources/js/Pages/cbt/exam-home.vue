@@ -18,6 +18,9 @@
     .subject-box:hover {
         opacity: 0.8;
     }
+    img {
+        max-width: 60%;
+    }
 </style>
 <template>
     <div>

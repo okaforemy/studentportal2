@@ -23,8 +23,12 @@
                 <input type="date" class="form-control" v-model="form.term_end">
             </div>
             <div class="mt-3">
-                <label for="">Mid-term end <span class="text-danger">*</span></label>
+                <label for="">Mid-term <span class="text-danger">*</span></label>
                 <input type="date" v-model="form.mid_term_end" class="form-control">
+            </div>
+            <div class="mt-3">
+                <label for="">Mid-term resumption <span class="text-danger">*</span></label>
+                <input type="date" v-model="form.mid_term_resumption" class="form-control">
             </div>
             <div class="mt-3">
                 <label for="">Resumption <span class="text-danger">*</span></label>
@@ -48,6 +52,7 @@ export default {
                 term_begin:"",
                 term_end: "",
                 mid_term_end:"",
+                mid_term_resumption: "",
                 resumption: "",
             }
         }

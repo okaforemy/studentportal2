@@ -16,7 +16,7 @@ class attendance extends Model
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
-    public function student(): HasOne
+    public function student()
     {
         return $this->hasOne(student::class, 'id');
     }

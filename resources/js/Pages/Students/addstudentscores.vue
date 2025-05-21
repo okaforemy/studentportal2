@@ -85,7 +85,7 @@
                             <h3 class="card-title">Students</h3>
                         </div>
                         <!-- /.card-header -->
-                        <div class="card-body table-sm-responsive p-0">
+                        <div class="card-body table-responsive p-0">
                             <table class="table table-hover text-nowrap">
                                 <thead>
                                     <tr>
@@ -125,17 +125,20 @@ import { parse } from '@fortawesome/fontawesome-svg-core'
 import { Inertia } from '@inertiajs/inertia'
 
 export default {
-    props:{
-        students: Object,
-        page:Number,
-        student: Object,
-        grade: String,
-        currentpage: String,
-        selectedstudent: Number,
-        subjects: Array,
-        primaryexam: Object,
-        section: String,
-    },
+    // props:{
+    //     students: Object,
+    //     page:Number,
+    //     student: Object,
+    //     grade: String,
+    //     currentpage: String,
+    //     selectedstudent: Number,
+    //     subjects: Array,
+    //     primaryexam: Object,
+    //     section: String,
+    //     term: String,
+    //     session: String,
+    // },
+    props:['students', 'page', 'student','grade', 'currentpage', 'selectedstudent', 'subjects', 'primaryexam', 'section', 'term', 'session'],
     components:{
         Paginator, Link, Inertia
     },
@@ -143,8 +146,6 @@ export default {
         return{
             arm:null,
             studentid:null,
-            term:"second term",
-            session:"2021/2022",
             pagination_page: (this.currentpage)? this.currentpage:1,
         }
     },

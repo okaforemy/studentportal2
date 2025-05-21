@@ -28,11 +28,11 @@
                                <label for="section">Section <required/></label>
                                <select  name="" v-model="form.section" id="section" class="custom-select">
                                    <option value="">select option</option>
-                                   <option value="pre_nursery">Pre nursery</option>
+                                   <option value="pre nursery">Pre nursery</option>
                                    <option value="nursery">Nursery</option>
                                    <option value="primary">Primary</option>
-                                   <option value="junior_secondary">Junior secondary</option>
-                                   <option value="senior_secondary">Senior secondary</option>
+                                   <option value="junior secondary">Junior secondary</option>
+                                   <option value="senior secondary">Senior secondary</option>
                                </select>
                                <div v-if="errors.section" class="text-danger">{{ errors.section }}</div>
                            </div>

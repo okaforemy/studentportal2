@@ -42,22 +42,22 @@
             </div>
             
         </div>
-        <div class="text-center my-4">
-            <img src="" height="70px" alt="student" class="img-thumbnail">
+        <div class="text-center my-4" v-if="picture">
+            <img :src="picture.path" style="height: 140px;" alt="student" class="img-thumbnail">
         </div>
-        <div>
-            <p class="text-center">Holiday Assessment/Midterm Progress Report for <span class="term"></span> <span class="session"></span> Session.</p>
+        <div v-if="result.student">
+            <p class="text-center" v-if="result && result.settings">Midterm Progress Report for <span class="term">{{ (result.settings.term).split('_').join(" ") }}, </span> <span class="session">{{ result.settings.session }}</span> Session.</p>
             <p class="text-center">
                 <span class=" font-weight-bold"> PUPIL'S NAME:</span> 
-                <span class="std_name mr-5">{{ result.length !=0 ? result.surname+" "+result.othernames:'' }}</span>
+                <span class="std_name mr-5">{{ result.length !=0 ? result.student.surname+" "+result.student.othernames:'' }}</span>
                 <!-- <span class=" font-weight-bold">	DATE:</span> 
                 <span class="date" style="text-transform: uppercase;">May 11, 2023, 12:56 pm</span> -->
             </p>
             <p class="text-center">
                 <span class=" font-weight-bold">CLASS:</span> 
-                <span class="clas mr-5">{{result.grade}}</span>
+                <span class="clas mr-5">{{result.student.grade}}</span>
                 <span class=" font-weight-bold">	SCHOOL RESUMES:</span> 
-                <span class="resume">Monday, 17th April, 2023</span>
+                <span class="resume">{{ getResumptionDate() }}</span>
             </p>
 
             <table class="table table-bordered table-sm primary2 mb-2">
@@ -106,9 +106,22 @@
                
 		</table>
 
-        <p><bold></bold>Class Teacher's Comment: <span class="ct_remarks">Derick is an impressive learner. He is making steady progress in all his subjects. Howbeit, he needs a little push in his Creative Arts. Happy Easter!</span></p>
-
-        <p>Class Teacher's Sign:...............................     Head Teacher's Sign: ....................................</p>
+        <div class="row">
+                <div class="col-md-12">
+                    <div class="remarks report-table-hide">
+                        <div class="row" v-if="result.student && result.student.remarks && result.student.remarks.length > 0">
+                            <div class="col-md-6" v-if="result.student && result.student.remarks">
+                                <p class=" font-weight-bold">Principal's Remark:</p><p class="principal htremarks" style="text-decoration: none">{{ result.student.remarks[0].HT_remarks }}</p>
+                                <p>Principal's Signature:.......................</p>
+                            </div>
+                            <div class="col-md-6" v-if="result.student && result.student.remarks">
+                                <p class=" font-weight-bold">Form Teacher's Remark:</p><p class="form_teacher htremarks" style="text-decoration: none">{{ result.student.remarks[0].CT_remarks }}</p>
+                                <p>Form Teacher's Signature:.......................</p>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        </div>
         </div>
     </div>
 </template>
@@ -122,7 +135,8 @@ export default {
             result:[],
             student_id:"",
             prenurseryexam:[],
-            student: []
+            student: [],
+            picture: []
         }
     },
     methods:{
@@ -132,10 +146,25 @@ export default {
                 this.result = response.data
                 this.prenurseryexam = response.data.prenurseryexam
                 this.student = response.data.student
-                this.calculatePercentage();
+                this.picture = response.data.student.picture
+                //this.calculatePercentage();
                 this.class_avg = ((this.result.class_avg/20) *100).toFixed(2)
             })
         },
+        getResumptionDate(){
+                if(this.result && this.result.settings && this.result.settings.mid_term_resumption){
+                    const date = new Date(this.result.settings.mid_term_resumption);
+                    const formattedDate = new Intl.DateTimeFormat("en-US", {
+                    weekday: "long",
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                    }).format(date);
+
+                    return formattedDate;
+                }
+               
+            },
     }
 
 }

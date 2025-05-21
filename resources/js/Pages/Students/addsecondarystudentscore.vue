@@ -30,10 +30,10 @@
                                     <thead>
                                         <tr>
                                             <th>Names</th>
-                                            <th>1st CAT (20)</th>
-                                            <th>2nd CAT (20)</th>
-                                            <th>Exam (60)</th>
-                                            <th>Total</th>
+                                            <th>1st CAT (30)</th>
+                                            <th>2nd CAT (30)</th>
+                                            <th>Exam (40)</th>
+                                            <th>Total (100)</th>
                                             <th>Remark</th>
                                         </tr>
                                     </thead>
@@ -43,16 +43,16 @@
                                                {{stu.fullname}}
                                             </td>
                                             <td>
-                                                <input type="text"  @keypress="isNumber" ref="first_ca" :value="stu.first_ca" @blur="total($event,20,index)" @keyup="total($event,20,index)" name="first_ca" :id="'first_ca_'+index" class="form-control" placeholder="first CA">
+                                                <input type="text"  @keypress="isNumber" ref="first_ca" :value="stu.first_ca" @blur="total($event,30,index)" @keyup="total($event,30,index)" name="first_ca" :id="'first_ca_'+index" class="form-control" placeholder="first CA">
                                             </td>
                                             <td>
-                                                <input type="text"  @keypress="isNumber" ref="second_ca" :value="stu.second_ca" @blur="total($event,20,index)" @keyup="total($event,20,index)" name="second_ca" :id="'second_ca_'+index" class="form-control" placeholder="second CA">
+                                                <input type="text"  @keypress="isNumber" ref="second_ca" :value="stu.second_ca" @blur="total($event,30,index)" @keyup="total($event,30,index)" name="second_ca" :id="'second_ca_'+index" class="form-control" placeholder="second CA">
                                             </td>
                                             <td>
-                                                <input type="text"  @keypress="isNumber" ref="exam" :value="stu.exam" @blur="total($event,60,index)" @keyup="total($event,60,index)" name="exam" :id="'exam_'+index" class="form-control" placeholder="exam">
+                                                <input type="text"  @keypress="isNumber" ref="exam" :value="stu.exam" @blur="total($event,40,index)" @keyup="total($event,40,index)" name="exam" :id="'exam_'+index" class="form-control" placeholder="exam">
                                             </td>
                                             <td>
-                                                <input type="text"  name="total" ref="total" :value="stu.total" :id="'total_'+index" readonly tabstop="false" tabindex="2" class="form-control" placeholder="total">
+                                                <input type="text"  name="total" ref="total" :value="stu.total !== null ? parseFloat(stu.total).toFixed(2) : ''" :id="'total_'+index" readonly tabstop="false" tabindex="2" class="form-control" placeholder="total">
                                             </td>
                                             <td>
                                                 <input type="text"  name="remark" ref="remark" :value="stu.remark" :id="'remark_'+index" readonly tabstop="false" tabindex="3" class="form-control" placeholder="remark">
@@ -86,7 +86,7 @@
                             <h3 class="card-title">Subjects</h3>
                         </div>
                         <!-- /.card-header -->
-                        <div class="card-body table-sm-responsive p-0">
+                        <div class="card-body table-responsive p-0">
                             <table class="table table-hover text-nowrap">
                                 <thead>
                                     <tr>
@@ -137,6 +137,7 @@ export default {
         primaryexam: Object,
         section: String,
         subject: String,
+        settings: Object
     },
     components:{
         Paginator, Link, Inertia
@@ -145,8 +146,8 @@ export default {
         return{
             arm:null,
             studentid:null,
-            term:"second term",
-            session:"2021/2022"
+            term:this.settings.term,
+            session:this.settings.session
         }
     },
     methods:{
@@ -180,9 +181,10 @@ export default {
                     student_id: student_id[i].value,
                     id: id[i].value,
                     subject: subject[i].value,
+                   // subject_id: subject[i].id,
                     grade: grade,
-                    term:'Third term',
-                    session: '2021/2022',
+                    term:this.settings.term,
+                    session: this.settings.session,
                 }
                 scores.push(val);
             }
@@ -225,20 +227,40 @@ export default {
             $('#total_'+index).val(total)
             
             let remark = ""
-            if(total >= 90){
-                remark = "A+"
-            }else if(total <=89.98 && total >=79.99){
-                remark = "A"
-            }else if(total <= 79.98 && total >= 69.99){
-                remark = "B+"
-            }else if(total <=69.98 && total >=59.99){
-                remark = "B"
-            }else if(total <=59.98 && total >= 49.99){
-               remark = "C"
-            }else if(total <=49.98 && total >= 39.99){
-                remark = "D"
-            }else if(total <= 39.98){
-                remark = "E"
+            // if(total >= 90){
+            //     remark = "A+"
+            // }else if(total <=89.98 && total >=79.99){
+            //     remark = "A"
+            // }else if(total <= 79.98 && total >= 69.99){
+            //     remark = "B+"
+            // }else if(total <=69.98 && total >=59.99){
+            //     remark = "B"
+            // }else if(total <=59.98 && total >= 49.99){
+            //    remark = "C"
+            // }else if(total <=49.98 && total >= 39.99){
+            //     remark = "D"
+            // }else if(total <= 39.98){
+            //     remark = "E"
+            // }
+
+            if (total >= 75) {
+                remark = "A1";
+            } else if (total >= 70) {
+                remark = "B2";
+            } else if (total >= 65) {
+                remark = "B3";
+            } else if (total >= 60) {
+                remark = "C4";
+            } else if (total >= 55) {
+                remark = "C5";
+            } else if (total >= 50) {
+                remark = "C6";
+            } else if (total >= 45) {
+                remark = "D7";
+            } else if (total >= 40) {
+                remark = "E8";
+            } else {
+                remark = "F9";
             }
             
             $('#remark_'+index).val(remark);

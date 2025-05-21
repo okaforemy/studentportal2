@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\Classes;
 use App\Models\Arms;
 use App\Models\Student;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ScoreSheetExport;
+use App\Models\Setting;
 
 class ClassesController extends Controller
 {
@@ -13,7 +16,7 @@ class ClassesController extends Controller
      * Get the add class page
      */
     public function index(){
-        $classes = Classes::with('arms')->get();
+        $classes = Classes::with('arms')->latest()->get();
         return inertia('Classes/addClass',compact('classes'));
     }
 
@@ -37,30 +40,71 @@ class ClassesController extends Controller
      * Get all classes
      */
     public function Classes(){
-        $classes = Classes::with('arms')->paginate(20);
+        $classes = Classes::with(['arms'=>function($query){
+            $query->withCount('subjects');
+        }])->withCount(['subjects', 'arms'])->paginate(20);
         return inertia('Classes/classes',compact('classes'));
     }
 
     /**
      * save arms
      */
-    public function saveArms(Request $request){
-        $arms = $request->arms;
-        $arms_arr = [];
-        foreach($arms as $arm){
-            array_push($arms_arr,[
-                'arm_name'=>$arm,
-                'classes_id'=>$request->class_id,
-                'created_at' => \Carbon\Carbon::now(),
-                'updated_at' => \Carbon\Carbon::now(),
-                ]);
-        }
-        if(count($request->old_arms) > 0){
-            Arms::destroy($request->old_arms);
-        }
-        Arms::insert($arms_arr);
-        return ['success'=>true];
+    // public function saveArms(Request $request){//dd($request->all());
+    //     $arms = $request->arms;
+    //     $arms_arr = [];
+    //     foreach($arms as $arm){
+    //         array_push($arms_arr,[
+    //             'arm_name'=>$arm,
+    //             'classes_id'=>$request->class_id,
+    //             'created_at' => \Carbon\Carbon::now(),
+    //             'updated_at' => \Carbon\Carbon::now(),
+    //             ]);
+    //     }
+    //     if(count($request->old_arms) > 0){
+    //         Arms::destroy($request->old_arms);
+    //     }
+    //     if(count($request->arms) == 0){
+    //         Arms::destroy($request->old_arms);
+    //     }else{
+    //         Arms::insert($arms_arr);
+    //     }
+    
+    //     return ['success'=>true];
+    // }
+
+    public function saveArms(Request $request)
+{
+    $arms = $request->arms;
+    $arms_arr = [];
+
+    foreach ($arms as $arm) {
+        array_push($arms_arr, [
+            'arm_name' => $arm,
+            'classes_id' => $request->class_id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
+
+    // Detach relationships before deleting old arms
+    if (!empty($request->old_arms)) {
+        foreach ($request->old_arms as $armId) {
+            $arm = Arms::find($armId);
+            if ($arm) {
+                $arm->subjects()->detach(); // Detach relationships
+                $arm->delete(); // Delete the arm
+            }
+        }
+    }
+
+    // Insert new arms only if there are new ones
+    if (!empty($arms_arr)) {
+        Arms::insert($arms_arr);
+    }
+
+    return ['success' => true];
+}
+
 
     /**
      * Edit Classes
@@ -117,6 +161,53 @@ class ClassesController extends Controller
         $grade=$request->class;
         $arm = $request->arm? $request->arm: "";
         return inertia('Classes/students',compact('students','grade','page','arm'));
+    }
+
+    public function getSettings(){
+        $settings = Setting::first();
+        return $settings;
+    }
+
+    public function getScoreSheet(Request $request){
+       $exam_section = match($request->section) {
+            'primary' => 'primaryExam',
+            'junior secondary' => 'secondaryExam',
+            default => 'seniorSecondaryExam',
+        };
+         $settings = $this->getSettings();
+
+        if($request->arm_id){
+            $class = Arms::with('subjects')->find($request->arm_id);
+            $students = Student::with([$exam_section => function($query) use($settings){
+                $query->where('term', $settings->term)->where('session', $settings->session);
+            }])->where('class_id', $class->classes_id)->where('arm', $class->arm_name)->get();
+            $class_name = $class->arm_name;
+        }else{
+            $class = Classes::with('subjects')->find($request->id);
+            $students = Student::with([$exam_section => function($query) use($settings){
+                $query->where('term', $settings->term)->where('session', $settings->session);
+            }])->where('class_id', $class->id)->where('arm', null)->get();
+            $class_name = $class->class_name;
+        }
+
+        if($request->section == 'primary'){
+            $max_ca = 20;
+            $max_exam = 60;
+        }else if($request->section == 'junior secondary'){
+            $max_ca = 30;
+            $max_exam = 40;
+        }else if($request->section == 'senior secondary'){
+            $max_ca = 15;
+            $max_exam = 70;
+        }
+      
+         //return Excel::download(new ScoreSheetExport($class, $students), 'score_sheet.xlsx');
+         if($class->subjects && count($class->subjects) > 0){
+            return (new ScoreSheetExport($class, $students, $max_ca, $max_exam))->download($class_name.'.xlsx');
+         }else{
+           // return redirect()->back();
+         }
+         
     }
     
 }

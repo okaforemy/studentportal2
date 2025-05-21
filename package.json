@@ -21,6 +21,9 @@
     },
     "dependencies": {
         "@ckeditor/ckeditor5-build-classic": "^39.0.2",
+        "@ckeditor/ckeditor5-ckbox": "^39.0.2",
+        "@ckeditor/ckeditor5-ckfinder": "^39.0.2",
+        "@ckeditor/ckeditor5-core": "^39.0.2",
         "@ckeditor/ckeditor5-upload": "^39.0.2",
         "@ckeditor/ckeditor5-vue": "^5.1.0",
         "@ckeditor/ckeditor5-vue2": "^3.0.1",
@@ -46,6 +49,7 @@
         "vue-radial-progress": "^0.3.2",
         "vue2-timepicker": "^1.1.6",
         "vuedraggable": "^2.24.3",
-        "vuejs-dialog": "^1.4.2"
+        "vuejs-dialog": "^1.4.2",
+        "xlsx": "^0.18.5"
     }
 }

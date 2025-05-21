@@ -1,3 +1,8 @@
+<style>
+    img {
+        width: 60%;
+    }
+</style>
 <template>
     <div>
         <div class="card">

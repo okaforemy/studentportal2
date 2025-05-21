@@ -14,7 +14,20 @@
                                <input type="text"  v-model="form.class_name" name="" id="classname" class="form-control">
                                <div v-if="errors.classname" class="text-danger">{{ errors.classname }}</div>
                            </div>
+
                            <div class="col-md-6">
+                               <label for="section">Section <required/></label>
+                               <select  name="" v-model="form.section" id="section" class="custom-select">
+                                   <option value="">select option</option>
+                                   <option value="pre nursery">Pre nursery</option>
+                                   <option value="nursery">Nursery</option>
+                                   <option value="primary">Primary</option>
+                                   <option value="junior secondary">Junior secondary</option>
+                                   <option value="senior secondary">Senior secondary</option>
+                               </select>
+                               <div v-if="errors.section" class="text-danger">{{ errors.section }}</div>
+                           </div>
+                           <!-- <div class="col-md-6">
                                <label for="classteacher">Class Teacher</label>
                                <select name="" id="classteacher" class="custom-select" v-model="form.teacher_incharge">
                                    <option value="">Select teacher</option>
@@ -23,26 +36,15 @@
                                    <option value="Precious">Precious</option>
                                </select>
                                <div v-if="errors.class_teacher" class="text-danger">{{ errors.class_teacher }}</div>
-                           </div>
+                           </div> -->
                        </div>
                        <div class="row mt-3">
-                           <div class="col-md-6">
+                           <!-- <div class="col-md-6">
                                <label for="capacity">Capacity</label>
                                <input type="text" v-model="form.capacity" name="" id="capacity" class="form-control">
                                <div v-if="errors.capacity" class="text-danger">{{ errors.capacity }}</div>
-                           </div>
-                           <div class="col-md-6">
-                               <label for="section">Section <required/></label>
-                               <select  name="" v-model="form.section" id="section" class="custom-select">
-                                   <option value="">select option</option>
-                                   <option value="pre_nursery">Pre nursery</option>
-                                   <option value="nursery">Nursery</option>
-                                   <option value="primary">Primary</option>
-                                   <option value="junior_secondary">Junior secondary</option>
-                                   <option value="senior_secondary">Senior secondary</option>
-                               </select>
-                               <div v-if="errors.section" class="text-danger">{{ errors.section }}</div>
-                           </div>
+                           </div> -->
+                           
                        </div>
                        <div class="mt-3 text-center">
                            <button class="btn btn-primary">Edit</button>

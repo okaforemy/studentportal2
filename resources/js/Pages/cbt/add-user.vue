@@ -78,9 +78,7 @@ export default {
             
         },
         deleteStudent(id){
-            this.$inertia.get('/delete-cbt-student',{id:id}).then((response)=>{
-                
-            })
+            this.$inertia.get('/delete-cbt-student',{id:id})
         },
          copyToClipboard(id) {
             navigator.clipboard.writeText(id)

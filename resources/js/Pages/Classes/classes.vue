@@ -69,23 +69,17 @@
                 <h3 class="card-title">Classes</h3>
 
                 <div class="card-tools">
-                    <div
-                        class="input-group input-group-sm"
-                        style="width: 150px"
-                    >
-                        <input
-                            type="text"
-                            name="table_search"
-                            class="form-control float-right"
-                            placeholder="Search"
-                        />
-
+                    <div class="input-group input-group-sm" style="width: 450px;">
+                        <input type="text" v-model="query" name="table_search" class="form-control float-right"
+                            placeholder="Search">
                         <div class="input-group-append">
                             <button type="submit" class="btn btn-default">
                                 <i class="fas fa-search"></i>
                             </button>
                         </div>
+                        <Link href="/add-class" class="ml-4 btn btn-primary">Add classes</Link>
                     </div>
+
                 </div>
             </div>
             <!-- /.card-header -->
@@ -96,8 +90,8 @@
                             <th>S/N</th>
                             <th>Class name</th>
                             <th>Arm(s)</th>
-                            <th>Class teacher</th>
-                            <th>Capacity</th>
+                            <!-- <th>Class teacher</th>
+                            <th>Capacity</th> -->
                             <th>Section</th>
                             <th>Subjects</th>
                             <th>Options</th>
@@ -123,18 +117,18 @@
                                    {{" "+arm.arm_name+", "}}
                                </span>
                            </td>
-                           <td>{{clas.teacher_incharge}}</td>
-                           <td>{{clas.capacity}}</td>
+                           <!-- <td>{{clas.teacher_incharge}}</td>
+                           <td>{{clas.capacity}}</td> -->
                            <td>{{clas.section.replace('_',' ')}}</td>
                            <td v-if="clas.arms.length == 0">
-                               <Link href="/assign-subjects" :data="{section: clas.section, grade:clas.class_name}" class="inner">{{(clas.subjects !==null && clas.subjects.length > 0)? "edit subjects": "add subjects"}}</Link></td>
+                               <Link href="/assign-subjects" :data="{section: clas.section, grade:clas.class_name}" class="inner">{{(clas.subjects_count !==0)? "edit subjects": "add subjects"}}</Link></td>
                            <td v-else>
                                <div class="dropdown">
                                     <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         Select arm
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                        <Link class="dropdown-item"  v-for="(arm, ind) in clas.arms" :key="ind" href="/assign-subjects" :data="{section: clas.section, grade:clas.class_name, arm: arm.arm_name}">{{(arm.subjects !== null && arm.subjects.length > 0)? arm.arm_name+" [edit subjects]": arm.arm_name+" [add subjects]"}}</Link>
+                                        <Link class="dropdown-item"  v-for="(arm, ind) in clas.arms" :key="ind" href="/assign-subjects" :data="{section: clas.section, grade:clas.class_name, arm: arm.arm_name}">{{(arm.subjects_count !==0)? arm.arm_name+" [edit subjects]": arm.arm_name+" [add subjects]"}}</Link>
                                     </div>
                                 </div>
                            </td>
@@ -145,13 +139,16 @@
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                         <Link href="/students-exam-scores" class="dropdown-item" :data="{grade:clas.class_name,section:clas.section}">Student's score</Link>
+                                        <Link href="/upload-scores" v-if="clas.section=='primary' || clas.section=='junior secondary' || clas.section == 'senior secondary'" class="dropdown-item" :data="{grade:clas.class_name,section:clas.section, class_id: clas.id}">Upload scores</Link>
+                                        <a href="#" v-if="clas.section=='primary' || clas.section=='junior secondary' || clas.section == 'senior secondary'"  class="dropdown-item" :data="{id: clas.id}" @click="dowloadScoreSheet(clas.id,'',clas.section)">Download Score sheet</a>
                                         <Link href="/holiday-assessment" v-if="clas.section=='primary'"  class="dropdown-item" :data="{grade: clas.class_name}">Holiday Assessment</Link>
                                         <Link href="/affective-disposition" class="dropdown-item" :data="{grade:clas.class_name,currentStudent:0,section:clas.section}">Affective disposition</Link>
                                         <Link href="/attendance" class="dropdown-item" :data="{grade:clas.class_name, section: clas.section}">Attendance</Link>
                                         <Link href="/physical-development" :data="{grade:clas.class_name}" class="dropdown-item">Physical development</Link>
                                         <Link href="/remarks" class="dropdown-item" :data="{grade: clas.class_name}">Remarks</Link>
+                                        <Link href="/behaviour" class="dropdown-item" :data="{grade: clas.class_name}" v-if="clas.section == 'pre nursery'">Behaviour</Link>
                                         <div class="dropdown-divider"></div>
-                                        <Link href="#" class="dropdown-item">Results</Link>
+                                        <Link href="/get-result-page" :data="{section: clas.section, grade:clas.class_name}" class="dropdown-item">Results</Link>
                                         <Link href="/mid-term-result" :data="{grade: clas.class_name, section:clas.section}" class="dropdown-item">Mid-term Results</Link>
                                         <div class="dropdown-divider"></div>
                                         <Link href="/edit-class" :data="{id:clas.id}" class="mr-2 dropdown-item">edit</Link>
@@ -171,13 +168,16 @@
                                             <div class="dropdown dropleft btn-group">
                                                 <div class="dropdown-menu dropdown-menu-custom" aria-labelledby="dropdownMenuButton">
                                                     <Link href="/students-exam-scores" class="dropdown-item" :data="{grade:clas.class_name,section:clas.section, arm:arm.arm_name}">Student's score [ {{arm.arm_name}}]</Link>
+                                                    <Link href="/upload-scores" v-if="clas.section=='primary' || clas.section=='junior secondary' || clas.section == 'senior secondary'" class="dropdown-item" :data="{grade:clas.class_name,section:clas.section, class_id: clas.id, arm:arm.arm_name, arm_id:arm.id}">Upload scores</Link>
+                                                    <a href="#" v-if="clas.section=='primary' || clas.section=='junior secondary' || clas.section == 'senior secondary'"  class="dropdown-item" :data="{id: clas.id, arm_id:arm.id}" @click="dowloadScoreSheet(clas.id,arm.id, clas.section)">Download Score sheet  [ {{arm.arm_name}}]</a>
                                                     <Link href="/holiday-assessment" v-if="clas.section=='primary'"  class="dropdown-item" :data="{grade: clas.class_name, arm:arm.arm_name}">Holiday Assessment [ {{arm.arm_name}}]</Link>
                                                     <Link href="/affective-disposition" class="dropdown-item" :data="{grade:clas.class_name,currentStudent:0,section:clas.section, arm:arm.arm_name}">Affective disposition [ {{arm.arm_name}}]</Link>
                                                     <Link href="/attendance" class="dropdown-item" :data="{grade:clas.class_name, section: clas.section, arm:arm.arm_name}">Attendance [ {{arm.arm_name}}]</Link>
                                                     <Link href="/physical-development" :data="{grade:clas.class_name, arm:arm.arm_name}" class="dropdown-item">Physical development [ {{arm.arm_name}}]</Link>
                                                     <Link href="/remarks" class="dropdown-item" :data="{grade: clas.class_name, arm:arm.arm_name}">Remarks [ {{arm.arm_name}}]</Link>
+                                                    <Link href="/behaviour" class="dropdown-item" :data="{grade: clas.class_name, arm:arm.arm_name}" v-if="clas.section == 'pre nursery'">Behaviour</Link>
                                                     <div class="dropdown-divider"></div>
-                                                    <Link href="#" class="dropdown-item">Results</Link>
+                                                    <Link href="/get-result-page" :data="{section: clas.section, grade: clas.class_name, arm: arm.arm_name}" class="dropdown-item">Results</Link>
                                                     <Link href="/mid-term-result" :data="{grade: clas.class_name, arm:arm.arm_name, section:clas.section}" class="dropdown-item">Mid-term Results</Link>
                                                     <div class="dropdown-divider"></div>
                                                     <Link href="/edit-class" :data="{id:clas.id}" class="mr-2 dropdown-item">edit</Link>
@@ -282,6 +282,11 @@ export default {
                     Inertia.reload({ only: ['classes'] })
                 }
             })
+        },
+        dowloadScoreSheet(class_id,arm_id, section){
+            //this.$inertia.get('/score-sheet',{id:class_id, arm_id:arm_id})
+             const url = `/score-sheet?id=${class_id}&arm_id=${arm_id}&section=${section}`;
+                window.location.href = url;
         },
         deleteClass(name, id){
             $.confirm({

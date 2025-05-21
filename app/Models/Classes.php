@@ -15,4 +15,15 @@ class Classes extends Model
     public function Arms(){
         return $this->hasMany(Arms::class, 'classes_id','id');
     }
+
+    /**
+     * The subjects that belong to the Classes
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function subjects()
+    {
+        return $this->belongsToMany(Subjects::class, 'class_subject', 'classes_id', 'subject_id');
+    }
+
 }

@@ -39,6 +39,26 @@ class Student extends Model
     }
 
     /**
+     * Get the preNurseryAffective associated with the Student
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function preNurseryAffective()
+    {
+        return $this->hasOne(preNurseryAffective::class, 'studentid', 'id');
+    }
+
+     /**
+     * Get all of the secondaryAffective for the Student
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function secondaryAffective()
+    {
+        return $this->hasMany(secondaryAffective::class, 'studentid', 'id');
+    }
+
+    /**
      * Get the attendance associated with the Student
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
@@ -90,5 +110,55 @@ class Student extends Model
 
     public function prenurseryexam(){
         return $this->hasMany(PreNurseryExam::class,'student_id');
+    }
+
+    /**
+     * Get all of the secondaryExam for the Student
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function secondaryExam()
+    {
+        return $this->hasMany(secondaryExam::class, 'student_id');
+    }
+
+    /**
+     * Get all of the seniorSecondaryExam for the Student
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function seniorSecondaryExam()
+    {
+        return $this->hasMany(SeniorSecondaryExam::class, 'student_id');
+    }
+
+    /**
+     * Get the behaviour associated with the Student
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function behaviour()
+    {
+        return $this->hasOne(Behaviour::class);
+    }
+
+    /**
+     * Get the picture associated with the Student
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function picture()
+    {
+        return $this->hasOne(StudentImage::class);
+    }
+
+    /**
+     * Get the grade that owns the Student
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function studentGrade()
+    {
+        return $this->belongsTo(Classes::class, 'class_id', 'id');
     }
 }

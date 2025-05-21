@@ -29,6 +29,7 @@ Route::middleware(['auth'])->group(function () {
     //Students controller
     Route::get('/add-students',[StudentController::class, 'index'])->name('get-addstudents');
     Route::post('/add-students',[StudentController::class, 'addStudent'])->name('addstudents');
+    Route::get('/edit-student/{id}', [StudentController::class, 'editStudent'])->name('editStudent');
     Route::get('/recently-added-students',[StudentController::class, 'getRecentlyAddedStudent']);
     Route::get('/students',[StudentController::class, 'Students'])->name('students');
     Route::get('/search-students',[StudentController::class, 'searchForChildren']);
@@ -43,6 +44,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/physical-development', [StudentController::class, 'physicalDevelopment']);
     Route::get('/remarks', [StudentController::class, 'getStudentsRemarks']);
     Route::post('/remarks', [StudentController::class, 'saveStudentsRemarks']);
+    Route::get('/behaviour', [StudentController::class, 'studentBehaviourPage']);
+    Route::post('/behaviour', [StudentController::class, 'saveStudentBehaviour']);
+    Route::get('/filter-students', [StudentController::class, 'filterStudents']);
+    Route::get('/upload-scores', [StudentController::class, 'uploadScores']);
+    Route::post('/upload-primary-scores', [StudentController::class, 'savePrimaryUploadedScores']);
 
     //Parents controller
     Route::get('/add-parents',[ParentsController::class, 'index']);
@@ -57,6 +63,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/delete-parent',[ParentsController::class, 'deleteParent']);
     Route::get('/edit-parent-only',[ParentsController::class,'getEditOnlyParent']);
     Route::post('/edit-parent-only',[ParentsController::class, 'editOnlyParent']);
+    Route::get('/search-parents', [ParentsController::class, 'searchParents']);
 
     //Classes controller
     Route::get('/add-class',[ClassesController::class,'index']);
@@ -68,6 +75,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/delete-class', [ClassesController::class, 'deleteClasses']);
     Route::get('/get-arms', [ClassesController::class, 'getArms']);
     Route::get('/class-list',[ClassesController::class, 'getStudentsClass']);
+    Route::get('/score-sheet', [ClassesController::class, 'getScoreSheet']);
 
     //subjects routes
     Route::get('/add-subjects',[SubjectController::class, 'index'])->name('addsubjects');
@@ -75,10 +83,20 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/assign-subjects',[SubjectController::class, 'getAssignSubject'])->name('assignsubjects');
     Route::post('/assign-subjects',[SubjectController::class, 'assignSubjects']);
     Route::get('/delete-subject', [SubjectController::class, 'deleteSubject']);
+    Route::get('/subjects', [SubjectController::class, 'subjects']);
+    Route::get('/edit-subject/{id}', [SubjectController::class, 'editSubject']);
+    Route::post('/edit-subject/{id}', [SubjectController::class, 'updateSubject']);
 
     //manages students result
     Route::get('/mid-term-result', [ResultController::class, 'index']);
     Route::get('/get-midterm-result', [ResultController::class, 'getMidTermResult']);
+
+    Route::get('/delete-pre-nursery-exam-subject', [ResultController::class, 'deletePrenurseryExamSubject']);
+    Route::get('/delete-senior-secondary-exam-subject', [ResultController::class, 'deleteSeniorSecondaryExamSubject']);
+
+    //student's result
+    Route::get('/get-result-page', [ResultController::class, 'getResultPage']);
+    Route::get('/get-result', [ResultController::class, 'getResult']);
 
     //holiday assessment
     Route::get('/holiday-assessment', [ResultController::class, 'holidayAssessment']);
@@ -103,6 +121,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/results', [CBTController::class, 'StudentResult']);
     Route::get('/students-in-a-class', [CBTController::class, 'getStudentsInAClass']);
     Route::get('/student-results-by-subjects', [CBTController::class, 'CBTResultsBySubjects']);
+    Route::post('/upload-image', [CBTController::class, 'imageUpload']);
 
     //general
     Route::get('/settings', [HomeController::class, 'Settings']);

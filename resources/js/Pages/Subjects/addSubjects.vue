@@ -207,16 +207,59 @@ export default {
         },
 
         checkPreNursery(){
-            let found = this.selectedSection.findIndex(element=>element.name == 'pre_nursery');
+            let found = this.selectedSection.findIndex(element=>element.name == 'pre nursery');
             if(found != -1){
                 this.iscategory = true
             }else{
                 this.iscategory = false
             }
+        },
+
+         parseWords(input) {
+            const result = [];
+            let buffer = ''; // To store current word or phrase
+            let insideBrackets = false; // To track if we're inside square brackets
+
+            for (let i = 0; i < input.length; i++) {
+                const char = input[i];
+
+                if (char === '[') {
+                    // Start of a square bracket group
+                    insideBrackets = true;
+                    if (buffer.trim()) {
+                        result.push(buffer.trim());
+                    }
+                    buffer = '';
+                } else if (char === ']') {
+                    // End of a square bracket group
+                    insideBrackets = false;
+                    if (buffer.trim()) {
+                        result.push(buffer.trim());
+                    }
+                    buffer = '';
+                } else if (char === ',' && !insideBrackets) {
+                    // Split by comma if not inside square brackets
+                    if (buffer.trim()) {
+                        result.push(buffer.trim());
+                    }
+                    buffer = '';
+                } else {
+                    // Append character to the buffer
+                    buffer += char;
+                }
+            }
+
+            // Add any remaining buffer content
+            if (buffer.trim()) {
+                result.push(buffer.trim());
+            }
+
+            return result;
         }
+
     },
     watch:{
-        subjects:function(){
+        subjects:function(newVal){
            let subject = this.$refs.subjects.value;
 
                 if(subject.length == 0 && this.selectedSection.length ==0){
@@ -230,8 +273,13 @@ export default {
                 }
                 this.allSubjects=[];
                 if(this.subjects.length !=0){
-                    let myarr = this.subjects.split(',');
-                    this.allSubjects = myarr.filter(entry => entry.trim() != '');
+                   
+                       // let myarr = this.subjects.split(',');
+
+                        let words = this.parseWords(newVal)
+                        //this.allSubjects = myarr.filter(entry => entry.trim() != '');
+                        this.allSubjects = words
+                    
                 }
         }
     }

@@ -38,7 +38,7 @@
 <script>
 import { Inertia } from '@inertiajs/inertia'
 export default {
-    props: ['students', 'grade'],
+    props: ['students', 'grade', 'settings'],
 
     data(){
         return{
@@ -61,8 +61,8 @@ export default {
           let data = {
             HT_remarks: HT_remarks,
             CT_remarks: CT_remarks,
-            session: '2022/2023',
-            term: 'first term',
+            session: this.settings.session,
+            term: this.settings.term,
             student_id: student_id,
             id: id
           }

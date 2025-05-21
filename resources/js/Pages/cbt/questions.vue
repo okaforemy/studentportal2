@@ -92,7 +92,8 @@
                         <div class="mt-2">
                             <label for="">Question</label>
                             <ckeditor :editor="editor" v-model="form.question" :config="editorConfig"></ckeditor>
-                            <div v-if="errors.question" class="text-danger">{{ errors.question }}</div>
+                            <!-- <textarea name="editor" id="editor" v-model="form.question"></textarea>
+                            <div v-if="errors.question" class="text-danger">{{ errors.question }}</div> -->
                         </div>
                        <div v-if="form.isRichText ==false">
                         <div class="mt-3 ml-2 form-group row">
@@ -164,8 +165,13 @@
 </template>
 
 <script>
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { Head } from "@inertiajs/inertia-vue";
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+//import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor';
+// import CKFinder from '@ckeditor/ckeditor5-ckfinder/src/ckfinder';
+// import Link from '@ckeditor/ckeditor5-link/src/link';
+// import CKFinderUploadAdapter from '@ckeditor/ckeditor5-adapter-ckfinder/src/uploadadapter';
+// import Image from '@ckeditor/ckeditor5-image/src/image';
 
 export default {
     props:['classes','errors','questions'],
@@ -173,10 +179,15 @@ export default {
     data(){
         return {
                 editor: ClassicEditor,
-                editorData: '',
+                editorData: 'My content',
                 editorConfig: {
-                    // The configuration of the editor.
+                   // plugins: [CKFinder,Link, CKFinderUploadAdapter, Image],
+                   ckfinder: {
+                    // Upload the images to the server using the CKFinder QuickUpload command.
+                    uploadUrl: '/upload-image?_token='+$('meta[name="csrf-token"]').attr('content')
                 },
+                },
+                
                 subjects: [],
                 form: this.$inertia.form({
                    grade: '',
@@ -220,6 +231,18 @@ export default {
             alert(this.isRichText)
             return !this.isRichText;
         }
+    },
+    mounted(){
+        // ClassicEditor
+        // .create( document.querySelector( '#editor' ),{
+        //     ckfinder: {
+        //         // Upload the images to the server using the CKFinder QuickUpload command.
+        //         uploadUrl: '/upload-image?_token='+$('meta[name="csrf-token"]').attr('content')
+        //     }
+        // } )
+        // .catch( error => {
+        //     console.error( error );
+        // } );
     }
 
 }

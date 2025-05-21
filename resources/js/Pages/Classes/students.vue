@@ -6,7 +6,7 @@
 
                 <div class="card-tools">
                   <div class="input-group input-group-sm" style="width: 150px;">
-                    <input type="text" name="table_search" class="form-control float-right" placeholder="Search">
+                    <input type="text" name="table_search" v-model="query" class="form-control float-right" placeholder="Search">
 
                     <div class="input-group-append">
                       <button type="submit" class="btn btn-default">
@@ -17,8 +17,8 @@
                 </div>
               </div>
               <!-- /.card-header -->
-              <div class="card-body table-responsive p-0">
-                <table class="table table-hover text-nowrap">
+              <div class="card-body p-0">
+                <table class="table table-hover table-responsive text-nowrap">
                   <thead>
                     <tr>
                       <th>ID</th>
@@ -48,10 +48,10 @@
                               </button>
                               <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                   <Link class="dropdown-item" href="/add-parents" :data="{id:student.id,surname:student.surname, othernames:student.othernames}">Add parents' info</Link>
-                                  <a class="dropdown-item" href="#">Add medical info</a>
+                                  <!-- <a class="dropdown-item" href="#">Add medical info</a>
                                   <a class="dropdown-item" href="#">Assign hostel</a>
                                   <a class="dropdown-item" href="#">Assign house</a>
-                                  <a class="dropdown-item" href="#">Assign club</a>
+                                  <a class="dropdown-item" href="#">Assign club</a> -->
                                   <div class="dropdown-divider"></div>
                                   <a class="dropdown-item" href="#">Add scores</a>
                                   <a class="dropdown-item" href="#">Check result</a>
@@ -88,7 +88,8 @@ export default {
         grade: String,
         page: String,
         arm: String,
-    }
+    },
+    
     
 }
 </script>

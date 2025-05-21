@@ -27,6 +27,7 @@ class HomeController extends Controller
             'term_end'=>'required',
             'mid_term_end'=>'required',
             'resumption'=>'required',
+            'mid_term_resumption' => 'required',
         ]);
 
         $settings = Setting::first();
@@ -37,6 +38,7 @@ class HomeController extends Controller
         $setting->term_end = $request->term_end;
         $setting->mid_term_end = $request->mid_term_end;
         $setting->resumption = $request->resumption;
+        $setting->mid_term_resumption = $request->mid_term_resumption;
         $setting->save();
         
         return redirect()->back()->with('success',true);

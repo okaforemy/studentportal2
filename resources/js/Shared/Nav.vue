@@ -46,7 +46,7 @@
             </Link>
           </li>
 
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <a href="#" class="nav-link">
               <i class="fas fa-users"></i>
               <p>
@@ -55,14 +55,7 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
-              <li class="nav-item">
-                <Link href="/add-students" class="nav-link">
-                  <i class="fas fa-user-plus"></i>
-                  <p>
-                    Add Students
-                  </p>
-                </Link>
-              </li>
+              
               <li class="nav-item">
                 <Link href="/students" class="nav-link" preserve-scroll >
                   <i class="fas fa-users"></i>
@@ -72,9 +65,9 @@
                 </Link>
               </li>
             </ul>
-          </li>
+          </li> -->
 
-          <li class="nav-item">
+          <!-- <li class="nav-item">
             <a href="#" class="nav-link">
               <i class="fas fa-user-tie"></i>
               <p>
@@ -100,15 +93,33 @@
                 </Link>
               </li>
             </ul>
-          </li>
+          </li> -->
+
+
               <li class="nav-item">
+                <Link href="/students" class="nav-link">
+                 <i class="fas fa-user-plus"></i>
+                  <p>
+                    Students
+                  </p>
+                </Link>
+              </li>
+              <li class="nav-item">
+                <Link href="/parents" class="nav-link">
+                 <i class="fas fa-user-plus"></i>
+                  <p>
+                    Parents
+                  </p>
+                </Link>
+              </li>
+              <!-- <li class="nav-item">
                 <Link href="/add-class" class="nav-link">
                 <i class="fas fa-laptop-house"></i>
                   <p>
                     Add classes
                   </p>
                 </Link>
-              </li>
+              </li> -->
               <li class="nav-item">
                 <Link href="/classes" class="nav-link">
                 <i class="fas fa-laptop-house"></i>
@@ -118,10 +129,10 @@
                 </Link>
               </li>
               <li class="nav-item">
-                <Link href="/add-subjects" class="nav-link">
+                <Link href="/subjects" class="nav-link">
                 <i class="fas fa-laptop-house"></i>
                   <p>
-                    Add subjects
+                    Subjects
                   </p>
                 </Link>
               </li>

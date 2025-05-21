@@ -1,5 +1,5 @@
 
-<style scoped>
+<style>
     .badge{
         font-size: 18px;
         cursor: pointer;
@@ -8,6 +8,16 @@
     .form-control:disabled, .form-control[readonly] {
         background-color: #fff;
         cursor: default;
+    }
+
+    img {
+        max-width: 60%;
+        padding:10px;
+        margin-top: 5px;
+    }
+
+    li {
+        list-style: none;
     }
 </style>
 <template>

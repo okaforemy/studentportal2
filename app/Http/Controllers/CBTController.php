@@ -44,9 +44,9 @@ class CBTController extends Controller
             $lines = explode("<ol>", $question);
             //if the first element is empty go to the next or get the first element
             $currentLine = $lines[0] ==""? next($lines) : $lines[0];
-           
-                $currentQuestion = strip_tags(trim($currentLine));
-              
+          
+                $currentQuestion = strpos($currentLine, "<img")? trim($currentLine) :strip_tags(trim($currentLine));
+             //dd($currentQuestion);
                $newLine = next($lines);
                 if(isset($newLine) && $newLine !=""){
                     
@@ -84,8 +84,8 @@ class CBTController extends Controller
 
     public function saveQuestions(Request $request){ 
        $settings = Setting::first();
-        if($request->isRichText){
-            $richText = $this->convertToPhpArray($request->question);
+        if($request->isRichText){ 
+            $richText = $this->convertToPhpArray($request->question); 
             $data = [];
             foreach($richText as $index => $rts){
                $arr = [
@@ -96,7 +96,7 @@ class CBTController extends Controller
                 'option_c' => html_entity_decode(strip_tags($rts['c'])),
                 'option_d' => html_entity_decode(strip_tags($rts['d'])),
                 'option_e' => isset($rts['e'])? html_entity_decode(strip_tags($rts['e'])):'',
-               // 'subject' => $request->subject,
+                'subject' => $request->subject,
                 'subject_id' => $request->subject,
                 'grade' => $request->grade,
                 'session' => $settings->session,
@@ -104,7 +104,7 @@ class CBTController extends Controller
                ];
                array_push($data, $arr);
             }
-           
+       
             Question::insert($data);
             return redirect()->route('add-question');
         }
@@ -152,13 +152,13 @@ class CBTController extends Controller
 
     public function saveStudent(Request $request){
         $id = substr(uniqid() . mt_rand(), 7, 6);
-       
+        $settings = Setting::first();
         DB::table('cbtstudents')->insert([
             'firstname'=>$request->firstname,
             'lastname' => $request->lastname,
             'student_id'=> $id,
-            'session' =>  '2022/2023',
-            'term' => 'First term',
+            'session' =>  $settings->session,
+            'term' => $settings->term,
             'grade' => $request->grade,
             'created_at' =>\Carbon\Carbon::now()
         ]);
@@ -179,13 +179,18 @@ class CBTController extends Controller
     }
 
     public function viewQuestions(){
-        $classes = Classes::all();
+        $classes = Classes::where('section', 'junior secondary')->orWhere('section', 'senior secondary')->get();
         $subjects = Subjects::all();
         return inertia('cbt/view-questions',compact('classes','subjects'));
     }
 
     public function getQuestions(Request $request){
-        $questions = Question::where('subject_id', $request->subject)->where('grade', $request->grade)->get();
+        $settings = Setting::first();
+        $questions = Question::where('subject_id', $request->subject)
+                    ->where('grade', $request->grade)
+                    ->where('term', $settings->term)
+                    ->where('session',$settings->session)
+                    ->get();
         return response()->json($questions);
     }
 
@@ -323,10 +328,10 @@ class CBTController extends Controller
                     array_push($data, $ar);
                 }
         
-                $user_questions = DB::table('student_questions')->where('student_id',auth()->user()->student_id)->where('subject', $subject->id)->get();
+                $user_questions = DB::table('student_questions')->where('student_id',auth()->user()->student_id)->where('subject', $subject->id)->where('term', $settings->term)->where('session', $settings->session)->get();
                 if(count($user_questions) <= 0){
                     DB::table('student_questions')->insert($data);
-                    $user_questions = DB::table('student_questions')->where('student_id',auth()->user()->student_id)->where('subject', $subject->id)->get();
+                    $user_questions = DB::table('student_questions')->where('student_id',auth()->user()->student_id)->where('subject', $subject->id)->where('term', $settings->term)->where('session', $settings->session)->get();
                 }
 
                 //insert timer to the user table
@@ -483,5 +488,22 @@ class CBTController extends Controller
         });
 
         return response()->json($results);
+    }
+
+    public function imageUpload(Request $request){
+        $request->validate([
+            'upload' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+            $originName = $request->file('upload')->getClientOriginalName();
+            $fileName = pathinfo($originName, PATHINFO_FILENAME);
+            $extension = $request->file('upload')->getClientOriginalExtension();
+            $fileName = $fileName . '_' . time() . '.' . $extension;
+    
+            $request->file('upload')->move(public_path('images/cbt'), $fileName);
+    
+            $url = asset('images/cbt/' . $fileName);
+
+            return response()->json(['fileName' => $fileName, 'uploaded'=> 1, 'url' => $url]);
     }
 }

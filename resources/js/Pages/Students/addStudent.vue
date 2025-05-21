@@ -143,6 +143,17 @@
                                     </div>
                                 </div>
                                 <div class="row">
+                                    <div class="col-md-6 pt-sm-3 pt-md-4">
+                                        <label for="">Student image</label>
+                                        <div class="input-group is-invalid ">
+                                            <div class="custom-file">
+                                                <label class="custom-file-label" for="validatedInputGroupCustomFile">Choose file...</label>
+                                            <input type="file" @change="previewImage" accept="image/*" class="custom-file-input" id="validatedInputGroupCustomFile" required>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
                                         <div class="col-md-6 pt-sm-3 pt-md-4" v-if="arms.length > 0">
                                             <label for="arms">Arms</label>
                                              <select v-model="form.arm" class="custom-select" id="arms">
@@ -152,6 +163,9 @@
                                                 </option>
                                             </select>
                                         </div>
+                                </div>
+                                <div class="row" v-if="imageUrl">
+                                    <img :src="imageUrl" width="120" alt="Preview" class="preview-image mt-2 pl-2" />
                                 </div>
                                 <div class="row pt-4 pb-3">
                                     <div class="col-md-12 text-center">
@@ -174,7 +188,7 @@
                             <h3 class="card-title">Recently added</h3>
                         </div>
                         <!-- /.card-header -->
-                        <div class="card-body table-sm-responsive p-0">
+                        <div class="card-body table-responsive p-0">
                             <table class="table table-hover text-nowrap">
                                 <thead>
                                     <tr>
@@ -192,7 +206,7 @@
                                     >
                                         <td>{{ index + 1 }}</td>
                                         <td>
-                                            <Link>{{
+                                            <Link :href="'/edit-student/'+recent.id">{{
                                                 recent.surname +
                                                 " " +
                                                 recent.othernames
@@ -240,7 +254,9 @@ export default {
                 grade: "",
                 reg_progress: 50,
                 arm:"",
+                image:null
             }),
+            imageUrl: null,
             recent_students: {},
             arms:[],
             // id:1,
@@ -255,6 +271,17 @@ export default {
                     toastr.success("Student added successfully!", "Success");
                 },
             });
+        },
+        previewImage(event){
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                this.imageUrl = e.target.result; // Set the base64 URL
+                };
+                reader.readAsDataURL(file);
+                this.form.image = file
+            }
         },
         getRecentlyAddedStudent() {
             axios.get("/recently-added-students").then((response) => {

@@ -192,4 +192,19 @@ class ParentsController extends Controller
         return redirect('/parents');
     }
 
+    public function searchParents(Request $request){
+
+            $parents = Parents::with('students')->where(function($query)use($request){
+                $query->where('fullname', 'LIKE', '%'.$request->search.'%')
+                    ->orWhere('nationality', 'LIKE', '%'.$request->search.'%')
+                    ->orWhere('occupation' , 'LIKE', '%'.$request->search.'%')
+                    ->orWhere('home_address', 'LIKE', '%'.$request->search.'%')
+                    ->orWhere('office_address', 'LIKE', '%'.$request->search.'%')
+                    ->orWhere('email', 'LIKE', '%'.$request->search.'%')
+                    ->orWhere('phone', 'LIKE', '%'.$request->search.'%');
+            })->paginate(20);
+
+            return response()->json($parents);
+    }
+
 }

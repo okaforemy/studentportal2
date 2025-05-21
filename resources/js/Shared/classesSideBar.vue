@@ -4,7 +4,7 @@
                             <h3 class="card-title">Classes</h3>
                         </div>
                         <!-- /.card-header -->
-                        <div class="card-body table-sm-responsive p-0">
+                        <div class="card-body table-responsive p-0">
                             <table class="table table-hover text-nowrap">
                                 <thead>
                                     <tr>

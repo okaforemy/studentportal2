@@ -16,19 +16,20 @@
         color: #fff !important;
     }
 </style>
+
 <template>
      <div>
         <Head title="add student" />
         <div class="pt-3">
             <div class="row">
                 <div class="col-md-9">
-                    <div class="card">
+                    <div class="card" >
                         <div class="card-header">
                             <h3 class="card-title">Affective disposition </h3>
                         </div>
                         <div class="card-body">
                             <form id="affective">
-                                <table class="table table-sm affective_disp">
+                                <table class="table table-sm table-responsive affective_disp">
                                     <thead>
                                         <tr>
                                             <th>Affective Disposition</th>
@@ -80,7 +81,7 @@
                                         </tr>
                                     </tbody>
 
-                                    <tbody v-if="studentid && (section==='junior_secondary' || section === 'senior_secondary')">
+                                    <tbody v-if="studentid && (section==='junior secondary' || section === 'senior secondary')">
                                         <tr v-for="(pa,index) in secondary_affective" :key="index">
                                             <td>{{pa}}</td>
                                             <td>
@@ -102,7 +103,7 @@
                                         </tr>
                                     </tbody>
 
-                                    <tbody v-if="studentid && section==='pre_nursery'">
+                                    <tbody v-if="studentid && section==='pre nursery'">
                                         <tr v-for="(pa,index) in pre_nursery_affective" :key="index">
                                             <td>{{pa}}</td>
                                             <td>
@@ -137,7 +138,7 @@
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <div class="card">
+                    <div class="card" style="overflow-x: scroll; font-size: 14px;">
                         <div class="card-header">
                             <h3 class="card-title">Students</h3>
                         </div>
@@ -200,11 +201,13 @@ export default {
                 'Attentive and works independently',
                 'Does neat work',
                 'Honesty',
+                 'Team  work and cooperation',
                 'Relationship with peers',
                 'Leadership',
                 'Politeness',
                 'Confidence',
                 'Speaking',
+                
             ],
             pre_nursery_affective:[
                 'Mental alertness',
@@ -252,7 +255,7 @@ export default {
             let form = $('#affective').serialize();
         
             axios.post('/affective-disposition',form).then((response)=>{
-                console.log(response.data)
+                //router.reload({only: ['affective']})
                 toastr.success("Successfully saved", 'Success!')
             }).catch((error)=>{
                 if(error.response){

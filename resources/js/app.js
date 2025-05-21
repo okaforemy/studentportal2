@@ -8,6 +8,7 @@ import Autocomplete from '@trevoreyre/autocomplete-vue'
 import '@trevoreyre/autocomplete-vue/dist/style.css'
 import CKEditor from '@ckeditor/ckeditor5-vue2';
 
+
 //import { library } from '@fortawesome/fontawesome-svg-core'
 //import { faHatWizard } from '@fortawesome/free-solid-svg-icons'
 //import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
