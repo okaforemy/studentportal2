@@ -31,6 +31,7 @@
     <div>
         <div class="col-md-12">
             <div class="pt-3 mb-4 no-print">
+                 <button class="btn btn-primary no-print mt-2 pr-2" style="position:absolute; right: 0;" @click.prevent="rePrint">Re-print result</button>
                 <div class="row">
                        
                        <div class="col no-print col-md-5 m-auto">
@@ -40,6 +41,21 @@
                            </select>
                        </div>
                    </div>
+                   <div class="col-md-6 pt-4 mx-auto no-print" v-if="is_reprint">
+                <div class="row">
+                    <div class="col-md-6">
+                        <select class="form-control" v-model="term" id="">
+                            <option value="">Select term</option>
+                            <option value="first_term">First term</option>
+                            <option value="second_term">Second term</option>
+                            <option value="third_term">Third term</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" v-model="session" name="" class="form-control" placeholder="Session" id="">
+                    </div>
+                </div>
+            </div>
             </div>
             <div class="col-md-12" style="text-align: center; padding-top: 15px; padding-bottom: 25px">
                 <img src="/images/purplins-school2.png" alt="purplins high school">
@@ -78,7 +94,8 @@
                             </tr>
                             <tr>
                                 <td>CLASS:</td>
-                                <td id="class">{{student.grade}} <span v-if="student.arm">{{ student.arm }}</span></td>
+                                <!-- <td id="class">{{student.grade}} <span v-if="student.arm">{{ student.arm }}</span></td> -->
+                                  <td id="class" v-if="student && student.primary_exam && student.primary_exam.length > 0">{{student?.primary_exam[0]?.grade}} {{student?.primary_exam[0]?.arm}} </td>
                             </tr>
                             <tr>
                                 <td>NEXT TERM BEGINS:</td>
@@ -312,15 +329,24 @@
                 total_marks_obtainable:0,
                 total_marks_obtained:0,
                 overall_percentage:0,
-                settings: []
+                settings: [],
+                is_reprint: false,
+                term:'',
+                session:''
             }
         },
 
         methods:{
+            rePrint(){
+                this.is_reprint = !this.is_reprint
+            },
             getResult(){
                 axios.get('/get-result', {params:{
                     student_id: this.selectedStudent,
-                    section: this.section
+                    section: this.section,
+                    term: this.term, 
+                    session: this.session, 
+                    is_reprint: this.is_reprint
                 }}).then((response)=>{
                     this.student = response.data.student
                     this.class_average = response.data.class_average.toFixed(2)

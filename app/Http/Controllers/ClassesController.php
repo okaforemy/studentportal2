@@ -49,28 +49,6 @@ class ClassesController extends Controller
     /**
      * save arms
      */
-    // public function saveArms(Request $request){//dd($request->all());
-    //     $arms = $request->arms;
-    //     $arms_arr = [];
-    //     foreach($arms as $arm){
-    //         array_push($arms_arr,[
-    //             'arm_name'=>$arm,
-    //             'classes_id'=>$request->class_id,
-    //             'created_at' => \Carbon\Carbon::now(),
-    //             'updated_at' => \Carbon\Carbon::now(),
-    //             ]);
-    //     }
-    //     if(count($request->old_arms) > 0){
-    //         Arms::destroy($request->old_arms);
-    //     }
-    //     if(count($request->arms) == 0){
-    //         Arms::destroy($request->old_arms);
-    //     }else{
-    //         Arms::insert($arms_arr);
-    //     }
-    
-    //     return ['success'=>true];
-    // }
 
     public function saveArms(Request $request)
 {
@@ -149,9 +127,9 @@ class ClassesController extends Controller
      */
     public function getStudentsClass(Request $request){
         if($request->arm){
-            $students = Student::where('grade',$request->class)->where('arm',$request->arm)->paginate(25)->withQueryString();
+            $students = Student::with('studentGrade')->where('grade',$request->class)->where('arm',$request->arm)->paginate(25)->withQueryString();
         }else{
-            $students = Student::where('grade',$request->class)->paginate(25)->withQueryString();
+            $students = Student::with('studentGrade')->where('grade',$request->class)->paginate(25)->withQueryString();
         }
         $page= 0;
       
@@ -161,6 +139,20 @@ class ClassesController extends Controller
         $grade=$request->class;
         $arm = $request->arm? $request->arm: "";
         return inertia('Classes/students',compact('students','grade','page','arm'));
+    }
+
+    public function searchClassesStudents(Request $request){
+        $students = Student::with('studentGrade')->where(function($query)use($request){
+            $query->where('class_id', $request->class_id)
+                ->orWhere('surname','LIKE', '%'.$request->search.'%')
+                ->orWhere('othernames','LIKE', '%'.$request->search.'%')
+                ->orWhere('fullname','LIKE', '%'.$request->search.'%')
+                ->orWhere('dob','LIKE', '%'.$request->search.'%')
+                ->orWhere('sex', $request->search)
+                ->orWhere('student_id','LIKE', '%'.$request->search.'%');
+        })->paginate(20);
+
+        return response()->json($students);
     }
 
     public function getSettings(){
@@ -208,6 +200,22 @@ class ClassesController extends Controller
            // return redirect()->back();
          }
          
+    }
+
+    public function searchClasses(Request $request){
+        $classes = Classes::with('Arms')->where(function($query)use($request){
+            $query->where('class_name', 'LIKE', '%'.$request->search.'%')
+                ->orWhere('section', 'LIKE', '%'.$request->search.'%');
+        })->orWhereHas('Arms', function($query)use ($request){
+            $query->where('arm_name', 'LIKE', '%'.$request->search.'%');
+        })->paginate(20);
+
+        return response()->json($classes);
+    }
+
+    public function getClassesWithArms(){
+        $classes = Classes::with('Arms')->get();
+        return response()->json($classes);
     }
     
 }

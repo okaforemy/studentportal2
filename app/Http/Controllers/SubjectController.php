@@ -155,5 +155,15 @@ class SubjectController extends Controller
         $subject->save();
         return redirect()->back();
     }
+
+    public function searchSubjects(Request $request){
+        $subjects = Subjects::where(function($query) use($request){
+            $query->where('subject', 'LIKE', '%'.$request->search.'%')
+                ->orWhere('section', 'LIKE', '%'.$request->search.'%' )
+                ->orWhere('category', 'LIKE', '%'.$request->search.'%');
+        })->paginate(20);
+
+        return response()->json($subjects);
+    }
 }
 

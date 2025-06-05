@@ -98,7 +98,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                       <tr v-for="(clas, index) in classes.data" :key="index" >
+                       <tr v-for="(clas, index) in allClasses.data" :key="index" >
                            <td>{{index + 1}}</td>
                            <td v-if="clas.arms.length == 0"><Link href="/class-list" :data="{class:clas.class_name}" class="inner">{{clas.class_name}}</Link></td>
                            <td v-else>
@@ -148,6 +148,8 @@
                                         <Link href="/remarks" class="dropdown-item" :data="{grade: clas.class_name}">Remarks</Link>
                                         <Link href="/behaviour" class="dropdown-item" :data="{grade: clas.class_name}" v-if="clas.section == 'pre nursery'">Behaviour</Link>
                                         <div class="dropdown-divider"></div>
+                                        <Link href="/add-fee-to-class" class="dropdown-item" :data="{grade: clas.id}" >Add fee</Link>
+                                        <div class="dropdown-divider"></div>
                                         <Link href="/get-result-page" :data="{section: clas.section, grade:clas.class_name}" class="dropdown-item">Results</Link>
                                         <Link href="/mid-term-result" :data="{grade: clas.class_name, section:clas.section}" class="dropdown-item">Mid-term Results</Link>
                                         <div class="dropdown-divider"></div>
@@ -176,6 +178,8 @@
                                                     <Link href="/physical-development" :data="{grade:clas.class_name, arm:arm.arm_name}" class="dropdown-item">Physical development [ {{arm.arm_name}}]</Link>
                                                     <Link href="/remarks" class="dropdown-item" :data="{grade: clas.class_name, arm:arm.arm_name}">Remarks [ {{arm.arm_name}}]</Link>
                                                     <Link href="/behaviour" class="dropdown-item" :data="{grade: clas.class_name, arm:arm.arm_name}" v-if="clas.section == 'pre nursery'">Behaviour</Link>
+                                                    <div class="dropdown-divider"></div>
+                                                    <Link href="/add-fee-to-class" class="dropdown-item" :data="{grade: clas.id, arm:arm.id}" >Add fee</Link>
                                                     <div class="dropdown-divider"></div>
                                                     <Link href="/get-result-page" :data="{section: clas.section, grade: clas.class_name, arm: arm.arm_name}" class="dropdown-item">Results</Link>
                                                     <Link href="/mid-term-result" :data="{grade: clas.class_name, arm:arm.arm_name, section:clas.section}" class="dropdown-item">Mid-term Results</Link>
@@ -237,6 +241,7 @@
 import paginator from '../../Shared/paginator.vue'
 import { Inertia } from '@inertiajs/inertia'
 import { Link } from '@inertiajs/inertia-vue'
+import debounce from 'lodash/debounce';
 export default {
   components: { paginator, Link },
     props:{
@@ -244,17 +249,14 @@ export default {
     },
     data(){
         return{
-        //    form: this.$inertia.form({
-        //        class_name:null,
-        //        class_id:null,
-        //        arm:null,
-        //    }),
            all_arms:[],
            class_id:null,
            class_arms:null,
            class_name:null,
            old_arms:[],
            isOpen: false,
+           query:'',
+           allClasses: this.classes
         }
     },
     methods:{
@@ -312,6 +314,16 @@ export default {
                 }
             });
         },
+        searchClasses(query) {
+            axios.get('/search-class', { params: { search: query } })
+                .then((response) => {
+                    this.allClasses.data = response.data.data
+                    this.links = response.data.links
+                })
+                .catch((error) => {
+                    console.error(error); // Handle errors
+                });
+        }
     
     },
     watch:{
@@ -319,7 +331,10 @@ export default {
                 this.all_arms=[];
                 let myarr = this.class_arms.split(',');
                 this.all_arms = myarr.filter(entry => entry.trim() != '');
-        }
+        },
+        query: debounce(function(newVal){
+            this.searchClasses(newVal)
+        }, 500)
     },
     
 }

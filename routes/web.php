@@ -9,6 +9,7 @@ use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\ResultController;
 use App\Http\Controllers\CBTController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\FeeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -49,6 +50,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/filter-students', [StudentController::class, 'filterStudents']);
     Route::get('/upload-scores', [StudentController::class, 'uploadScores']);
     Route::post('/upload-primary-scores', [StudentController::class, 'savePrimaryUploadedScores']);
+    Route::post('/promote-students', [StudentController::class, 'promoteStudents']);
 
     //Parents controller
     Route::get('/add-parents',[ParentsController::class, 'index']);
@@ -76,6 +78,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/get-arms', [ClassesController::class, 'getArms']);
     Route::get('/class-list',[ClassesController::class, 'getStudentsClass']);
     Route::get('/score-sheet', [ClassesController::class, 'getScoreSheet']);
+    Route::get('/search-class', [ClassesController::class, 'searchClasses']);
+    Route::get('/search-classes-students', [ClassesController::class, 'searchClassesStudents']);
+    Route::get('/classes-with-arms', [ClassesController::class, 'getClassesWithArms']);
 
     //subjects routes
     Route::get('/add-subjects',[SubjectController::class, 'index'])->name('addsubjects');
@@ -86,6 +91,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/subjects', [SubjectController::class, 'subjects']);
     Route::get('/edit-subject/{id}', [SubjectController::class, 'editSubject']);
     Route::post('/edit-subject/{id}', [SubjectController::class, 'updateSubject']);
+    Route::get('/search-subjects', [SubjectController::class, 'searchSubjects']);
 
     //manages students result
     Route::get('/mid-term-result', [ResultController::class, 'index']);
@@ -126,6 +132,12 @@ Route::middleware(['auth'])->group(function () {
     //general
     Route::get('/settings', [HomeController::class, 'Settings']);
     Route::post('/settings', [HomeController::class, 'saveSettings']);
+
+    //fees
+    Route::get('/configure-fees', [FeeController::class, 'getConfigureFeePage']);
+    Route::post('/configure-fees', [FeeController::class, 'configureFee']);
+    Route::get('/get-configured-fees', [FeeController::class, 'getFeesConfiguration']);
+    Route::get('/delete-fee/{id}', [FeeController::class, 'deleteFeeConfiguration']);
 
 });
 

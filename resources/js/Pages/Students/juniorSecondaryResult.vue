@@ -29,6 +29,7 @@
    <div class="load_content">
    
    <div class="col-md-12">
+       <button class="btn btn-primary no-print mt-2 pr-2" style="position:absolute; right: 0;" @click.prevent="rePrint">Re-print result</button>
       <div class="col-md-4 m-auto pt-2 mb-4 no-print">
          <form>
             <div class="text center">
@@ -39,6 +40,21 @@
             </div>
          </form>
       </div>
+      <div class="col-md-6 pt-4 mx-auto no-print" v-if="is_reprint">
+                <div class="row">
+                    <div class="col-md-6">
+                        <select class="form-control" v-model="term" id="">
+                            <option value="">Select term</option>
+                            <option value="first_term">First term</option>
+                            <option value="second_term">Second term</option>
+                            <option value="third_term">Third term</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" v-model="session" name="" class="form-control" placeholder="Session" id="">
+                    </div>
+                </div>
+            </div>
       <div class="text-center py-4">
             <img src="/images/PHS.png"  alt="purplins">
       </div>
@@ -76,7 +92,8 @@
                   </tr>
                   <tr>
                      <td>CLASS:</td>
-                     <td id="h_class">{{student.grade+' '}} {{ student.arm?student.arm:'' }}</td>
+                     <!-- <td id="h_class">{{student.grade+' '}} {{ student.arm?student.arm:'' }}</td> -->
+                      <td v-if="exams && exams.length > 0">{{ exams[0].grade }}</td>
                   </tr>
                   <tr>
                      <td>NEXT TERM BEGINS:</td>
@@ -300,15 +317,24 @@
                 exams:[],
                 class_average: 0,
                 student_average: 0,
-                result_id:1
+                result_id:1,
+                is_reprint: false,
+               term:'',
+               session:''
             }
         },
 
         methods:{
+          rePrint(){
+                  this.is_reprint = !this.is_reprint
+            },
             getResult(){
                 axios.get('/get-result', {params:{
                     student_id: this.selectedStudent,
-                    section: this.section
+                    section: this.section,
+                    term: this.term, 
+                    session: this.session, 
+                    is_reprint: this.is_reprint
                 }}).then((response)=>{
                     this.student = response.data.student
                     this.settings = response.data.settings

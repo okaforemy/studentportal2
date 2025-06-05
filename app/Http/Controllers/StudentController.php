@@ -158,7 +158,7 @@ class StudentController extends Controller
         $students = Student::with('studentGrade')->where(function($query)use($request){
                 $query->where('fullname', 'LIKE', '%'.$request->search.'%')
                 ->orWhere('dob', 'LIKE', '%'.$request->search.'%')
-                ->orWhere('sex','LIKE', '%'.$request->search.'%')
+                ->orWhere('sex', $request->search)
                 ->orWhere('student_id', 'LIKE', '%'.$request->search.'%')
                 ->orWhere('grade', 'LIKE', '%'.$request->search.'%')
                 ->orWhere('arm', 'LIKE', '%'.$request->search.'%');
@@ -917,6 +917,12 @@ class StudentController extends Controller
                 SeniorSecondaryExam::insert($new_scores);
             }
         }
+        return response()->json(['success'=>true]);
+      }
+
+      public function promoteStudents(Request $request){
+        $students = $request->students;
+        Student::whereIn('id', $students)->update(['class_id'=>$request->class_id, 'grade'=>$request->class_name, 'arm'=>$request->arm_name]);
         return response()->json(['success'=>true]);
       }
 

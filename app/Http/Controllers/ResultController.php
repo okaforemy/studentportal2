@@ -244,20 +244,23 @@ class ResultController extends Controller
         if(!$settings){
             return redirect()->back();
         }
+       // dd($request->all());
+        $term = $request->is_reprint && $request->is_reprint !=='false'? $request->term: $settings->term;
+        $session = $request->is_reprint && $request->is_reprint !=='false'? $request->session: $settings->session;
 
         if($request->section == 'pre nursery'){
-            $student = Student::with(['picture','remarks'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
-            }, 'behaviour'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
-            }, 'physicaldevelopment'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
-            }, 'attendance'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
-            }, 'preNurseryAffective'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
-            }, 'prenurseryexam'=>function($query)use ($settings){
-                $query->where('session', $settings->session)->where('term', $settings->term);
+            $student = Student::with(['picture','remarks'=>function($query) use($term, $session){
+                $query->where('term', $term)->where('session', $session);
+            }, 'behaviour'=>function($query) use($term, $session){
+                $query->where('term', $term)->where('session', $session);
+            }, 'physicaldevelopment'=>function($query) use($term, $session){
+                $query->where('term', $term)->where('session', $session);
+            }, 'attendance'=>function($query) use($term, $session){
+                $query->where('term', $term)->where('session', $session);
+            }, 'preNurseryAffective'=>function($query) use($term, $session){
+                $query->where('term', $term)->where('session', $session);
+            }, 'prenurseryexam'=>function($query)use ($term, $session){
+                $query->where('session', $session)->where('term', $term);
             }])->where('id',$request->student_id)->first();
 
             $prenurseryexam = collect($student->prenurseryexam)->groupBy('category');
@@ -265,18 +268,18 @@ class ResultController extends Controller
         }
 
         if($request->section == 'nursery'){
-            $student = Student::with(['remarks'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
-            }, 'behaviour'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
-            }, 'physicaldevelopment'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
-            }, 'attendance'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
-            }, 'primaryAffective'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
-            }, 'picture', 'primaryExam'=>function($query)use ($settings){
-                $query->where('session', $settings->session)->where('term', $settings->term);
+            $student = Student::with(['remarks'=>function($query) use($term, $session){
+                $query->where('term', $term)->where('session', $session);
+            }, 'behaviour'=>function($query) use($term, $session){
+                $query->where('term', $term)->where('session', $session);
+            }, 'physicaldevelopment'=>function($query) use($term, $session){
+                $query->where('term', $term)->where('session', $session);
+            }, 'attendance'=>function($query) use($term, $session){
+                $query->where('term', $term)->where('session', $session);
+            }, 'primaryAffective'=>function($query) use($term, $session){
+                $query->where('term', $term)->where('session', $session);
+            }, 'picture', 'primaryExam'=>function($query)use ($term, $session){
+                $query->where('session', $session)->where('term', $term);
             }])->withCount('subjects')->where('id',$request->student_id)->first();
 
             $total_subjects = $student->subjects_count; 
@@ -284,19 +287,19 @@ class ResultController extends Controller
             $total_marks_obtained = $student->primaryExam->sum('total');
             $overall_percentage = $total_marks_obtained? ($total_marks_obtained/ $total_marks_obtainable) * 100: 0;
 
-            $total_class_sum = Student::whereHas('primaryExam', function ($query) use ($settings, $student) {
-                $query->where('session', $settings->session)
-                      ->where('term', $settings->term)
+            $total_class_sum = Student::whereHas('primaryExam', function ($query) use ($term, $session, $student) {
+                $query->where('session', $session)
+                      ->where('term', $term)
                       ->where('grade', $student->grade);
-            })->withSum(['primaryExam as total' => function ($query) use ($settings, $student) {
-                $query->where('session', $settings->session)
-                      ->where('term', $settings->term)
+            })->withSum(['primaryExam as total' => function ($query) use ($term, $session, $student) {
+                $query->where('session', $session)
+                      ->where('term', $term)
                       ->where('grade', $student->grade);
             }],'total')->get()->sum('total');
      
-            $total_student = Student::whereHas('primaryExam', function($query) use ($settings, $student){
-                $query->where('session', $settings->session)
-                    ->where('term', $settings->term)
+            $total_student = Student::whereHas('primaryExam', function($query) use ($term, $session, $student){
+                $query->where('session', $session)
+                    ->where('term', $term)
                     ->where('grade', $student->grade);
             })->count();
 
@@ -318,16 +321,16 @@ class ResultController extends Controller
         }
 
         if($request->section == 'primary'){
-            $student = Student::with(['remarks'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
-            }, 'physicaldevelopment'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
-            }, 'attendance'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
-            }, 'primaryAffective'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
-            }, 'picture', 'primaryExam'=>function($query)use ($settings){
-                $query->where('session', $settings->session)->where('term', $settings->term);
+            $student = Student::with(['remarks'=>function($query) use($term, $session){
+                $query->where('term', $term)->where('session', $session);
+            }, 'physicaldevelopment'=>function($query) use($term, $session){
+                $query->where('term', $term)->where('session', $session);
+            }, 'attendance'=>function($query) use($term, $session){
+                $query->where('term', $term)->where('session', $session);
+            }, 'primaryAffective'=>function($query) use($term, $session){
+                $query->where('term', $term)->where('session', $session);
+            }, 'picture', 'primaryExam'=>function($query)use ($term, $session){
+                $query->where('session', $session)->where('term', $term);
             }])->withCount('subjects')->where('id',$request->student_id)->first();
 
             $total_subjects = $student->subjects_count; 
@@ -335,19 +338,19 @@ class ResultController extends Controller
             $total_marks_obtained = $student->primaryExam->sum('total');
             $overall_percentage = ($total_marks_obtained/ $total_marks_obtainable) * 100;
 
-            $total_class_sum = Student::whereHas('primaryExam', function ($query) use ($settings, $student) {
-                $query->where('session', $settings->session)
-                      ->where('term', $settings->term)
+            $total_class_sum = Student::whereHas('primaryExam', function ($query) use ($term, $session, $student) {
+                $query->where('session', $session)
+                      ->where('term', $term)
                       ->where('grade', $student->grade);
-            })->withSum(['primaryExam as total' => function ($query) use ($settings, $student) {
-                $query->where('session', $settings->session)
-                      ->where('term', $settings->term)
+            })->withSum(['primaryExam as total' => function ($query) use ($term, $session, $student) {
+                $query->where('session', $session)
+                      ->where('term', $term)
                       ->where('grade', $student->grade);
             }],'total')->get()->sum('total');
      
-            $total_student = Student::whereHas('primaryExam', function($query) use ($settings, $student){
-                $query->where('session', $settings->session)
-                    ->where('term', $settings->term)
+            $total_student = Student::whereHas('primaryExam', function($query) use ($term, $session, $student){
+                $query->where('session', $session)
+                    ->where('term', $term)
                     ->where('grade', $student->grade);
             })->count();
 
@@ -364,19 +367,19 @@ class ResultController extends Controller
 
         if($request->section == 'junior secondary'){
            
-            $student = Student::with(['remarks'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
-            }, 'physicaldevelopment'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
-            }, 'attendance'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
-            }, 'secondaryAffective'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
+            $student = Student::with(['remarks'=>function($query) use($term, $session){
+                $query->where('term', $term)->where('session', $session);
+            }, 'physicaldevelopment'=>function($query) use($term, $session){
+                $query->where('term', $term)->where('session', $session);
+            }, 'attendance'=>function($query) use($term, $session){
+                $query->where('term', $term)->where('session', $session);
+            }, 'secondaryAffective'=>function($query) use($term, $session){
+                $query->where('term', $term)->where('session', $session);
             }, 'picture'])->where('id',$request->student_id)->first();
 
-            $allExams = secondaryExam::where(function($query) use ($settings, $student){
-                $query->where('term', $settings->term)
-                    ->where('session', $settings->session)
+            $allExams = secondaryExam::where(function($query) use ($term, $session, $student){
+                $query->where('term', $term)
+                    ->where('session', $session)
                     ->where('grade', $student->grade)
                     ->where('arm', $student->arm);
             })
@@ -418,20 +421,20 @@ class ResultController extends Controller
         }
 
         if($request->section == 'senior secondary'){
-           
-            $student = Student::with(['remarks'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
-            }, 'physicaldevelopment'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
-            }, 'attendance'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
-            }, 'secondaryAffective'=>function($query) use($settings){
-                $query->where('term', $settings->term)->where('session', $settings->session);
+          
+            $student = Student::with(['remarks'=>function($query) use($session, $term){
+                $query->where('term', $term)->where('session', $session);
+            }, 'physicaldevelopment'=>function($query) use($session, $term){
+                $query->where('term', $term)->where('session', $session);
+            }, 'attendance'=>function($query) use($session, $term){
+                $query->where('term', $term)->where('session', $session);
+            }, 'secondaryAffective'=>function($query) use($session, $term){
+                $query->where('term', $term)->where('session', $session);
             }, 'picture'])->where('id',$request->student_id)->first();
 
-            $allExams = SeniorSecondaryExam::where(function($query) use ($settings, $student){
-                $query->where('term', $settings->term)
-                    ->where('session', $settings->session)
+            $allExams = SeniorSecondaryExam::where(function($query) use ($session, $term, $student){
+                $query->where('term', $term)
+                    ->where('session', $session)
                     ->where('grade', $student->grade);
                     //->where('arm', $student->arm);
             })

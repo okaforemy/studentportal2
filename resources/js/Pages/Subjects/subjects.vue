@@ -120,13 +120,13 @@ export default {
        
        fetchData(query) {
         //if (query) { // Ensure query is checked correctly
-            axios.get('/filter-subjects', { params: { search: query } })
+            axios.get('/search-subjects', { params: { search: query } })
                 .then((response) => {
-                    this.allsubjects = response.data.data
+                    this.allSubjects = response.data.data
                     this.links = response.data.links
                 })
                 .catch((error) => {
-                    console.error(error); // Handle errors
+                    //console.error(error); // Handle errors
                 });
         //}
     }

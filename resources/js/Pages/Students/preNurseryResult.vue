@@ -11,6 +11,7 @@
 </style>
 <template>
     <div class="col-md-12" style="font-size: 0.9rem;">
+        <button class="btn btn-primary no-print mt-2 pr-2" style="position:absolute; right: 0;" @click.prevent="rePrint">Re-print result</button>
         <div class="mx-auto no-print">
             <div class="col-md-4 pt-4 mx-auto">
                 <label for="">Students:</label>
@@ -18,6 +19,21 @@
                     v-if="students && students.length > 0">
                     <option v-for="student in students" :value="student.id">{{ student.fullname }}</option>
                 </select>
+            </div>
+            <div class="col-md-6 pt-4 mx-auto no-print" v-if="is_reprint">
+                <div class="row">
+                    <div class="col-md-6">
+                        <select class="form-control" v-model="term" id="">
+                            <option value="">Select term</option>
+                            <option value="first_term">First term</option>
+                            <option value="second_term">Second term</option>
+                            <option value="third_term">Third term</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <input type="text" v-model="session" name="" class="form-control" placeholder="Session" id="">
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -304,13 +320,20 @@ export default {
             prenurseryexam: [],
             class_avg: 0,
             picture: [],
-            settings:[]
+            settings:[],
+            is_reprint: false,
+            term:'',
+            session:''
 
         }
     },
     methods: {
+        rePrint(){
+            this.is_reprint = !this.is_reprint
+        },
         getResult() {
-            axios.get('/get-result', { params: { student_id: this.student_id, section: this.section } }).then((response) => {
+            axios.get('/get-result', { params: { student_id: this.student_id, 
+                section: this.section, term: this.term, session: this.session, is_reprint: this.is_reprint } }).then((response) => {
                 this.result = response.data
                 this.prenurseryexam = response.data.prenurseryexam
                 this.student = response.data.student
