@@ -77,7 +77,7 @@
                             <label for="">Class</label>
                             <select name="grade" ref="mySelect" @change="getSubjects" required v-model="form.grade" class="form-control">
                                 <option value="">select class</option>
-                                <option v-for="(cls, index) in classes" :data-id="cls.section" :key="index" :value="cls.class_name">{{ cls.class_name }}</option>
+                                <option v-for="(cls, index) in classes" :data-id="cls.section" :key="index" :value="cls.id">{{ cls.class_name }}</option>
                             </select>
                             <div v-if="errors.grade" class="text-danger">{{ errors.grade }}</div>
                         </div>

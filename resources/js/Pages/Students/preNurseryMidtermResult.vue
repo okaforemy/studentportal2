@@ -55,7 +55,7 @@
             </p>
             <p class="text-center">
                 <span class=" font-weight-bold">CLASS:</span> 
-                <span class="clas mr-5">{{result.student.grade}}</span>
+                <span class="clas mr-5">{{result.student.grade}} {{ result.student.arm }}</span>
                 <span class=" font-weight-bold">	SCHOOL RESUMES:</span> 
                 <span class="resume">{{ getResumptionDate() }}</span>
             </p>
@@ -63,19 +63,19 @@
             <table class="table table-bordered table-sm primary2 mb-2">
 			<thead>
 				<tr>
-					<th>SUBJECTS</th>
-					<th>CONCEPT</th>
-					<th>MASTERED CONCEPT</th>
-                    <th>NEEDS WORK</th>
+					<th style="width: 20%;"  class="ml-2">SUBJECTS</th>
+					<th style="width: 50%;">CONCEPT</th>
+					<th style="width: 15%;">MASTERED CONCEPT</th>
+                    <th style="width: 15%;">NEEDS WORK</th>
 				</tr>
 			</thead>
 			<tbody class="midterm-td">
-                <tr v-for="(result, index) in prenurseryexam" :key="index">
+                <tr v-for="(group, index) in prenurseryexam" :key="index">
                     <td class="pl-2">{{index}}</td>
                     <td>
                         <table class="table">
                             <tbody>
-                                <tr v-for="(subj, ind) in result" :key="ind">
+                                <tr v-for="(subj, ind) in group" :key="ind">
                                     <td class="px-2 py-1">{{ subj.subject }}</td>
                                 </tr>
                             </tbody>
@@ -84,7 +84,7 @@
                     <td>
                         <table class="table">
                             <tbody>
-                                <tr v-for="(subj, ind) in result" :key="ind">
+                                <tr v-for="(subj, ind) in group" :key="ind">
                                     <td class="px-2 py-1" v-if="subj.value == 2"><i class="fas fa-check" ></i></td>
                                     <td v-else class="hidden-check px-2 py-1"><i class="fas fa-check text-gray "></i></td>
                                 </tr>
@@ -94,7 +94,7 @@
                     <td>
                         <table class="table">
                             <tbody>
-                                <tr v-for="(subj, ind) in result" :key="ind">
+                                <tr v-for="(subj, ind) in group" :key="ind">
                                     <td class="px-2 py-1" v-if="subj.value == 1"><i class="fas fa-check"></i></td>
                                     <td v-else class="hidden-check px-2 py-1"><i class="fas fa-check text-gray"></i></td>
                                 </tr>

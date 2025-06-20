@@ -39,7 +39,7 @@
             </p>
             <p class="text-center">
                 <span class=" font-weight-bold">CLASS:</span> 
-                <span class="clas mr-5">{{result.grade}}</span>
+                <span class="clas mr-5">{{result.grade}} {{ result.arm }}</span>
                 <span class=" font-weight-bold">	SCHOOL RESUMES:</span> 
                 <span class="resume">{{getResumptionDate()}}</span>
             </p>

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddGradeToQuestionsTable extends Migration
+class AddExtrasToTransactionsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,9 @@ class AddGradeToQuestionsTable extends Migration
      */
     public function up()
     {
-        Schema::table('questions', function (Blueprint $table) {
-            $table->unsignedBigInteger('grade');
+        Schema::table('transactions', function (Blueprint $table) {
+            $table->enum('payment_method',['cash', 'bank', 'transfer', 'cheque'])->default('bank');
+            $table->string('receipt_no')->nullable();
         });
     }
 
@@ -25,7 +26,7 @@ class AddGradeToQuestionsTable extends Migration
      */
     public function down()
     {
-        Schema::table('questions', function (Blueprint $table) {
+        Schema::table('transactions', function (Blueprint $table) {
             //
         });
     }

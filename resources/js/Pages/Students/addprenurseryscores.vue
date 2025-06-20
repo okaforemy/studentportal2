@@ -40,10 +40,10 @@
                                         <td>
                                             <div class="btn-group btn-group-toggle" data-toggle="buttons">
                                                 <label class="btn btn-primary btn-sm text-white" :class="{active:subj.value==2}">
-                                                    <input type="radio" @click="getsubject($event,subj,2)" :checked="subj.value==2" ref="mastered" :name="'scores'+(subj.id)" value="2"> Mastered Concepts
+                                                    <input type="radio" v-model="subject_data['data_'+subj.id].value" @click="getsubject($event,subj,2)" :checked="subj.value==2" ref="mastered" :name="'scores'+(subj.id)" value="2"> Mastered Concepts
                                                 </label>
                                                 <label class="btn btn-primary btn-sm text-white" :class="{active: subj.value==1}">
-                                                    <input type="radio" @click="getsubject($event, subj,1)" ref="needs" :checked="subj.value==1" :name="'scores'+(subj.id)" value="1"> NEEDs Work
+                                                    <input type="radio" v-model="subject_data['data_'+subj.id].value" @click="getsubject($event, subj,1)" ref="needs" :checked="subj.value==1" :name="'scores'+(subj.id)" value="1"> NEEDs Work
                                                 </label>
                                             </div>
                                             <input type="hidden" ref="subject" name="subject" :value="subj.subject">
@@ -112,7 +112,8 @@ export default {
             pagination_page: (this.currentpage)? this.currentpage:1,
             allMastered: [],
             allNeeds: [],
-            pre_subjects: []
+            pre_subjects: [],
+            subject_data: {}
         }
     },
     methods: {
@@ -142,166 +143,37 @@ export default {
                         //id: data.id
                     })
                 }
-                // //check for needs
-                // let found2 = this.allNeeds.findIndex((item)=>item.id == data.id)
-                // if(found2 !== -1){
-                //     this.allNeeds.splice(found2, 1);
-                // }
                
             }
         },
-        mastered(e,data){
-            
-            if(e.target.checked){
-                let found = this.allMastered.filter((item)=>item.id == data.id)
-               
-                if(found.length ==0){
-                    this.allMastered.push({
-                        value: 2,
-                        subject: data.subject,
-                        category: data.category,
-                        student_id: this.student.id,
-                        session: this.session,
-                        term:this.term,
-                        id: data.id
-                    })
-                }
-                //check for needs
-                let found2 = this.allNeeds.findIndex((item)=>item.id == data.id)
-                if(found2 !== -1){
-                    this.allNeeds.splice(found2, 1);
-                }
-               
-            }
-        },
-        needs(e,data){
-            if(e.target.checked){
-                let found = this.allNeeds.filter((item)=>item.id == data.id)
-               
-                if(found.length ==0){
-                    this.allNeeds.push({
-                        value: 1,
-                        subject: data.subject,
-                        category: data.category,
-                        student_id: this.student.id,
-                        session: this.session,
-                        term:this.term,
-                        id: data.id
-                    })
-                }
-
-                //check for mastered
-                let found2 = this.allMastered.findIndex((item)=>item.id == data.id)
-                if(found2 !== -1){
-                    this.allMastered.splice(found2, 1);
-                }
-                
-            }
-        },
-        saveStudentScores(){
-           //let scores = $('#scores').serializeArray();
-          
-        //    let needs = this.$refs['needs'];
-        //    let mastered = this.$refs['mastered'];
-        //    let subject = this.$refs['subject'];
-        //    let category = this.$refs['category'];
-        //    let student_id = this.$refs['student_id'];
-        //    let id = this.$refs['id'];
-        //    console.log(needs)
-           
-        //     let scores = [];
-
-        //    for(let i=0; i < needs.length; i++){
-        //     //console.log(needs[i].checked)
-        //         if(needs[i].checked){
-        //             let arr ={
-        //                 value: 1,
-        //                 subject: subject[i].value,
-        //                 category: category[i].value,
-        //                 student_id: student_id[i].value,
-        //                 session: this.session,
-        //                 term:this.term,
-        //                 id: id[i].value
-        //             }
-        //             scores.push(arr)
-        //         } 
-        //    }
-
-        //    for(let i=0; i < mastered.length; i++){
-        //     //console.log(needs[i].checked)
-        //     if(mastered[i].checked){
-               
-        //             let arr ={
-        //                 value: 2,
-        //                 subject: subject[i].value,
-        //                 category: category[i].value,
-        //                 student_id: student_id[i].value,
-        //                 session: this.session,
-        //                 term:this.term,
-        //                 id: id[i].value
-        //             }
-        //             scores.push(arr)
-        //         }
-        //    }
         
-        //let scores = this.allMastered.concat(this.allNeeds);
-        if(this.pre_subjects.length == 0){
-            let mastered = this.$refs['mastered'];
-            let needs = this.$refs['needs'];
-            let subject = this.$refs['subject'];
-            let category = this.$refs['category'];
-            let student_id = this.$refs['student_id'];
-            let id = this.$refs['id'];
-            
-            for(let i=0; i < needs.length; i++){
-                if(needs[i].checked){
-                    let arr ={
-                        value: 1,
-                        subject: subject[i].value,
-                        category: category[i].value,
-                        student_id: student_id[i].value,
-                        session: this.session,
-                        term:this.term,
-                        //id: id[i].value
-                    }
-                    this.pre_subjects.push(arr)
-                } 
-           }
-
-           for(let i=0; i < mastered.length; i++){
-            if(mastered[i].checked){
-               
-                    let arr ={
-                        value: 2,
-                        subject: subject[i].value,
-                        category: category[i].value,
-                        student_id: student_id[i].value,
-                        session: this.session,
-                        term:this.term,
-                        //id: id[i].value
-                    }
-                    this.pre_subjects.push(arr)
-                }
-           }
-
-           
-        }
-       
-          let data = {
-            data: this.pre_subjects,
-             section: this.section,
-             grade: this.grade,
-            //  student_id: this.student.id,
-            //  section: this.section,
-            //  term: this.term
-          }
+        saveStudentScores(){
          
-          axios.post('/students-exam-scores',data).then((response)=>{
+          axios.post('/students-exam-scores',{data:this.subject_data, section:this.section}).then((response)=>{
             toastr.success('Saved successfully!', 'Success')
             Inertia.reload({ only: ['subjects'] })
           })
         }
     },
+    created(){
+        
+        for(let subject in this.subjects){
+            let order = 1;
+            for(let val of this.subjects[subject]){
+               
+                this.subject_data['data_' + val.id] = {
+                    subject: val.subject,
+                    category: val.category,
+                    value: (val && val.value)? val.value: '',
+                    session:this.session,
+                    term: this.term,
+                    student_id: this.student.id,
+                    order: order
+                };
+                order += order + 1;
+            }
+        }
+    }
     
 }
 </script>

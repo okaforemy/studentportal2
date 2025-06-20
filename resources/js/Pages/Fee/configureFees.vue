@@ -85,7 +85,7 @@
                             <tr v-for="(fee, index) in fees">
                                 <td>{{ index + 1 }}</td>
                                 <td>{{ fee.description }}</td>
-                                <td>{{ fee.is_optional?'Yes':'No' }}</td>
+                                <td>{{ fee.is_optional==1?'Yes':'No' }}</td>
                                 <td>{{ formatAmount(fee.amount) }}</td>
                                 <td>
                                     <i class="fas fa-edit px-2 text-success" @click="editFee(fee)" style="cursor: pointer"></i>
@@ -118,7 +118,7 @@ export default {
                 section: '',
                 class: '',
                 class_id: '',
-                is_optional: false,
+                is_optional: 1,
                 arm: '',
                 id: null
             }),

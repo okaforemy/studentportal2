@@ -22,6 +22,6 @@ class Arms extends Model
      */
     public function subjects()
     {
-        return $this->belongsToMany(Subjects::class, 'class_subject', 'arms_id', 'subject_id');
+        return $this->belongsToMany(Subjects::class, 'class_subject', 'arms_id', 'subject_id')->withPivot(['is_holiday', 'max_score', 'order']);
     }
 }

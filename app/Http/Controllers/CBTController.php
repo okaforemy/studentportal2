@@ -17,6 +17,7 @@ use App\Models\Setting;
 use App\Models\CBTResult;
 use App\Events\ResultSubmitted;
 use App\Models\StudentQuestion;
+use App\Models\Student;
 use Str;
 
 class CBTController extends Controller
@@ -96,7 +97,7 @@ class CBTController extends Controller
                 'option_c' => html_entity_decode(strip_tags($rts['c'])),
                 'option_d' => html_entity_decode(strip_tags($rts['d'])),
                 'option_e' => isset($rts['e'])? html_entity_decode(strip_tags($rts['e'])):'',
-                'subject' => $request->subject,
+                //'subject' => $request->subject,
                 'subject_id' => $request->subject,
                 'grade' => $request->grade,
                 'session' => $settings->session,
@@ -123,7 +124,7 @@ class CBTController extends Controller
         }
         
         $q->grade = $request->grade;
-        $q->subject = $request->subject;
+       // $q->subject = $request->subject;
         $q->subject_id = $request->subject;
         $q->question = $request->question;
         $q->option_a = $request->option_a;
@@ -174,13 +175,22 @@ class CBTController extends Controller
     }
 
     public function CBTUsers(){
-        $students = DB::table('cbtstudents')->get()->groupBy('grade');
+        //$students = DB::table('cbtstudents')->get()->groupBy('grade');
+        $students = Student::whereHas('studentGrade', function ($query) {
+        $query->where('section', 'junior secondary')
+                ->orWhere('section', 'senior secondary');
+        })
+        ->with(['studentGrade', 'Subjects'])
+        ->get()
+        ->groupBy('grade');
         return inertia('cbt/users', compact('students'));
     }
 
     public function viewQuestions(){
         $classes = Classes::where('section', 'junior secondary')->orWhere('section', 'senior secondary')->get();
-        $subjects = Subjects::all();
+        $subjects = Subjects::where('section', 'junior secondary')
+                    ->orWhere('section', 'senior secondary')
+                    ->get();
         return inertia('cbt/view-questions',compact('classes','subjects'));
     }
 
@@ -200,7 +210,7 @@ class CBTController extends Controller
     }
 
     public function settings(){
-        $subjects = Subjects::where('section','junior_secondary')->orWhere('section','senior_secondary')->get();
+        $subjects = Subjects::where('section','junior secondary')->orWhere('section','senior secondary')->get();
         $settings = DB::table('cbt_settings')->get();
         return inertia('cbt/settings', compact('subjects','settings'));
     }
@@ -247,13 +257,13 @@ class CBTController extends Controller
     }
 
     public function CBTLoginValidate(Request $request){
-        $user = CBTStudents::where('student_id', $request->student_id)->first();
-
+        $user = Student::where('student_id', $request->student_id)->first();
         if($user){
             if(Auth::guard('cbt')->loginUsingId($user->id)){
-                
                 $deviceToken = Str::random(32);
-                $user->update(['device_token' => $deviceToken]);
+                $user->device_token = $deviceToken;
+                $user->save();
+                //$user->update(['device_token' => $deviceToken]);
                 $request->session()->put('device_token', $deviceToken);
 
                 return redirect()->route('exam-home');
@@ -288,7 +298,7 @@ class CBTController extends Controller
     }
 
     public function prepareQuestion(Request $request){
-        $student = CBTStudents::find(auth()->user()->id);
+        $student = Student::find(auth()->user()->id);
         $subject = Subjects::where('subject',$request->subject)
                     ->where('section',$request->section)
                     ->first();
@@ -300,12 +310,12 @@ class CBTController extends Controller
                     ->first();
         
         if(is_null($student_score) == true){
-            $questions = Question::where('grade', $student->grade)
+            $questions = Question::where('grade', $student->class_id)
                     ->where('subject_id',$subject->id)
                     ->where('session', $settings->session)
                     ->where('term', $settings->term)
                     ->get();
-                 
+               
             if(!$questions->isEmpty()){
                 $shuffled = $questions->shuffle();
 
@@ -336,8 +346,8 @@ class CBTController extends Controller
 
                 //insert timer to the user table
                 $cbt_setting = CBTSetting::where('subject_id', $subject->id)->first();
-               
-                CBTStudents::where('id', auth()->user()->id)->update(['timer'=>$cbt_setting->duration]);
+             
+                Student::where('id', auth()->user()->id)->update(['timer'=>$cbt_setting->duration]);
                
                 $questions = $user_questions;
                 $fullname = auth()->user()->lastname." ".auth()->user()->firstname;
@@ -345,7 +355,7 @@ class CBTController extends Controller
                 return redirect("cbt-exam?subject_id=$subject->id&&student_id=$student->student_id")->with('questions');
                
             }
-        
+       
         }else{
             return redirect()->back()->with('error','Test taken for this subject');
         }
@@ -360,7 +370,7 @@ class CBTController extends Controller
             'term' => $settings->term
         ]);
 
-        CBTStudents::where('id', auth()->user()->id)->update(['timer'=>$request->duration]);
+        Student::where('id', auth()->user()->id)->update(['timer'=>$request->duration]);
         return response()->json($state);
     }
 
@@ -450,7 +460,7 @@ class CBTController extends Controller
     }
 
     public function getStudentsInAClass(Request $request){
-        $students = CBTStudents::where('grade', $request->grade)->get();
+        $students = Student::where('grade', $request->grade)->get();
         return response()->json($students);
     }
     

@@ -1,0 +1,110 @@
+<template>
+    <div class="pt-4">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">ADD FEES FOR <span style="font-weight: bold;">{{ student.fullname }}</span>, Class: {{ student.grade }} <span v-if="student.arm">{{ student.arm }}</span></h3>
+            </div>
+
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <select name="" v-model="form.fee_config_id" class="form-control" id="">
+                            <option value="">Select fee configuration</option>
+                            <option :value="fee.id" v-for="fee in fees">{{ fee.description }}</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button @click.prevent="addFee" class="btn btn-primary">Add Fee</button>
+                    </div>
+                </div>
+
+                <div class="py-3">
+                    <table class="table">
+                        <thead>
+                            <th>#</th>
+                            <th>Description</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th></th>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(fee, index) in studentFeeConfig">
+                                <td>{{ index+1 }}</td>
+                                <td>{{ fee.description }}</td>
+                                <th>{{ fee.is_optional ==1? 'Optional':'Mandatory' }}</th>
+                                <td>{{ formatAmount(fee.amount) }}</td>
+                                <td > <span v-if="fee.is_optional == 1" style="cursor: pointer;" @click="removeSingleFee(fee.id)">Remove</span></td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td></td>
+                                <td style="font-size: 16px; font-weight: bold;" colspan="2">TOTAL</td>
+                                <td style="font-size: 16px; font-weight: bold;">{{ totalStudentFees() }} </td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+
+export default {
+    props: ['student', 'studentFeeConfig', 'feeConfig'],
+    data(){
+        return {
+            form: this.$inertia.form({
+                fee_config_id: '',
+                student_id:''
+            })
+        }
+    },
+    methods: {
+        formatAmount(amount){
+           return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
+        },
+
+        totalStudentFees(){
+            let total = 0;
+            for(let fee of this.studentFeeConfig){
+                total +=fee.amount
+            }
+            return this.formatAmount(total)
+        },
+        addFee(){
+            this.form.student_id = this.student.id;
+            this.$inertia.post('/add-single-fee', this.form, {
+                only: ['studentFeeConfig', 'feeConfig'],
+                onSuccess: ()=>{
+                    this.form.reset();
+                }
+            })
+        },
+        removeSingleFee(id){
+            let data = {
+                student_id: this.student.id,
+                fee_config_id: id
+            }
+            
+            this.$inertia.get('/remove-single-fee',data, {
+                only: ['studentFeeConfig', 'feeConfig']
+            })
+            // axios.get('/remove-single-fee',{params:data}, {onSuccess:()=>{
+            //     this.$inertia.reload({
+            //         only: ['studentFeeConfig', 'feeConfig']
+            //     })
+            // }})
+        }
+    },
+    computed:{
+        fees(){
+            const studentFeeIds = new Set(this.studentFeeConfig.map(item => item.id));
+            return this.feeConfig.filter(item => !studentFeeIds.has(item.id));
+        }
+    }
+}
+</script>

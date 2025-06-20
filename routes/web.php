@@ -10,6 +10,8 @@ use App\Http\Controllers\ResultController;
 use App\Http\Controllers\CBTController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\FeeController;
+use App\Http\Controllers\StudentFeesController;
+use App\Http\Controllers\TransactionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -94,7 +96,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/search-subjects', [SubjectController::class, 'searchSubjects']);
 
     //manages students result
-    Route::get('/mid-term-result', [ResultController::class, 'index']);
+    Route::get('/mid-term-result', [ResultController::class, 'midTerm']);
     Route::get('/get-midterm-result', [ResultController::class, 'getMidTermResult']);
 
     Route::get('/delete-pre-nursery-exam-subject', [ResultController::class, 'deletePrenurseryExamSubject']);
@@ -138,13 +140,24 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/configure-fees', [FeeController::class, 'configureFee']);
     Route::get('/get-configured-fees', [FeeController::class, 'getFeesConfiguration']);
     Route::get('/delete-fee/{id}', [FeeController::class, 'deleteFeeConfiguration']);
-
+    Route::post('/add-fees-to-class', [StudentFeesController::class, 'addClassFees']);
+    Route::get('/add-student-fees/{section}/{id}', [StudentFeesController::class, 'addStudentFees']);
+    Route::post('/add-single-fee', [StudentFeesController::class, 'addSingleFee']);
+    Route::get('/remove-single-fee', [StudentFeesController::class, 'removeSingleFee']);
+    Route::get('/view-fees/{id}', [StudentFeesController::class, 'viewFees']);
+    Route::get('/make-payment/{id}', [TransactionController::class, 'makePayment']);
+    Route::post('/make-payment/{id}', [TransactionController::class, 'makeTransaction']);
+    Route::post('/remove-transaction-entry/{id}', [TransactionController::class, 'removeTransactionEntry']);
+   // Route::get('/get-all-transaction-for-student', [TransactionController::class, 'getAllTransactionsForStudent']);
 });
 
-Route::get('/login',[LoginController::class, 'login'])->name('login');
-Route::post('/login', [LoginController::class, 'authenticate'])->name('login-user');
-Route::get('/cbt-login', [CBTController::class, 'CBTLogin'])->name('cbt-login');
-Route::post('/cbt-login', [CBTController::class, 'CBTLoginValidate'])->name('post-cbt-login');
+Route::middleware(['guest'])->group(function(){
+    Route::get('/login',[LoginController::class, 'login'])->name('login');
+    Route::post('/login', [LoginController::class, 'authenticate'])->name('login-user');
+    Route::get('/cbt-login', [CBTController::class, 'CBTLogin'])->name('cbt-login');
+    Route::post('/cbt-login', [CBTController::class, 'CBTLoginValidate'])->name('post-cbt-login');
+});
+
 
 Route::middleware(['auth:cbt', 'is_logged_in'])->group(function () {
     Route::get('/cbt-home', [CBTController::class, 'CBTHome'])->name('exam-home');

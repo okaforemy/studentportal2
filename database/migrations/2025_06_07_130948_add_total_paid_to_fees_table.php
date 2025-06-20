@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddGradeToQuestionsTable extends Migration
+class AddTotalPaidToFeesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AddGradeToQuestionsTable extends Migration
      */
     public function up()
     {
-        Schema::table('questions', function (Blueprint $table) {
-            $table->unsignedBigInteger('grade');
+        Schema::table('fees', function (Blueprint $table) {
+            $table->float('total_paid')->nullable();
         });
     }
 
@@ -25,7 +25,7 @@ class AddGradeToQuestionsTable extends Migration
      */
     public function down()
     {
-        Schema::table('questions', function (Blueprint $table) {
+        Schema::table('fees', function (Blueprint $table) {
             //
         });
     }

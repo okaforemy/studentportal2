@@ -116,7 +116,7 @@ class StudentController extends Controller
         }else{
             $student =Student::create($request->all());
         }
-/*
+
         if($request->file('image')){
             if($request->id){
                 $this->upload($request,$student->id, true);
@@ -124,7 +124,7 @@ class StudentController extends Controller
                 $this->upload($request,$student->id, false);
             }
         }
-*/
+
         $students = $this->getRecentlyAddedStudent();
         if($request->id){
             return redirect()->route('editStudent',$request->id);
@@ -208,10 +208,14 @@ class StudentController extends Controller
             }
 
             if($request->arm && $request->arm !=='null'){
-                $students = Student::with('subjects')->where('grade',$request->grade)->where('arm',$request->arm)->paginate(20)->withQueryString();
+                $students = Student::with(['subjects'=>function($query){
+                    $query->orderBy('created_at', 'ASC');
+                }])->where('grade',$request->grade)->where('arm',$request->arm)->paginate(20)->withQueryString();
                 $page= 0;
             }else{
-              $students = Student::with('subjects')->where('grade',$request->grade)->paginate(20)->withQueryString();
+              $students = Student::with(['subjects'=>function($query){
+                $query->orderBy('created_at', 'ASC');
+              }])->where('grade',$request->grade)->paginate(20)->withQueryString();
                 $page= 0;  
             }
           
@@ -296,26 +300,19 @@ class StudentController extends Controller
 
          //for pre nursery
          if($request->section == 'pre nursery'){
-          
+         
             if($request->arm && $request->arm !=='null'){
-                $students = Student::with('subjects')->where('grade',$request->grade)->where('arm', $request->arm)->paginate(20)->withQueryString();
+                $students = Student::with(['subjects' =>function($query){
+                    $query->orderBy('order', 'ASC');
+                }])->where('grade',$request->grade)->where('arm', $request->arm)->paginate(20)->withQueryString();
             }else{
-                $students = Student::with('subjects')->where('grade',$request->grade)->paginate(20)->withQueryString();
+                $students = Student::with(['subjects' =>function($query){
+                    $query->orderBy('pivot_order', 'ASC');
+                }])->where('grade',$request->grade)->paginate(20)->withQueryString();
             }
 
             $page = 0;
-            // if(!$request->newpage){
-            //     if(!$request->page){
-            //             $student = [0];
-            //             $selectedstudent = 0;
-            //     }else{
-            //             $student = $students[$request->currentStudent];
-            //             $selectedstudent=$request->currentStudent;
-            //     }
-            // }else{
-            //         $student = $students[0];
-            //         $selectedstudent = 0;
-            // }
+           
          
              if(!$request->singleStudent){
                 if($request->currentStudent == 0){
@@ -366,8 +363,7 @@ class StudentController extends Controller
                     $subj_transform = $subj_transform->transform(function ($item) use ($scores) {
                 
                         $matched = $scores->where('category', $item->first()->category);
-                       
-                        $newval = $matched->isNotEmpty() ? $matched->concat($item) : $item;
+                        $newval = $matched->isNotEmpty() ? $matched->values()->merge($item->values()) : $item;
                         return $newval->unique('subject');
                       
                     });
@@ -375,10 +371,10 @@ class StudentController extends Controller
                 $subjects = $subj_transform;
 //dd($subjects);
             }
-           
+       
             $session = $settings->session;
             $term = $settings->term;
-
+//dd($subjects);
             return inertia('Students/addprenurseryscores',compact('students','student','selectedstudent','page','currentpage','grade','section','subjects', 'session', 'term'));
          }
         
@@ -612,14 +608,19 @@ class StudentController extends Controller
         //  }
          //pre nursery section 
          if($request->section == "pre nursery"){
-        
-            $scores = $request->except('section','grade','id');
-           	$scores = array_values(array_pop($scores));
-            if(count($scores) > 0){
-           PreNurseryExam::where('student_id', $scores[0]['student_id'])->where('term', $settings->term)->where('session', $settings->session)->delete();
-       
-           PreNurseryExam::insert($scores);
+            //$scores = $request->except('section','grade','id');
+           	//$scores = array_values(array_pop($scores));
+            $data = array_values($request->data);
+            if(count($data) > 0){
+                PreNurseryExam::where('student_id', $data[0]['student_id'])->where('term', $settings->term)->where('session', $settings->session)->delete();
+                PreNurseryExam::insert($data);
             }
+
+        //     if(count($scores) > 0){
+        //    PreNurseryExam::where('student_id', $scores[0]['student_id'])->where('term', $settings->term)->where('session', $settings->session)->delete();
+       
+        //    PreNurseryExam::insert($scores);
+        //     }
             return response()->json(['success'=>true]);
          }
 

@@ -23,7 +23,7 @@ class Classes extends Model
      */
     public function subjects()
     {
-        return $this->belongsToMany(Subjects::class, 'class_subject', 'classes_id', 'subject_id');
+        return $this->belongsToMany(Subjects::class, 'class_subject', 'classes_id', 'subject_id')->withPivot(['is_holiday', 'max_score', 'order']);
     }
 
 }

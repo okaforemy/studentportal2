@@ -18,7 +18,6 @@ class IsLoggedIn
     public function handle(Request $request, Closure $next)
     {
         $user = Auth::user();
-
         if ($user && $user->device_token !== $request->session()->get('device_token')) {
             Auth::logout();
             return redirect('/cbt-login');

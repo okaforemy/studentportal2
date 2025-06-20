@@ -5,11 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
-class Student extends Model
+
+class Student extends Authenticatable
 {
     use HasFactory;
-    use SoftDeletes;
+    use SoftDeletes, Notifiable, HasApiTokens;
 
     protected $fillable = ['surname','othernames','dob','sex','student_id','grade', 'reg_progress','fullname','arm', 'class_id'];
 
@@ -25,7 +29,7 @@ class Student extends Model
      */
     public function Subjects()
     {
-        return $this->belongsToMany(Subjects::class, 'student_subjects','student_id','subjects_id')->withTimestamps();
+        return $this->belongsToMany(Subjects::class, 'student_subjects','student_id','subjects_id')->withPivot(['order'])->withTimestamps();
     }
 
     /**
@@ -161,4 +165,35 @@ class Student extends Model
     {
         return $this->belongsTo(Classes::class, 'class_id', 'id');
     }
+
+    /**
+     * The fees that belong to the Student
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function fees()
+    {
+        return $this->belongsToMany(FeeConfiguration::class, 'student_fees', 'student_id', 'fee_configuration_id');
+    }
+
+    /**
+     * Get the transactions that owns the Student
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    /**
+     * Get the cbtstudents that owns the StudentQuestion
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function cbtquestions()
+    {
+        return $this->belongsTo(StudentQuestion::class, 'student_id', 'student_id');
+    }
+
 }

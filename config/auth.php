@@ -72,7 +72,8 @@ return [
 
         'cbts' => [
             'driver' => 'eloquent',
-            'model' => App\Models\CBTStudents::class,
+            //'model' => App\Models\CBTStudents::class,
+             'model' => App\Models\Student::class,
         ],
 
         // 'users' => [

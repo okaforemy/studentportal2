@@ -22,41 +22,14 @@ class ResultController extends Controller
         return $settings;
     }
 
-    public function index(Request $request){
+    public function midTerm(Request $request){
         $section = $request->section;
         if($request->section=="pre nursery"){
-            // if($request->arm){
-            //     $students = Student::with(['subjects'=>function($query){
-            //         $query->select('subject','section','category')->groupBy('category');
-            //     }])->where('grade',$request->grade)->where('arm',$request->arm)->get();
-            // }else{
-            //     $students = Student::with(['subjects'=>function($query){
-            //         $query->select('subject','section','category')->groupBy('category');
-            //     }])->where('grade',$request->grade)->get();
-            // }
             $students = Student::where('grade', $request->grade)
             ->when($request->arm, function ($query) use ($request) {
                 $query->where('arm', $request->arm);
             })
             ->get();
-
-        //     $new_students = [];
-        //     foreach($students as $student){
-        //         $data = [
-        //             'id'=>$student->id,
-        //             'surname'=>$student->surname,
-        //             'othernames' => $student->othernames,
-        //             'fullname' => $student->fullname,
-        //             'dob' => $student->dob,
-        //             'sex' => $student->sex,
-        //             'student_id' => $student->student_id,
-        //             'grade' => $student->grade,
-        //             'arm' => $student->arm,
-        //             'subjects' => $student->subjects->groupBy('category')
-        //         ];
-        //         array_push($new_students, $data);
-        //     }
-        //    $students = $new_students;
             return inertia('Students/preNurseryMidtermResult', compact('students','section'));
         }
         
@@ -89,15 +62,25 @@ class ResultController extends Controller
     }
 
     public function holidayAssessment(Request $request){
+        $settings = $this->getSettings();
+
         if($request->arm){
-            $students = Student::with(['holidayAssessment'])->where('grade',$request->grade)->where('arm',$request->arm)->get();
-            $grade = Arms::where('arm_name',$request->arm)->first();
+            $students = Student::with(['holidayAssessment'=>function($query) use($settings){
+                $query->where('term', $settings->term)->where('session', $settings->session);
+            }])->where('grade',$request->grade)->where('arm',$request->arm)->get();
+            $grade = Arms::with(['subjects'=>function($query){
+                $query->wherePivot('is_holiday',1);
+            }])->where('arm_name',$request->arm)->first();
         }else{
-            $students = Student::with('holidayAssessment')->where('grade',$request->grade)->get();
-            $grade = Classes::where('class_name',$request->grade)->first();
+            $students = Student::with(['holidayAssessment'=>function($query) use($settings){
+                $query->where('term', $settings->term)->where('session', $settings->session);
+            }])->where('grade',$request->grade)->get();
+            $grade = Classes::with(['subjects'=>function($query){
+                $query->wherePivot('is_holiday',1);
+            }])->where('class_name',$request->grade)->first();
         }
 
-        return inertia('Students/holidayassessment', compact('students','grade'));
+        return inertia('Students/holidayassessment', compact('students','grade', 'settings'));
     }
     
     public function saveHolidayAssessment(Request $request){
@@ -127,17 +110,33 @@ class ResultController extends Controller
             //$exams = PrimaryExam::where('grade',$student->grade)->where('session', '2021/2022')->where('term','second term')->where('arm', $student->arm)->get();
         
             //$total = $exams->sum('first_ca');
-                $student_total = $student->primaryExam->sum('first_ca');
+               // $student_total = $student->primaryExam->sum('first_ca');
+               $student_total = $student->primaryExam->sum(function ($exam) {
+                    return (float) ($exam->first_ca ?? 0);
+                });
+
                 $student_count = $student->primaryExam->count();
                     //$count = $student->primaryExam->count();
-                    $students = Student::with('primaryExam')->where('grade', $student->grade)->where('arm', $student->arm)->get();
-                    $total = $students->sum(function ($student) {
-                        return $student->primaryExam->sum('first_ca');
-                    });
+                    $students = Student::with(['primaryExam'=> function($query)use ($settings){
+                        $query->where('term', $settings->term)->where('session', $settings->session);
+                    }])
+                        ->where('grade', $student->grade)
+                        ->where('arm', $student->arm)
+                        ->get();
+                    // $total = $students->sum(function ($student) {
+                    //     return $student->primaryExam? $student->primaryExam->sum('first_ca'): 0;
+                    // });
                     
-                    $count = $students->sum(function ($student) {
-                        return $student->primaryExam->count();
-                    });
+                    // $count = $students->sum(function ($student) {
+                    //     return $student->primaryExam->count();
+                    // });
+
+                $total = $students->sum(fn($s) => $s->primaryExam->sum(fn($exam) => (float) $exam->first_ca));
+                $count = $students->sum(fn($s) => $s->primaryExam->count());
+            
+        //    $total = $student->primaryExam->sum('first_ca');
+        //     $count = $student->primaryExam->count();
+
             $class_avg = $count? ($total/$count): 0;
             $student['class_avg'] = number_format($class_avg, 2);
             $student['percentage'] = $student_count? ($student_total/$student_count): 0;
@@ -150,7 +149,7 @@ class ResultController extends Controller
             $student = Student::with(['remarks'=>function($query) use($settings){
                 $query->where('term', $settings->term)->where('session', $settings->session);
             }, 'picture', 'prenurseryexam'=>function($query) use($settings){
-                $query->where('session', $settings->session)->where('term', $settings->term);
+                $query->where('session', $settings->session)->where('term', $settings->term)->orderBy('order', 'ASC');
             }])->where('id',$request->student_id)->first();
 
             $prenurseryexam = collect($student->prenurseryexam)->groupBy('category');

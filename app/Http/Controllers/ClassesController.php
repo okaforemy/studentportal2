@@ -138,7 +138,8 @@ class ClassesController extends Controller
         }
         $grade=$request->class;
         $arm = $request->arm? $request->arm: "";
-        return inertia('Classes/students',compact('students','grade','page','arm'));
+        $section = $request->section;
+        return inertia('Classes/students',compact('students','grade','page','arm','section'));
     }
 
     public function searchClassesStudents(Request $request){

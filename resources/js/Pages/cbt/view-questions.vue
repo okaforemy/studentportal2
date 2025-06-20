@@ -15,7 +15,7 @@
                         <div class="col-md-6">
                             <select name="" ref="classes" @change="getQuestion" id="" class="form-control">
                                 <option value="">Select class</option>
-                                <option v-for="(grade, index) in classes" :value="grade.class_name" :key="index">{{ grade.class_name }}</option>
+                                <option v-for="(grade, index) in classes" :value="grade.id" :key="index">{{ grade.class_name }}</option>
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -76,7 +76,7 @@
                             <label for="">Class</label>
                             <select name="grade" id="" required v-model="form.grade" class="form-control">
                                 <option value="">select class</option>
-                                <option v-for="(cls, index) in classes" :key="index" :value="cls.class_name">{{ cls.class_name }}</option>
+                                <option v-for="(cls, index) in classes" :key="index" :value="cls.id">{{ cls.class_name }}</option>
                             </select>
                             <div v-if="errors.grade" class="text-danger">{{ errors.grade }}</div>
                         </div>
@@ -191,7 +191,7 @@ export default {
             
             let question = this.questions[index];
             this.form.grade = question.grade;
-            this.form.subject = question.subject
+            this.form.subject = question.subject_id
             this.form.option_a = question.option_a;
             this.form.option_b = question.option_b;
             this.form.option_c = question.option_c;

@@ -21,7 +21,7 @@ class Subjects extends Model
      */
     public function Student()
     {
-        return $this->belongsToMany(Student::class,'student_subjects', 'subjects_id','student_id')->withTimestamps();
+        return $this->belongsToMany(Student::class,'student_subjects', 'subjects_id','student_id')->withPivot(['order'])->withTimestamps();
     }
 
     /**
@@ -31,7 +31,7 @@ class Subjects extends Model
      */
     public function classes()
     {
-        return $this->belongsToMany(Classes::class, 'class_subject', 'subject_id', 'classes_id');
+        return $this->belongsToMany(Classes::class, 'class_subject', 'subject_id', 'classes_id')->withPivot(['is_holiday', 'max_score', 'order']);
     }
 
     /**

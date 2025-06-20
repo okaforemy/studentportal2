@@ -100,14 +100,14 @@
                     <tbody>
                        <tr v-for="(clas, index) in allClasses.data" :key="index" >
                            <td>{{index + 1}}</td>
-                           <td v-if="clas.arms.length == 0"><Link href="/class-list" :data="{class:clas.class_name}" class="inner">{{clas.class_name}}</Link></td>
+                           <td v-if="clas.arms.length == 0"><Link href="/class-list" :data="{class:clas.class_name, section:clas.section}" class="inner">{{clas.class_name}}</Link></td>
                            <td v-else>
                               <div class="dropdown">
                                     <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         {{clas.class_name}}
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                        <Link class="dropdown-item" v-for="(arm, ind) in clas.arms" :key="ind" href="/class-list" :data="{class:clas.class_name, arm: arm.arm_name}">{{arm.arm_name}}</Link>
+                                        <Link class="dropdown-item" v-for="(arm, ind) in clas.arms" :key="ind" href="/class-list" :data="{class:clas.class_name, arm: arm.arm_name, section:clas.section}">{{arm.arm_name}}</Link>
                                     </div>
                                 </div>
                            </td>
@@ -148,7 +148,7 @@
                                         <Link href="/remarks" class="dropdown-item" :data="{grade: clas.class_name}">Remarks</Link>
                                         <Link href="/behaviour" class="dropdown-item" :data="{grade: clas.class_name}" v-if="clas.section == 'pre nursery'">Behaviour</Link>
                                         <div class="dropdown-divider"></div>
-                                        <Link href="/add-fee-to-class" class="dropdown-item" :data="{grade: clas.id}" >Add fee</Link>
+                                        <Link href="/add-fees-to-class" method="post" class="dropdown-item" :data="{grade: clas.id}" >Add fee</Link>
                                         <div class="dropdown-divider"></div>
                                         <Link href="/get-result-page" :data="{section: clas.section, grade:clas.class_name}" class="dropdown-item">Results</Link>
                                         <Link href="/mid-term-result" :data="{grade: clas.class_name, section:clas.section}" class="dropdown-item">Mid-term Results</Link>
@@ -164,22 +164,22 @@
                                         {{clas.class_name}}
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                                        <Link class="dropdown-item dropdown-item-custom" v-for="(arm, ind) in clas.arms" :key="ind" href="/class-list" :data="{class:clas.class_name, arm: arm.arm_name}">
+                                        <Link class="dropdown-item dropdown-item-custom" v-for="(arm, ind) in clas.arms" :key="ind" href="/class-list" :data="{class:clas.class_name, arm: arm.arm_name, section:clas.section}">
                                             {{arm.arm_name}}
                                             <!-- remove btn-group for more spacing in the dropdown -->
                                             <div class="dropdown dropleft btn-group">
                                                 <div class="dropdown-menu dropdown-menu-custom" aria-labelledby="dropdownMenuButton">
                                                     <Link href="/students-exam-scores" class="dropdown-item" :data="{grade:clas.class_name,section:clas.section, arm:arm.arm_name}">Student's score [ {{arm.arm_name}}]</Link>
                                                     <Link href="/upload-scores" v-if="clas.section=='primary' || clas.section=='junior secondary' || clas.section == 'senior secondary'" class="dropdown-item" :data="{grade:clas.class_name,section:clas.section, class_id: clas.id, arm:arm.arm_name, arm_id:arm.id}">Upload scores</Link>
-                                                    <a href="#" v-if="clas.section=='primary' || clas.section=='junior secondary' || clas.section == 'senior secondary'"  class="dropdown-item" :data="{id: clas.id, arm_id:arm.id}" @click="dowloadScoreSheet(clas.id,arm.id, clas.section)">Download Score sheet  [ {{arm.arm_name}}]</a>
-                                                    <Link href="/holiday-assessment" v-if="clas.section=='primary'"  class="dropdown-item" :data="{grade: clas.class_name, arm:arm.arm_name}">Holiday Assessment [ {{arm.arm_name}}]</Link>
-                                                    <Link href="/affective-disposition" class="dropdown-item" :data="{grade:clas.class_name,currentStudent:0,section:clas.section, arm:arm.arm_name}">Affective disposition [ {{arm.arm_name}}]</Link>
-                                                    <Link href="/attendance" class="dropdown-item" :data="{grade:clas.class_name, section: clas.section, arm:arm.arm_name}">Attendance [ {{arm.arm_name}}]</Link>
-                                                    <Link href="/physical-development" :data="{grade:clas.class_name, arm:arm.arm_name}" class="dropdown-item">Physical development [ {{arm.arm_name}}]</Link>
-                                                    <Link href="/remarks" class="dropdown-item" :data="{grade: clas.class_name, arm:arm.arm_name}">Remarks [ {{arm.arm_name}}]</Link>
+                                                    <a href="#" v-if="clas.section=='primary' || clas.section=='junior secondary' || clas.section == 'senior secondary'"  class="dropdown-item" :data="{id: clas.id, arm_id:arm.id}" @click="dowloadScoreSheet(clas.id,arm.id, clas.section)">Download Score sheet  </a>
+                                                    <Link href="/holiday-assessment" v-if="clas.section=='primary'"  class="dropdown-item" :data="{grade: clas.class_name, arm:arm.arm_name}">Holiday Assessment </Link>
+                                                    <Link href="/affective-disposition" class="dropdown-item" :data="{grade:clas.class_name,currentStudent:0,section:clas.section, arm:arm.arm_name}">Affective disposition </Link>
+                                                    <Link href="/attendance" class="dropdown-item" :data="{grade:clas.class_name, section: clas.section, arm:arm.arm_name}">Attendance </Link>
+                                                    <Link href="/physical-development" :data="{grade:clas.class_name, arm:arm.arm_name}" class="dropdown-item">Physical development </Link>
+                                                    <Link href="/remarks" class="dropdown-item" :data="{grade: clas.class_name, arm:arm.arm_name}">Remarks </Link>
                                                     <Link href="/behaviour" class="dropdown-item" :data="{grade: clas.class_name, arm:arm.arm_name}" v-if="clas.section == 'pre nursery'">Behaviour</Link>
                                                     <div class="dropdown-divider"></div>
-                                                    <Link href="/add-fee-to-class" class="dropdown-item" :data="{grade: clas.id, arm:arm.id}" >Add fee</Link>
+                                                    <Link href="/add-fees-to-class" method="post" class="dropdown-item" :data="{grade: clas.id, arm:arm.arm_name}" >Add fee</Link>
                                                     <div class="dropdown-divider"></div>
                                                     <Link href="/get-result-page" :data="{section: clas.section, grade: clas.class_name, arm: arm.arm_name}" class="dropdown-item">Results</Link>
                                                     <Link href="/mid-term-result" :data="{grade: clas.class_name, arm:arm.arm_name, section:clas.section}" class="dropdown-item">Mid-term Results</Link>
@@ -336,6 +336,5 @@ export default {
             this.searchClasses(newVal)
         }, 500)
     },
-    
 }
 </script>

@@ -18,6 +18,6 @@ class StudentQuestion extends Model
      */
     public function cbtstudents()
     {
-        return $this->belongsTo(CBTStudents::class, 'student_id', 'student_id');
+        return $this->belongsTo(Student::class, 'student_id');
     }
 }

@@ -22,13 +22,15 @@
                         <!-- <th ref="subject1" :data-value="students[0].subjects[0].subject">{{ students[0].subjects[0].subject }} (40)</th>
                         <th ref="subject2" :data-value="students[0].subjects[1].subject">{{ students[0].subjects[1].subject }} (30)</th>
                         <th ref="subject3" :data-value="students[0].subjects[2].subject">{{ students[0].subjects[2].subject }} (30)</th> -->
-                       <template v-if="students[0].holiday_assessment && students[0].holiday_assessment.length ===0">
+                        <template v-if="hollyday_subj && hollyday_subj.length > 0">
+                            <th v-for="(subj, inde) in hollyday_subj" :data-value="subj.subject" :ref="'subject'+(inde+1)" :key="inde">{{ subj.subject }} ({{subj.pivot.max_score}})</th>
+                        </template>
+                       <!-- <template v-if="students[0].holiday_assessment && students[0].holiday_assessment.length ===0">
                             <th v-for="(subj, inde) in hollyday_subj" :data-value="subj.subject" :ref="'subject'+(inde+1)" :key="inde">{{ subj.subject }} ({{subj.max_score}})</th>
                        </template>
                        <template v-else>
-                            <!-- <th v-for="(subj, inde) in students[0].holiday_assessment" :data-value="subj.subject" :ref="'subject'+(inde+1)" :key="inde">{{ subj.subject+ " ("+ maxScoreValue(subj.subject) +")"}}</th> -->
                             <th v-for="(subj, inde) in hollyday_subj" :data-value="subj.subject" :ref="'subject'+(inde+1)" :key="inde">{{ subj.subject }} ({{subj.max_score}})</th>
-                       </template>
+                       </template> -->
                     </tr>
                 </thead>
                 <tbody>
@@ -61,14 +63,12 @@
 //import { router } from '@inertiajs/vue2'
 
 export default {
-    props:['students','grade'],
+    props:['students','grade', 'settings'],
     data(){
         return{
             allstudents: this.students,
             // hollyday_subj:[]
-            hollyday_subj: JSON.parse(this.grade.subjects).filter(function(val){
-                return val.holiday ==1;
-            }),
+            hollyday_subj: this.grade.subjects,
             score_index: 0,
         }
     },
@@ -123,9 +123,9 @@ export default {
                     score: score[i].value? parseFloat(score[i].value): 0,
                     subject: subject,
                     student_id: student_id,
-                    term: 'second',
+                    term: this.settings.term,
                     id: id,
-                    session: '2021/2022',
+                    session: this.settings.session,
                 }
                 data.push(val)
                }
@@ -140,7 +140,7 @@ export default {
         },
         validate(event,val,oldval){
             let old_val = oldval
-                if(event.target.value > parseInt(val.max_score)){
+                if(event.target.value > parseInt(val.pivot.max_score)){
                     toastr.error('Maximum number entered!', 'Error')
                     event.target.value=old_val
                 }

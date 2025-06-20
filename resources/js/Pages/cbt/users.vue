@@ -16,10 +16,9 @@
                         </thead>
                         <tbody>
                         <tr v-for="(stu, ind) in student" :key="ind">
-                            <td>{{ stu.lastname+" "+stu.firstname }}</td>
+                            <td>{{ stu.fullname }}</td>
                             <td>{{ stu.student_id }}</td>
                             <th>
-                                <button class="btn btn-sm" @click.prevent="deleteStudent(stu.id)"><i class="fas fa-trash text-danger"></i></button>
                                 <a href="" @click.prevent="openModal(stu)"><i class="fas fa-file"></i></a>
                             </th>
                         </tr>
@@ -43,7 +42,7 @@
                 <div class="col-md-4 mx-auto">
                     <select name="" class="form-control" id="" v-model="selected_subject" @change="setResult">
                         <option value="">Select subjects</option>
-                        <option v-for="(key, ind) in keys" :key="ind" :value="key">{{ key }}</option>
+                        <option v-for="(key, ind) in student_subject" :key="ind" :value="key.subject">{{ key.subject }}</option>
                     </select>
                 </div>
 
@@ -105,14 +104,15 @@ export default {
             selected_subject:'',
             result:[],
             total_score: 0,
+            student_subject: []
         }
     },
     methods:{
         deleteStudent(id){
             let userResponse = confirm('Do you want to proceed?');
-            if(userResponse){
-                this.$inertia.get('/delete-cbt-student',{id:id})
-            }
+            // if(userResponse){
+            //     this.$inertia.get('/delete-cbt-student',{id:id})
+            // }
             
         },
         openModal(student){
@@ -121,13 +121,14 @@ export default {
             this.selected_subject ="";
             this.result= [];
             this.total_score = 0
+            this.student_subject = student?.subjects
 
             axios.get('/cbt-results',{params:{student_id: student.student_id}}).then((response)=>{
                 this.results = response.data.results;
                 this.keys = response.data.keys
             })
             $('#resultModal').modal('show')
-            this.$refs['student_name'].innerHTML = student.firstname+" "+student.lastname
+            this.$refs['student_name'].innerHTML = student.fullname
         },
         setResult(){
             this.result = this.results[this.selected_subject];

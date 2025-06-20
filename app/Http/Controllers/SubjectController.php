@@ -75,20 +75,30 @@ class SubjectController extends Controller
          $subjects = Subjects::where('section',$request->section)->get();
        
         $classes = Classes::with(['arms'=>function($query){
-            $query->with('subjects');
-        }, 'subjects'])->where('class_name',$request->grade)->first();
+            $query->with(['subjects'=>function($query){
+                $query->orderBy('class_subject.order', 'ASC');
+            }]);
+        }, 'subjects'=>function($query){
+            $query->orderBy('class_subject.order', 'ASC');
+        }])->where('class_name',$request->grade)->first();
+
+        //$subjects = $classes->subjects;
 
         if($classes){
             if($request->arm){
-                $selected_subj = $classes->arms->where('arm_name', $request->arm)->first()->subjects()->get();
+                $selected_subj = $classes->arms->where('arm_name', $request->arm)->first()->subjects;
+                // if(gettype($selected_subj) == 'string'){
+                //     $selected_subj = json_decode($selected_subj);
+                // }
+                
             }else{
-                $selected_subj = $classes->subjects()->get();
+                $selected_subj = $classes->subjects;
             }
             //dd($selected_subj);
         }else{
             $selected_subj = [];
         }
-        
+        //dd($selected_subj);
         $grade = $request->grade;
         $arm = $request->arm;
         return inertia('Subjects/assignSubjects', compact('subjects','grade','arm','selected_subj'));
@@ -98,25 +108,42 @@ class SubjectController extends Controller
      * Assigns subject to students
      */
     public function assignSubjects(Request $request){
-       
+        //dd($request->subjects);
         $subjects_id = collect($request->all()['subjects'])->pluck('id');
+        $holiday = collect($request->all()['subjects'])->pluck('holiday');
+        $max_score = collect($request->all()['subjects'])->pluck('max_score');
         $class = Classes::with('arms')->where('class_name', $request->grade)->first();
        
+        $subjectsData = [];
+        $counter = 0;
+
+        foreach ($request->subjects as $subject) {
+            $counter += 1;
+            $subjectsData[$subject['id']] = [
+                'is_holiday' => isset($subject['holiday'])? ($subject['holiday']? 1: 0): 0,
+                'max_score' => isset($subject['max_score'])?$subject['max_score']: 0,
+                'order' => $counter
+            ];
+        }
+
         if($request->arm){
           $students = Student::where('grade',$request->grade)->where('arm',$request->arm)->get();
             //$arm = Arms::where('arm_name', $request->arm)->first();
             
-            $class->arms()->where('arm_name', $request->arm)->first()->subjects()->sync($subjects_id);
+            $class->arms()->where('arm_name', $request->arm)
+                    ->first()
+                    ->subjects()
+                    ->sync($subjectsData);
             //$arm->subjects()->sync($subjects_id);
         }else{
             if($class){
-                $class->subjects()->sync($subjects_id);
+                $class->subjects()->sync($subjectsData);
             }
            $students = Student::where('grade',$request->grade)->get();
         }
       
         foreach($students as $key=>$student){
-           $student->subjects()->sync($subjects_id);
+           $student->subjects()->sync($subjectsData);
         }
 
         $edited=true;
