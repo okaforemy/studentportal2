@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Classes;
 use App\Models\Section;
 use App\Models\FeeConfiguration;
+use App\Models\Student;
+use App\Models\Setting;
 
 class FeeController extends Controller
 {
@@ -16,7 +18,12 @@ class FeeController extends Controller
     }
 
     public function getFeesConfiguration(Request $request){
-        $fees = FeeConfiguration::where('section', $request->section)->where('class_id', $request->class_id)->get();
+        $fees = FeeConfiguration::where('section', $request->section)
+                ->where('class_id', $request->class_id)
+                ->when($request->arm, function($query) use($request){
+                    $query->where('arm', $request->arm);
+                })
+                ->get();
         return response()->json($fees);
     }
 
@@ -32,7 +39,7 @@ class FeeController extends Controller
         $fee->description = $request->description;
         $fee->amount = $request->amount;
         $fee->section = $request->section;
-        $fee->class = $request->class;
+        $fee->class = $request->class_name;
         $fee->class_id = $request->class_id;
         $fee->is_optional = $request->is_optional;
         $fee->arm = $request->arm;
@@ -47,5 +54,26 @@ class FeeController extends Controller
             $fee->delete();
         }
         return response()->json(['success'=>true]);
+    }
+
+    //new fees 
+    public function fees(){
+        $feeStructures = FeeConfiguration::orderBy('class', 'ASC')->paginate(5);
+        return inertia('Fees/fees', compact('feeStructures'));
+    }
+
+    public function getStudentFees(){
+        $settings = Setting::first();
+        $classes = Classes::get();
+        $class = $classes->first();
+        $students = Student::with(['studentFee' =>function($query) use($settings){
+            $query->where('term', $settings->term)->where('session', $settings->session);
+        }])->where('class_id', $class->id)->get();
+        $data = [
+            'classes' => $classes,
+            'class' => $class,
+            'students' => $students
+        ];
+        return response()->json($data);
     }
 }

@@ -32,8 +32,9 @@ class TransactionController extends Controller
             //check if there is change in term and pass on the outstanding fees
             if(is_null($fee_sumary)){
                  $outstanding = Fee::where('student_id', $id)->sum('outstanding');
-
+ 
                     $amount = $student->fees()->sum('amount');
+                    $outstanding = (is_null($outstanding) || $outstanding == 0)? $amount: $outstanding;
                     $fee = new Fee();
                     $fee->student_id = $id;
                     $fee->total_fee =    $amount ;
@@ -45,6 +46,17 @@ class TransactionController extends Controller
                     $fee->session = $settings->session;
                     //$fee->previous_outstanding = $outstanding;
                     $fee->save();
+
+                     $fee_sumary = Fee::where('student_id', $id)
+                        ->where('term', $settings->term)
+                        ->where('session', $settings->session)
+                        ->first();
+            }
+
+            //should the school fees change, update the record
+            if($student->fees->sum('amount') !== $fee_sumary->total_fee){
+                $fee_sumary->update(['total_fee'=>$student->fees->sum('amount')]);
+
             }
         return inertia('Fee/makePayment', compact('student', 'fees', 'fee_sumary'));
     }
@@ -71,7 +83,7 @@ class TransactionController extends Controller
                 $fee = new Fee();
                 $fee->student_id = $request->student_id;
                 $fee->total_fee =    $amount;
-                $fee->outstanding = 0;
+                $fee->outstanding = $amount;
                 $fee->credit = 0;
                 $fee->total_paid = 0;
                 $fee->balance = $amount;
@@ -79,33 +91,12 @@ class TransactionController extends Controller
                 $fee->session = $settings->session;
                 //$fee->previous_outstanding = $outstanding;
                 $fee->save();
+
+                $fee = Fee::where('student_id', $request->student_id)
+                    ->where('term', $settings->term)
+                    ->where('session', $settings->session)
+                    ->first();
             }
-
-           // $outstanding = 0;
-           
-            //check previous outstanding;
-            // if($fee->term !== $settings->term && $fee->session !== $settings->session){
-            //     $student = Student::with(['fees', 'studentGrade'])->find($request->student_id);
-            //     //if the student does not have fees attached to them, return to the add fees page
-            //     if(is_null($student->fees)){
-            //         return redirect()->to('/add-student-fees/'.$student->studentGrade->section."/".$student->id);
-            //     }
-
-            //     $outstanding = $fee->outstanding;   
-           
-            //     $amount = $student->fees()->sum('amount');
-            //     $fee = new Fee();
-            //     $fee->student_id = $request->student_id;
-            //     $fee->total_fee =    $amount + $outstanding;
-            //     $fee->outstanding = $amount + $outstanding;
-            //     $fee->previous_outstanding = $outstanding;
-            //     $fee->credit = 0;
-            //     $fee->total_paid = 0;
-            //     $fee->balance = $amount;
-            //     $fee->term = $settings->term;
-            //     $fee->session = $settings->session;
-            //     $fee->save();
-            // }
 
             $trans = new Transaction();
             $trans->student_id = $request->student_id;

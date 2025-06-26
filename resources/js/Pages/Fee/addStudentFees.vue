@@ -25,6 +25,7 @@
                             <th>Description</th>
                             <th>Type</th>
                             <th>Amount</th>
+                            <th>Discount</th>
                             <th></th>
                         </thead>
                         <tbody>
@@ -32,7 +33,17 @@
                                 <td>{{ index+1 }}</td>
                                 <td>{{ fee.description }}</td>
                                 <th>{{ fee.is_optional ==1? 'Optional':'Mandatory' }}</th>
-                                <td>{{ formatAmount(fee.amount) }}</td>
+                                <td>{{ formatAmount(fee.amount, fee.pivot?.discount) }}</td>
+                                <td>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <input type="text" v-model="discount[index+1]" class="form-control" name="" placeholder="add discount" id="">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <button class="btn btn-success" @click.prevent="addDiscount($event, fee.id, index)">save</button>
+                                        </div>
+                                    </div>
+                                </td>
                                 <td > <span v-if="fee.is_optional == 1" style="cursor: pointer;" @click="removeSingleFee(fee.id)">Remove</span></td>
                             </tr>
                         </tbody>
@@ -41,6 +52,8 @@
                                 <td></td>
                                 <td style="font-size: 16px; font-weight: bold;" colspan="2">TOTAL</td>
                                 <td style="font-size: 16px; font-weight: bold;">{{ totalStudentFees() }} </td>
+                                <td></td>
+                                <td></td>
                                 <td></td>
                             </tr>
                         </tfoot>
@@ -60,20 +73,24 @@ export default {
             form: this.$inertia.form({
                 fee_config_id: '',
                 student_id:''
-            })
+            }),
+            discount:{}
         }
     },
     methods: {
-        formatAmount(amount){
-           return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
+        formatAmount(amount,discount){
+           return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount-discount);
         },
 
         totalStudentFees(){
             let total = 0;
+            let discount = 0;
             for(let fee of this.studentFeeConfig){
                 total +=fee.amount
+                discount += fee.pivot?.discount
             }
-            return this.formatAmount(total)
+            console.log(discount)
+            return this.formatAmount(total, discount)
         },
         addFee(){
             this.form.student_id = this.student.id;
@@ -93,11 +110,11 @@ export default {
             this.$inertia.get('/remove-single-fee',data, {
                 only: ['studentFeeConfig', 'feeConfig']
             })
-            // axios.get('/remove-single-fee',{params:data}, {onSuccess:()=>{
-            //     this.$inertia.reload({
-            //         only: ['studentFeeConfig', 'feeConfig']
-            //     })
-            // }})
+        },
+        addDiscount(event, id,index){
+            this.$inertia.post('/add-discount',{student_id: this.student.id, fee_configuration_id: id, discount: this.discount[index+1]},{
+                only: ['studentFeeConfig', 'feeConfig']
+            })
         }
     },
     computed:{
@@ -105,6 +122,14 @@ export default {
             const studentFeeIds = new Set(this.studentFeeConfig.map(item => item.id));
             return this.feeConfig.filter(item => !studentFeeIds.has(item.id));
         }
+    },
+    created(){
+        let fee_length = this.studentFeeConfig.length;
+        let data = {}
+        for(let i=0; i < fee_length; i++){
+            data[this.studentFeeConfig[i].id] = this.studentFeeConfig[i].pivot.discount?this.studentFeeConfig[i].pivot.discount: 0.0
+        }
+        this.discount = data
     }
 }
 </script>

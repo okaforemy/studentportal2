@@ -18129,6 +18129,184 @@ module.exports = /*#__PURE__*/JSON.parse('{"_from":"axios@^0.21.1","_id":"axios@
 
 /***/ }),
 
+/***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Components/fee_structure.vue?vue&type=script&lang=js":
+/*!*******************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Components/fee_structure.vue?vue&type=script&lang=js ***!
+  \*******************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _Shared_paginator_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../Shared/paginator.vue */ "./resources/js/Shared/paginator.vue");
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  components: {
+    Paginator: _Shared_paginator_vue__WEBPACK_IMPORTED_MODULE_0__["default"]
+  },
+  props: ['data'],
+  data: function data() {
+    return {
+      fee_structures: {},
+      links: null,
+      selected_class: '',
+      form: this.$inertia.form({
+        description: '',
+        amount: '',
+        section: '',
+        "class": '',
+        class_name: '',
+        class_id: '',
+        is_optional: 1,
+        arm: '',
+        id: null
+      })
+    };
+  },
+  methods: {
+    formatAmount: function formatAmount(amount) {
+      return new Intl.NumberFormat('en-NG', {
+        style: 'currency',
+        currency: 'NGN'
+      }).format(amount);
+    },
+    setSelectedFee: function setSelectedFee(fee) {
+      console.log(fee["class"]);
+      this.form.id = fee.id;
+      this.form.description = fee.description;
+      this.form.amount = fee.amount;
+      this.selected_class = fee["class"] + ' ' + (fee.arm ? fee.arm : '');
+      this.form.section = fee.section;
+      this.form["class"] = fee["class"];
+      this.form.class_name = fee["class"];
+      this.form.class_id = fee.class_id;
+      this.form.arm = fee.arm;
+      this.form.is_optional = fee.is_optional;
+    },
+    saveEdit: function saveEdit() {
+      var _this = this;
+      this.$inertia.post('/configure-fees', this.form, {
+        onSuccess: function onSuccess(response) {
+          _this.form.reset();
+          $('#feeModal').modal('hide');
+          _this.$emit('refresh');
+        }
+      });
+    },
+    deleteFee: function deleteFee(fee) {
+      var that = this;
+      $.confirm({
+        title: 'Delete!',
+        content: 'Do you want to delete ' + fee.description + '?',
+        type: 'red',
+        buttons: {
+          ok: {
+            text: "ok!",
+            btnClass: 'btn-primary',
+            keys: ['enter'],
+            action: function action() {
+              axios.get('/delete-fee/' + fee.id).then(function (response) {
+                that.$emit('refresh');
+              });
+            }
+          },
+          cancel: function cancel() {}
+        }
+      });
+    }
+  },
+  created: function created() {
+    // axios.get('/fee-structures').then((response)=>{
+    //     this.fee_structures = response.data.data
+    //     this.links = response.data.links
+    // })
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Components/student_fees.vue?vue&type=script&lang=js":
+/*!******************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Components/student_fees.vue?vue&type=script&lang=js ***!
+  \******************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  data: function data() {
+    return {
+      classes: {},
+      "class": [],
+      students: {}
+    };
+  },
+  methods: {
+    getStudents: function getStudents() {
+      var _this = this;
+      axios.get('/student-fees').then(function (response) {
+        _this.classes = response.data.classes;
+        _this["class"] = response.data["class"];
+        _this.students = response.data.students;
+      });
+    },
+    formatAmount: function formatAmount(amount) {
+      return new Intl.NumberFormat('en-NG', {
+        style: 'currency',
+        currency: 'NGN'
+      }).format(amount);
+    },
+    getStatus: function getStatus(student) {
+      if (student && student.student_fee && student.student_fee.length > 0) {
+        if (student.student_fee[0].outstanding == 0) {
+          return "Paid";
+        }
+        if (student.student_fee[0].outstanding !== 0 && student.student_fee[0].total_paid !== 0) {
+          return "Partial";
+        }
+        if (student.student_fee[0].total_paid == 0) {
+          return "Unpaid";
+        }
+      } else {
+        return 'Fees not found';
+      }
+    },
+    formatDate: function formatDate(dateString) {
+      var date = new Date(dateString);
+      var day = date.getDate();
+      var monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      var month = monthNames[date.getMonth()];
+      var year = date.getFullYear();
+
+      // Add ordinal suffix
+      var getOrdinal = function getOrdinal(n) {
+        if (n > 3 && n < 21) return "".concat(n, "th");
+        switch (n % 10) {
+          case 1:
+            return "".concat(n, "st");
+          case 2:
+            return "".concat(n, "nd");
+          case 3:
+            return "".concat(n, "rd");
+          default:
+            return "".concat(n, "th");
+        }
+      };
+      return "".concat(getOrdinal(day), " ").concat(month, ", ").concat(year);
+    }
+  },
+  created: function created() {
+    this.getStudents();
+  }
+});
+
+/***/ }),
+
 /***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Pages/Classes/addClass.vue?vue&type=script&lang=js":
 /*!*****************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Pages/Classes/addClass.vue?vue&type=script&lang=js ***!
@@ -18542,31 +18720,36 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       form: this.$inertia.form({
         fee_config_id: '',
         student_id: ''
-      })
+      }),
+      discount: {}
     };
   },
   methods: {
-    formatAmount: function formatAmount(amount) {
+    formatAmount: function formatAmount(amount, discount) {
       return new Intl.NumberFormat('en-NG', {
         style: 'currency',
         currency: 'NGN'
-      }).format(amount);
+      }).format(amount - discount);
     },
     totalStudentFees: function totalStudentFees() {
       var total = 0;
+      var discount = 0;
       var _iterator = _createForOfIteratorHelper(this.studentFeeConfig),
         _step;
       try {
         for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var _fee$pivot;
           var fee = _step.value;
           total += fee.amount;
+          discount += (_fee$pivot = fee.pivot) === null || _fee$pivot === void 0 ? void 0 : _fee$pivot.discount;
         }
       } catch (err) {
         _iterator.e(err);
       } finally {
         _iterator.f();
       }
-      return this.formatAmount(total);
+      console.log(discount);
+      return this.formatAmount(total, discount);
     },
     addFee: function addFee() {
       var _this = this;
@@ -18586,11 +18769,15 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
       this.$inertia.get('/remove-single-fee', data, {
         only: ['studentFeeConfig', 'feeConfig']
       });
-      // axios.get('/remove-single-fee',{params:data}, {onSuccess:()=>{
-      //     this.$inertia.reload({
-      //         only: ['studentFeeConfig', 'feeConfig']
-      //     })
-      // }})
+    },
+    addDiscount: function addDiscount(event, id, index) {
+      this.$inertia.post('/add-discount', {
+        student_id: this.student.id,
+        fee_configuration_id: id,
+        discount: this.discount[index + 1]
+      }, {
+        only: ['studentFeeConfig', 'feeConfig']
+      });
     }
   },
   computed: {
@@ -18602,6 +18789,14 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         return !studentFeeIds.has(item.id);
       });
     }
+  },
+  created: function created() {
+    var fee_length = this.studentFeeConfig.length;
+    var data = {};
+    for (var i = 0; i < fee_length; i++) {
+      data[this.studentFeeConfig[i].id] = this.studentFeeConfig[i].pivot.discount ? this.studentFeeConfig[i].pivot.discount : 0.0;
+    }
+    this.discount = data;
   }
 });
 
@@ -18636,6 +18831,7 @@ __webpack_require__.r(__webpack_exports__);
         amount: '',
         section: '',
         "class": '',
+        class_name: '',
         class_id: '',
         is_optional: 1,
         arm: '',
@@ -18645,8 +18841,10 @@ __webpack_require__.r(__webpack_exports__);
     };
   },
   methods: {
-    setSelectedClass: function setSelectedClass() {
+    setSelectedClass: function setSelectedClass(event) {
       var _this = this;
+      var selectedText = event.target.options[event.target.selectedIndex].text;
+      this.form.class_name = selectedText;
       var val = this.classes.filter(function (item) {
         return item.id == _this.grade;
       });
@@ -18654,6 +18852,17 @@ __webpack_require__.r(__webpack_exports__);
         this.selected_class = val[0];
       }
       this.resetArms();
+      this.getConfiguredFees();
+    },
+    setSelectedArm: function setSelectedArm() {
+      var _this2 = this;
+      var val = this.classes.filter(function (item) {
+        return item.id == _this2.grade;
+      });
+      if (val && val.length > 0) {
+        this.selected_class = val[0];
+      }
+      //this.resetArms()
       this.getConfiguredFees();
     },
     formatAmount: function formatAmount(amount) {
@@ -18674,7 +18883,7 @@ __webpack_require__.r(__webpack_exports__);
       }
     },
     fetchConfiguredFees: function fetchConfiguredFees() {
-      var _this2 = this;
+      var _this3 = this;
       axios.get('/get-configured-fees', {
         params: {
           section: this.sect,
@@ -18682,7 +18891,7 @@ __webpack_require__.r(__webpack_exports__);
           arm: this.form.arm
         }
       }).then(function (response) {
-        _this2.fees = response.data;
+        _this3.fees = response.data;
       });
     },
     getConfiguredFees: function getConfiguredFees() {
@@ -18694,14 +18903,27 @@ __webpack_require__.r(__webpack_exports__);
       }
     },
     saveConfiguration: function saveConfiguration() {
-      var _this3 = this;
+      var _this4 = this;
       this.form["class"] = this.grade;
       this.form.section = this.sect;
       this.form.class_id = this.selected_class.id;
+
+      //  description: '',
+      //     amount: '',
+      //     section: '',
+      //     class: '',
+      //     class_name: '',
+      //     class_id: '',
+      //     is_optional: 1,
+      //     arm: '',
+      //     id: null
+
       this.$inertia.post('/configure-fees', this.form, {
         onSuccess: function onSuccess(response) {
-          _this3.form.reset();
-          _this3.fetchConfiguredFees();
+          //this.form.reset()
+          _this4.form.description = '';
+          _this4.form.amount = '';
+          _this4.fetchConfiguredFees();
         }
       });
     },
@@ -18731,9 +18953,9 @@ __webpack_require__.r(__webpack_exports__);
   },
   computed: {
     selectedClass: function selectedClass() {
-      var _this4 = this;
+      var _this5 = this;
       return this.classes.filter(function (item) {
-        return item.section == _this4.sect;
+        return item.section == _this5.sect;
       });
     }
   }
@@ -18992,6 +19214,49 @@ function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length)
         this.links = (_this$transactions2 = this.transactions) === null || _this$transactions2 === void 0 ? void 0 : _this$transactions2.links;
       },
       immediate: true
+    }
+  }
+});
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Pages/Fees/fees.vue?vue&type=script&lang=js":
+/*!**********************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Pages/Fees/fees.vue?vue&type=script&lang=js ***!
+  \**********************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _Components_fee_structure_vue__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../Components/fee_structure.vue */ "./resources/js/Components/fee_structure.vue");
+/* harmony import */ var _Components_student_fees_vue__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../Components/student_fees.vue */ "./resources/js/Components/student_fees.vue");
+/* harmony import */ var _inertiajs_inertia_vue__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @inertiajs/inertia-vue */ "./node_modules/@inertiajs/inertia-vue/dist/index.js");
+
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = ({
+  components: {
+    Fee_structure: _Components_fee_structure_vue__WEBPACK_IMPORTED_MODULE_0__["default"],
+    Link: _inertiajs_inertia_vue__WEBPACK_IMPORTED_MODULE_2__.Link,
+    student_fees: _Components_student_fees_vue__WEBPACK_IMPORTED_MODULE_1__["default"]
+  },
+  props: ['feeStructures'],
+  data: function data() {
+    return {
+      active_btn: 'fee_structure'
+    };
+  },
+  methods: {
+    setActiveBtn: function setActiveBtn(txt) {
+      this.active_btn = txt;
+    },
+    refershData: function refershData() {
+      this.$inertia.reload({
+        only: ['feeStructures']
+      });
     }
   }
 });
@@ -23753,6 +24018,320 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Components/fee_structure.vue?vue&type=template&id=4599e6df":
+/*!******************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Components/fee_structure.vue?vue&type=template&id=4599e6df ***!
+  \******************************************************************************************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   render: () => (/* binding */ render),
+/* harmony export */   staticRenderFns: () => (/* binding */ staticRenderFns)
+/* harmony export */ });
+var render = function render() {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "card px-2 py-2"
+  }, [_c("table", {
+    staticClass: "table table-sm table-sm-reponsive mt-4 table-stripe"
+  }, [_vm._m(0), _vm._v(" "), _c("tbody", _vm._l(_vm.data.data, function (fee, index) {
+    return _c("tr", [_c("td", [_vm._v(_vm._s(index + 1))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(fee.description))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(fee.section))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(fee["class"]) + " " + _vm._s(fee.arm ? fee.arm : ""))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(fee.is_optional ? "Yes" : "No"))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(_vm.formatAmount(fee.amount)))]), _vm._v(" "), _c("td", [_c("i", {
+      staticClass: "fas fa-edit text-success",
+      staticStyle: {
+        cursor: "pointer"
+      },
+      attrs: {
+        "data-toggle": "modal",
+        "data-target": "#feeModal"
+      },
+      on: {
+        click: function click($event) {
+          return _vm.setSelectedFee(fee);
+        }
+      }
+    }), _vm._v(" "), _c("i", {
+      staticClass: "fas fa-trash text-danger",
+      staticStyle: {
+        cursor: "pointer"
+      },
+      on: {
+        click: function click($event) {
+          $event.preventDefault();
+          return _vm.deleteFee(fee);
+        }
+      }
+    })])]);
+  }), 0)]), _vm._v(" "), _c("Paginator", {
+    attrs: {
+      links: _vm.data.links
+    }
+  }), _vm._v(" "), _c("div", {
+    staticClass: "modal fade",
+    attrs: {
+      id: "feeModal",
+      tabindex: "-1",
+      "aria-labelledby": "feeModalLabel",
+      "aria-hidden": "true"
+    }
+  }, [_c("div", {
+    staticClass: "modal-dialog"
+  }, [_c("div", {
+    staticClass: "modal-content"
+  }, [_vm._m(1), _vm._v(" "), _c("div", {
+    staticClass: "modal-body"
+  }, [_c("div", [_c("label", {
+    attrs: {
+      "for": ""
+    }
+  }, [_vm._v("Class")]), _vm._v(" "), _c("input", {
+    staticClass: "form-control",
+    attrs: {
+      type: "text",
+      readonly: "",
+      name: "",
+      id: ""
+    },
+    domProps: {
+      value: _vm.selected_class
+    }
+  })]), _vm._v(" "), _c("div", {
+    staticClass: "mt-2"
+  }, [_c("label", {
+    attrs: {
+      "for": ""
+    }
+  }, [_vm._v("Description")]), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.form.description,
+      expression: "form.description"
+    }],
+    staticClass: "form-control",
+    attrs: {
+      type: "text",
+      name: "",
+      id: ""
+    },
+    domProps: {
+      value: _vm.form.description
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.$set(_vm.form, "description", $event.target.value);
+      }
+    }
+  })]), _vm._v(" "), _c("div", {
+    staticClass: "mt-2"
+  }, [_c("label", {
+    attrs: {
+      "for": ""
+    }
+  }, [_vm._v("Is Optional?")]), _vm._v(" "), _c("select", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.form.is_optional,
+      expression: "form.is_optional"
+    }],
+    staticClass: "form-control",
+    attrs: {
+      name: "",
+      id: ""
+    },
+    on: {
+      change: function change($event) {
+        var $$selectedVal = Array.prototype.filter.call($event.target.options, function (o) {
+          return o.selected;
+        }).map(function (o) {
+          var val = "_value" in o ? o._value : o.value;
+          return val;
+        });
+        _vm.$set(_vm.form, "is_optional", $event.target.multiple ? $$selectedVal : $$selectedVal[0]);
+      }
+    }
+  }, [_c("option", {
+    attrs: {
+      value: "1"
+    }
+  }, [_vm._v("Yes")]), _vm._v(" "), _c("option", {
+    attrs: {
+      value: "0"
+    }
+  }, [_vm._v("No")])])]), _vm._v(" "), _c("div", {
+    staticClass: "mt-2"
+  }, [_c("label", {
+    attrs: {
+      "for": ""
+    }
+  }, [_vm._v("Amount")]), _vm._v(" "), _c("input", {
+    directives: [{
+      name: "model",
+      rawName: "v-model",
+      value: _vm.form.amount,
+      expression: "form.amount"
+    }],
+    staticClass: "form-control",
+    attrs: {
+      type: "number",
+      name: "",
+      id: ""
+    },
+    domProps: {
+      value: _vm.form.amount
+    },
+    on: {
+      input: function input($event) {
+        if ($event.target.composing) return;
+        _vm.$set(_vm.form, "amount", $event.target.value);
+      }
+    }
+  })])]), _vm._v(" "), _c("div", {
+    staticClass: "modal-footer"
+  }, [_c("button", {
+    staticClass: "btn btn-primary",
+    attrs: {
+      type: "button"
+    },
+    on: {
+      click: _vm.saveEdit
+    }
+  }, [_vm._v("Save changes")])])])])])], 1);
+};
+var staticRenderFns = [function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("thead", [_c("tr", [_c("th", [_vm._v("#")]), _vm._v(" "), _c("th", [_vm._v("Description")]), _vm._v(" "), _c("th", [_vm._v("Section")]), _vm._v(" "), _c("th", [_vm._v("Class")]), _vm._v(" "), _c("th", [_vm._v("Optional?")]), _vm._v(" "), _c("th", [_vm._v("Amount")]), _vm._v(" "), _c("th")])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "modal-header"
+  }, [_c("h5", {
+    staticClass: "modal-title",
+    attrs: {
+      id: "feeModalLabel"
+    }
+  }, [_vm._v("Modal title")]), _vm._v(" "), _c("button", {
+    staticClass: "close",
+    attrs: {
+      type: "button",
+      "data-dismiss": "modal",
+      "aria-label": "Close"
+    }
+  }, [_c("span", {
+    attrs: {
+      "aria-hidden": "true"
+    }
+  }, [_vm._v("×")])])]);
+}];
+render._withStripped = true;
+
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Components/student_fees.vue?vue&type=template&id=d8633f48":
+/*!*****************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Components/student_fees.vue?vue&type=template&id=d8633f48 ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   render: () => (/* binding */ render),
+/* harmony export */   staticRenderFns: () => (/* binding */ staticRenderFns)
+/* harmony export */ });
+var render = function render() {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", [_vm._m(0), _vm._v(" "), _c("div", {
+    staticClass: "mt-4 card py-4 px-3"
+  }, [_c("h4", [_vm._v("Student Fee Records")]), _vm._v(" "), _c("table", {
+    staticClass: "py-4 table"
+  }, [_vm._m(1), _vm._v(" "), _c("tbody", _vm._l(_vm.students, function (student, index) {
+    return _c("tr", [_c("td", [_vm._v(_vm._s(index + 1))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(student.fullname))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(student.grade + " " + (student.arm ? student.arm : "")))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(student.student_fee && student.student_fee.length > 0 ? _vm.formatAmount(student.student_fee[0].total_fee) : 0))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(student.student_fee && student.student_fee.length > 0 ? _vm.formatAmount(student.student_fee[0].total_paid) : 0))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(student.student_fee && student.student_fee.length > 0 ? _vm.formatAmount(student.student_fee[0].outstanding) : 0))]), _vm._v(" "), _c("td"), _vm._v(" "), _c("td", [_vm._v(_vm._s(_vm.getStatus(student)))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(student.student_fee && student.student_fee.length > 0 ? _vm.formatDate(student.student_fee[0].updated_at) : ""))]), _vm._v(" "), _c("td")]);
+  }), 0)])])]);
+};
+var staticRenderFns = [function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "card px-3 py-4"
+  }, [_c("h4", [_vm._v("Filter Students")]), _vm._v(" "), _c("div", {
+    staticClass: "mt-2 row"
+  }, [_c("div", {
+    staticClass: "col-md-3"
+  }, [_c("input", {
+    staticClass: "form-control",
+    attrs: {
+      type: "text",
+      name: "",
+      placeholder: "Search student",
+      id: ""
+    }
+  })]), _vm._v(" "), _c("div", {
+    staticClass: "col-md-3"
+  }, [_c("select", {
+    staticClass: "form-control",
+    attrs: {
+      name: "",
+      id: ""
+    }
+  }, [_c("option", {
+    attrs: {
+      value: ""
+    }
+  }, [_vm._v("Select class")]), _vm._v(" "), _c("option", {
+    attrs: {
+      value: ""
+    }
+  })])]), _vm._v(" "), _c("div", {
+    staticClass: "col-md-3"
+  }, [_c("select", {
+    staticClass: "form-control",
+    attrs: {
+      name: "",
+      id: ""
+    }
+  }, [_c("option", {
+    attrs: {
+      value: ""
+    }
+  }, [_vm._v("Status")]), _vm._v(" "), _c("option", {
+    attrs: {
+      value: "paid"
+    }
+  }, [_vm._v("Paid")]), _vm._v(" "), _c("option", {
+    attrs: {
+      value: "partial"
+    }
+  }, [_vm._v("Partial")]), _vm._v(" "), _c("option", {
+    attrs: {
+      value: "unpaid"
+    }
+  }, [_vm._v("Unpaid")])])]), _vm._v(" "), _c("div", {
+    staticClass: "col-md-3"
+  }, [_c("button", {
+    staticClass: "btn py-2",
+    staticStyle: {
+      border: "1px solid #e4e4e4"
+    }
+  }, [_vm._v("Export to Excel")])])])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("thead", [_c("tr", [_c("th", [_vm._v("#")]), _vm._v(" "), _c("th", [_vm._v("Student")]), _vm._v(" "), _c("th", [_vm._v("Class")]), _vm._v(" "), _c("th", [_vm._v("Total Fees")]), _vm._v(" "), _c("th", [_vm._v("Paid Amount")]), _vm._v(" "), _c("th", [_vm._v("Pending")]), _vm._v(" "), _c("th", [_vm._v("Progress")]), _vm._v(" "), _c("th", [_vm._v("Status")]), _vm._v(" "), _c("th", [_vm._v("Last Payment")]), _vm._v(" "), _c("th", [_vm._v("Actions")])])]);
+}];
+render._withStripped = true;
+
+
+/***/ }),
+
 /***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Pages/Classes/addClass.vue?vue&type=template&id=511706c9":
 /*!****************************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Pages/Classes/addClass.vue?vue&type=template&id=511706c9 ***!
@@ -25113,7 +25692,45 @@ var render = function render() {
   }, [_c("table", {
     staticClass: "table"
   }, [_vm._m(0), _vm._v(" "), _c("tbody", _vm._l(_vm.studentFeeConfig, function (fee, index) {
-    return _c("tr", [_c("td", [_vm._v(_vm._s(index + 1))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(fee.description))]), _vm._v(" "), _c("th", [_vm._v(_vm._s(fee.is_optional == 1 ? "Optional" : "Mandatory"))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(_vm.formatAmount(fee.amount)))]), _vm._v(" "), _c("td", [fee.is_optional == 1 ? _c("span", {
+    var _fee$pivot;
+    return _c("tr", [_c("td", [_vm._v(_vm._s(index + 1))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(fee.description))]), _vm._v(" "), _c("th", [_vm._v(_vm._s(fee.is_optional == 1 ? "Optional" : "Mandatory"))]), _vm._v(" "), _c("td", [_vm._v(_vm._s(_vm.formatAmount(fee.amount, (_fee$pivot = fee.pivot) === null || _fee$pivot === void 0 ? void 0 : _fee$pivot.discount)))]), _vm._v(" "), _c("td", [_c("div", {
+      staticClass: "row"
+    }, [_c("div", {
+      staticClass: "col-md-6"
+    }, [_c("input", {
+      directives: [{
+        name: "model",
+        rawName: "v-model",
+        value: _vm.discount[index + 1],
+        expression: "discount[index+1]"
+      }],
+      staticClass: "form-control",
+      attrs: {
+        type: "text",
+        name: "",
+        placeholder: "add discount",
+        id: ""
+      },
+      domProps: {
+        value: _vm.discount[index + 1]
+      },
+      on: {
+        input: function input($event) {
+          if ($event.target.composing) return;
+          _vm.$set(_vm.discount, index + 1, $event.target.value);
+        }
+      }
+    })]), _vm._v(" "), _c("div", {
+      staticClass: "col-md-6"
+    }, [_c("button", {
+      staticClass: "btn btn-success",
+      on: {
+        click: function click($event) {
+          $event.preventDefault();
+          return _vm.addDiscount($event, fee.id, index);
+        }
+      }
+    }, [_vm._v("save")])])])]), _vm._v(" "), _c("td", [fee.is_optional == 1 ? _c("span", {
       staticStyle: {
         cursor: "pointer"
       },
@@ -25136,12 +25753,12 @@ var render = function render() {
       "font-size": "16px",
       "font-weight": "bold"
     }
-  }, [_vm._v(_vm._s(_vm.totalStudentFees()) + " ")]), _vm._v(" "), _c("td")])])])])])])]);
+  }, [_vm._v(_vm._s(_vm.totalStudentFees()) + " ")]), _vm._v(" "), _c("td"), _vm._v(" "), _c("td"), _vm._v(" "), _c("td")])])])])])])]);
 };
 var staticRenderFns = [function () {
   var _vm = this,
     _c = _vm._self._c;
-  return _c("thead", [_c("th", [_vm._v("#")]), _vm._v(" "), _c("th", [_vm._v("Description")]), _vm._v(" "), _c("th", [_vm._v("Type")]), _vm._v(" "), _c("th", [_vm._v("Amount")]), _vm._v(" "), _c("th")]);
+  return _c("thead", [_c("th", [_vm._v("#")]), _vm._v(" "), _c("th", [_vm._v("Description")]), _vm._v(" "), _c("th", [_vm._v("Type")]), _vm._v(" "), _c("th", [_vm._v("Amount")]), _vm._v(" "), _c("th", [_vm._v("Discount")]), _vm._v(" "), _c("th")]);
 }];
 render._withStripped = true;
 
@@ -25233,7 +25850,9 @@ var render = function render() {
           return val;
         });
         _vm.grade = $event.target.multiple ? $$selectedVal : $$selectedVal[0];
-      }, _vm.setSelectedClass]
+      }, function ($event) {
+        return _vm.setSelectedClass($event);
+      }]
     }
   }, [_c("option", {
     attrs: {
@@ -25268,7 +25887,7 @@ var render = function render() {
           return val;
         });
         _vm.arm = $event.target.multiple ? $$selectedVal : $$selectedVal[0];
-      }, _vm.getConfiguredFees]
+      }, _vm.setSelectedArm]
     }
   }, [_c("option", {
     attrs: {
@@ -26187,6 +26806,181 @@ var staticRenderFns = [function () {
       "data-dismiss": "modal"
     }
   }, [_vm._v("Close")])]);
+}];
+render._withStripped = true;
+
+
+/***/ }),
+
+/***/ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Pages/Fees/fees.vue?vue&type=template&id=24c21414&scoped=true":
+/*!*********************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Pages/Fees/fees.vue?vue&type=template&id=24c21414&scoped=true ***!
+  \*********************************************************************************************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   render: () => (/* binding */ render),
+/* harmony export */   staticRenderFns: () => (/* binding */ staticRenderFns)
+/* harmony export */ });
+var render = function render() {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "pt-4 px-3"
+  }, [_vm._m(0), _vm._v(" "), _vm._m(1), _vm._v(" "), _c("div", {
+    staticClass: "row mt-4"
+  }, [_c("div", {
+    staticClass: "col-md-6"
+  }, [_c("ul", [_c("li", {
+    staticClass: "flex-item",
+    "class": _vm.active_btn == "fee_structure" ? "active" : "",
+    on: {
+      click: function click($event) {
+        return _vm.setActiveBtn("fee_structure");
+      }
+    }
+  }, [_vm._v("Fee Structure")]), _vm._v(" "), _c("li", {
+    staticClass: "flex-item",
+    "class": _vm.active_btn == "student_fees" ? "active" : "",
+    on: {
+      click: function click($event) {
+        return _vm.setActiveBtn("student_fees");
+      }
+    }
+  }, [_vm._v("Student Fees")]), _vm._v(" "), _c("li", {
+    staticClass: "flex-item",
+    "class": _vm.active_btn == "record_payment" ? "active" : "",
+    on: {
+      click: function click($event) {
+        return _vm.setActiveBtn("record_payment");
+      }
+    }
+  }, [_vm._v("Record Payment")]), _vm._v(" "), _c("li", {
+    staticClass: "flex-item",
+    "class": _vm.active_btn == "analytics" ? "active" : "",
+    on: {
+      click: function click($event) {
+        return _vm.setActiveBtn("analytics");
+      }
+    }
+  }, [_vm._v("Analytics")])])]), _vm._v(" "), _c("div", {
+    staticClass: "col-md-6 text-right"
+  }, [_c("Link", {
+    staticClass: "btn btn-primary",
+    attrs: {
+      href: "/configure-fees"
+    }
+  }, [_vm._v("+ Add Fee Structure")])], 1)]), _vm._v(" "), _c("div", [_c("Fee_structure", {
+    directives: [{
+      name: "show",
+      rawName: "v-show",
+      value: _vm.active_btn == "fee_structure",
+      expression: "active_btn == 'fee_structure'"
+    }],
+    attrs: {
+      data: _vm.feeStructures
+    },
+    on: {
+      refresh: _vm.refershData
+    }
+  }), _vm._v(" "), _c("student_fees", {
+    directives: [{
+      name: "show",
+      rawName: "v-show",
+      value: _vm.active_btn == "student_fees",
+      expression: "active_btn == 'student_fees'"
+    }]
+  })], 1)]);
+};
+var staticRenderFns = [function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "row"
+  }, [_c("div", {
+    staticClass: "col-md-6"
+  }, [_c("h2", {
+    staticClass: "font-weight-bold"
+  }, [_vm._v("School Fees Management")]), _vm._v(" "), _c("p", [_vm._v("Manage student fees, payments, and generate reports")])]), _vm._v(" "), _c("div", {
+    staticClass: "col-md-6 text-right"
+  }, [_c("button", {
+    staticClass: "btn btn-primary"
+  }, [_vm._v("+ New Payment")])])]);
+}, function () {
+  var _vm = this,
+    _c = _vm._self._c;
+  return _c("div", {
+    staticClass: "row mt-4"
+  }, [_c("div", {
+    staticClass: "col-md-3 col-sm-6 col-12"
+  }, [_c("div", {
+    staticClass: "info-box bg-gradient-info"
+  }, [_c("span", {
+    staticClass: "info-box-icon"
+  }, [_c("i", {
+    staticClass: "fas fa-money-bill-wave-alt"
+  })]), _vm._v(" "), _c("div", {
+    staticClass: "info-box-content"
+  }, [_c("span", {
+    staticClass: "info-box-text"
+  }, [_vm._v("Total Fees for the term")]), _vm._v(" "), _c("span", {
+    staticClass: "info-box-number"
+  }, [_vm._v("47774")]), _vm._v(" "), _c("div", {
+    staticClass: "progress"
+  }, [_c("div", {
+    staticClass: "progress-bar",
+    staticStyle: {
+      width: "100%"
+    }
+  })])])])]), _vm._v(" "), _c("div", {
+    staticClass: "col-md-3 col-sm-6 col-12"
+  }, [_c("div", {
+    staticClass: "info-box bg-gradient-success"
+  }, [_c("span", {
+    staticClass: "info-box-icon"
+  }, [_c("i", {
+    staticClass: "fas fa-money-bill-wave-alt"
+  })]), _vm._v(" "), _c("div", {
+    staticClass: "info-box-content"
+  }, [_c("span", {
+    staticClass: "info-box-text"
+  }, [_vm._v("Total fees collected for the term")]), _vm._v(" "), _c("span", {
+    staticClass: "info-box-number"
+  }, [_vm._v("38883")]), _vm._v(" "), _c("div", {
+    staticClass: "progress"
+  })])])]), _vm._v(" "), _c("div", {
+    staticClass: "col-md-3 col-sm-6 col-12"
+  }, [_c("div", {
+    staticClass: "info-box bg-gradient-warning"
+  }, [_c("span", {
+    staticClass: "info-box-icon"
+  }, [_c("i", {
+    staticClass: "fas fa-money-bill-wave-alt"
+  })]), _vm._v(" "), _c("div", {
+    staticClass: "info-box-content"
+  }, [_c("span", {
+    staticClass: "info-box-text"
+  }, [_vm._v("Total outstanding fees")]), _vm._v(" "), _c("span", {
+    staticClass: "info-box-number"
+  }, [_vm._v("4888")]), _vm._v(" "), _c("div", {
+    staticClass: "progress"
+  })])])]), _vm._v(" "), _c("div", {
+    staticClass: "col-md-3 col-sm-6 col-12"
+  }, [_c("div", {
+    staticClass: "info-box bg-gradient-danger"
+  }, [_c("span", {
+    staticClass: "info-box-icon"
+  }, [_c("i", {
+    staticClass: "fas fa-money-bill-wave-alt"
+  })]), _vm._v(" "), _c("div", {
+    staticClass: "info-box-content"
+  }, [_c("span", {
+    staticClass: "info-box-text"
+  }, [_vm._v("Total credit for the term")]), _vm._v(" "), _c("span", {
+    staticClass: "info-box-number"
+  }, [_vm._v("3778838")])])])])]);
 }];
 render._withStripped = true;
 
@@ -42959,6 +43753,30 @@ __webpack_require__.r(__webpack_exports__);
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
 // Module
 ___CSS_LOADER_EXPORT___.push([module.id, "\n    /* Styles for printing only specific content */\n@media print {\n.no-print[data-v-5453f9fe] {\n    display: none !important;\n}\n.print-only[data-v-5453f9fe] {\n    display: block !important;\n}\n.print-only[data-v-5453f9fe], .print-only *[data-v-5453f9fe] {\n    visibility: visible;\n}\n.print-only[data-v-5453f9fe] {\n    position: absolute;\n    top: 0;\n    left: 0;\n    width: 100%;\n}\n.col-left[data-v-5453f9fe] {\n    float: left;\n    width: 50% !important;\n}\n.col-right[data-v-5453f9fe] {\n    float: right;\n    width: 50% !important;\n}\n.print-row[data-v-5453f9fe] {\n    width: 100%;\n    overflow: hidden;\n    display: block !important;\n}\n}\n\n", ""]);
+// Exports
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
+
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Pages/Fees/fees.vue?vue&type=style&index=0&id=24c21414&scoped=true&lang=css":
+/*!******************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Pages/Fees/fees.vue?vue&type=style&index=0&id=24c21414&scoped=true&lang=css ***!
+  \******************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/***/ ((module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0__);
+// Imports
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_0___default()(function(i){return i[1]});
+// Module
+___CSS_LOADER_EXPORT___.push([module.id, "\nul[data-v-24c21414]{\n    display: flex;\n    text-decoration: none;\n    list-style-type: none;\n    padding: 2px;\n    background-color: #fff;\n    border-radius: 5px;\n    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.10);\n}\n.flex-item[data-v-24c21414]{\n    flex: 1;\n    padding: 8px;\n    text-align: center;\n}\nul li[data-v-24c21414]{\n    cursor: pointer;\n    margin: 4px 1px;\n    border-radius: 5px;\n}\nli.active[data-v-24c21414]{\n    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.10);\n}\n", ""]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -109328,6 +110146,36 @@ var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js
 
 /***/ }),
 
+/***/ "./node_modules/style-loader/dist/cjs.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Pages/Fees/fees.vue?vue&type=style&index=0&id=24c21414&scoped=true&lang=css":
+/*!**********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/style-loader/dist/cjs.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Pages/Fees/fees.vue?vue&type=style&index=0&id=24c21414&scoped=true&lang=css ***!
+  \**********************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! !../../../../node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js */ "./node_modules/style-loader/dist/runtime/injectStylesIntoStyleTag.js");
+/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_node_modules_vue_loader_lib_index_js_vue_loader_options_fees_vue_vue_type_style_index_0_id_24c21414_scoped_true_lang_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! !!../../../../node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!../../../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../../../node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!../../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./fees.vue?vue&type=style&index=0&id=24c21414&scoped=true&lang=css */ "./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Pages/Fees/fees.vue?vue&type=style&index=0&id=24c21414&scoped=true&lang=css");
+
+            
+
+var options = {};
+
+options.insert = "head";
+options.singleton = false;
+
+var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default()(_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_node_modules_vue_loader_lib_index_js_vue_loader_options_fees_vue_vue_type_style_index_0_id_24c21414_scoped_true_lang_css__WEBPACK_IMPORTED_MODULE_1__["default"], options);
+
+
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_node_modules_vue_loader_lib_index_js_vue_loader_options_fees_vue_vue_type_style_index_0_id_24c21414_scoped_true_lang_css__WEBPACK_IMPORTED_MODULE_1__["default"].locals || {});
+
+/***/ }),
+
 /***/ "./node_modules/style-loader/dist/cjs.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Pages/Parents/parents.vue?vue&type=style&index=0&id=4c2c9dea&scoped=true&lang=css":
 /*!****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/style-loader/dist/cjs.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Pages/Parents/parents.vue?vue&type=style&index=0&id=4c2c9dea&scoped=true&lang=css ***!
@@ -151303,6 +152151,150 @@ __webpack_require__.r(__webpack_exports__);
 
 /***/ }),
 
+/***/ "./resources/js/Components/fee_structure.vue":
+/*!***************************************************!*\
+  !*** ./resources/js/Components/fee_structure.vue ***!
+  \***************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _fee_structure_vue_vue_type_template_id_4599e6df__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./fee_structure.vue?vue&type=template&id=4599e6df */ "./resources/js/Components/fee_structure.vue?vue&type=template&id=4599e6df");
+/* harmony import */ var _fee_structure_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./fee_structure.vue?vue&type=script&lang=js */ "./resources/js/Components/fee_structure.vue?vue&type=script&lang=js");
+/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! !../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+;
+var component = (0,_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _fee_structure_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"],
+  _fee_structure_vue_vue_type_template_id_4599e6df__WEBPACK_IMPORTED_MODULE_0__.render,
+  _fee_structure_vue_vue_type_template_id_4599e6df__WEBPACK_IMPORTED_MODULE_0__.staticRenderFns,
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/Components/fee_structure.vue"
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/Components/fee_structure.vue?vue&type=script&lang=js":
+/*!***************************************************************************!*\
+  !*** ./resources/js/Components/fee_structure.vue?vue&type=script&lang=js ***!
+  \***************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fee_structure_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./fee_structure.vue?vue&type=script&lang=js */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Components/fee_structure.vue?vue&type=script&lang=js");
+ /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fee_structure_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/Components/fee_structure.vue?vue&type=template&id=4599e6df":
+/*!*********************************************************************************!*\
+  !*** ./resources/js/Components/fee_structure.vue?vue&type=template&id=4599e6df ***!
+  \*********************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   render: () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_loaders_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_lib_index_js_vue_loader_options_fee_structure_vue_vue_type_template_id_4599e6df__WEBPACK_IMPORTED_MODULE_0__.render),
+/* harmony export */   staticRenderFns: () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_loaders_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_lib_index_js_vue_loader_options_fee_structure_vue_vue_type_template_id_4599e6df__WEBPACK_IMPORTED_MODULE_0__.staticRenderFns)
+/* harmony export */ });
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_loaders_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_lib_index_js_vue_loader_options_fee_structure_vue_vue_type_template_id_4599e6df__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../../node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./fee_structure.vue?vue&type=template&id=4599e6df */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Components/fee_structure.vue?vue&type=template&id=4599e6df");
+
+
+/***/ }),
+
+/***/ "./resources/js/Components/student_fees.vue":
+/*!**************************************************!*\
+  !*** ./resources/js/Components/student_fees.vue ***!
+  \**************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _student_fees_vue_vue_type_template_id_d8633f48__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./student_fees.vue?vue&type=template&id=d8633f48 */ "./resources/js/Components/student_fees.vue?vue&type=template&id=d8633f48");
+/* harmony import */ var _student_fees_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./student_fees.vue?vue&type=script&lang=js */ "./resources/js/Components/student_fees.vue?vue&type=script&lang=js");
+/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! !../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+;
+var component = (0,_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _student_fees_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"],
+  _student_fees_vue_vue_type_template_id_d8633f48__WEBPACK_IMPORTED_MODULE_0__.render,
+  _student_fees_vue_vue_type_template_id_d8633f48__WEBPACK_IMPORTED_MODULE_0__.staticRenderFns,
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/Components/student_fees.vue"
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/Components/student_fees.vue?vue&type=script&lang=js":
+/*!**************************************************************************!*\
+  !*** ./resources/js/Components/student_fees.vue?vue&type=script&lang=js ***!
+  \**************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_index_js_vue_loader_options_student_fees_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./student_fees.vue?vue&type=script&lang=js */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Components/student_fees.vue?vue&type=script&lang=js");
+ /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_index_js_vue_loader_options_student_fees_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/Components/student_fees.vue?vue&type=template&id=d8633f48":
+/*!********************************************************************************!*\
+  !*** ./resources/js/Components/student_fees.vue?vue&type=template&id=d8633f48 ***!
+  \********************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   render: () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_loaders_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_lib_index_js_vue_loader_options_student_fees_vue_vue_type_template_id_d8633f48__WEBPACK_IMPORTED_MODULE_0__.render),
+/* harmony export */   staticRenderFns: () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_loaders_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_lib_index_js_vue_loader_options_student_fees_vue_vue_type_template_id_d8633f48__WEBPACK_IMPORTED_MODULE_0__.staticRenderFns)
+/* harmony export */ });
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_loaders_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_lib_index_js_vue_loader_options_student_fees_vue_vue_type_template_id_d8633f48__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../../node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./student_fees.vue?vue&type=template&id=d8633f48 */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Components/student_fees.vue?vue&type=template&id=d8633f48");
+
+
+/***/ }),
+
 /***/ "./resources/js/Pages sync recursive ^\\.\\/.*$":
 /*!*******************************************!*\
   !*** ./resources/js/Pages/ sync ^\.\/.*$ ***!
@@ -151326,6 +152318,8 @@ var map = {
 	"./Fee/makePayment.vue": "./resources/js/Pages/Fee/makePayment.vue",
 	"./Fee/viewStudentFees": "./resources/js/Pages/Fee/viewStudentFees.vue",
 	"./Fee/viewStudentFees.vue": "./resources/js/Pages/Fee/viewStudentFees.vue",
+	"./Fees/fees": "./resources/js/Pages/Fees/fees.vue",
+	"./Fees/fees.vue": "./resources/js/Pages/Fees/fees.vue",
 	"./Parents/addParent": "./resources/js/Pages/Parents/addParent.vue",
 	"./Parents/addParent.vue": "./resources/js/Pages/Parents/addParent.vue",
 	"./Parents/addParentsOnly": "./resources/js/Pages/Parents/addParentsOnly.vue",
@@ -152040,6 +153034,93 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   staticRenderFns: () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_loaders_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_lib_index_js_vue_loader_options_viewStudentFees_vue_vue_type_template_id_5453f9fe_scoped_true__WEBPACK_IMPORTED_MODULE_0__.staticRenderFns)
 /* harmony export */ });
 /* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_loaders_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_lib_index_js_vue_loader_options_viewStudentFees_vue_vue_type_template_id_5453f9fe_scoped_true__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!../../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./viewStudentFees.vue?vue&type=template&id=5453f9fe&scoped=true */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Pages/Fee/viewStudentFees.vue?vue&type=template&id=5453f9fe&scoped=true");
+
+
+/***/ }),
+
+/***/ "./resources/js/Pages/Fees/fees.vue":
+/*!******************************************!*\
+  !*** ./resources/js/Pages/Fees/fees.vue ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _fees_vue_vue_type_template_id_24c21414_scoped_true__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./fees.vue?vue&type=template&id=24c21414&scoped=true */ "./resources/js/Pages/Fees/fees.vue?vue&type=template&id=24c21414&scoped=true");
+/* harmony import */ var _fees_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./fees.vue?vue&type=script&lang=js */ "./resources/js/Pages/Fees/fees.vue?vue&type=script&lang=js");
+/* harmony import */ var _fees_vue_vue_type_style_index_0_id_24c21414_scoped_true_lang_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./fees.vue?vue&type=style&index=0&id=24c21414&scoped=true&lang=css */ "./resources/js/Pages/Fees/fees.vue?vue&type=style&index=0&id=24c21414&scoped=true&lang=css");
+/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! !../../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+;
+
+
+/* normalize component */
+
+var component = (0,_node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_3__["default"])(
+  _fees_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_1__["default"],
+  _fees_vue_vue_type_template_id_24c21414_scoped_true__WEBPACK_IMPORTED_MODULE_0__.render,
+  _fees_vue_vue_type_template_id_24c21414_scoped_true__WEBPACK_IMPORTED_MODULE_0__.staticRenderFns,
+  false,
+  null,
+  "24c21414",
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "resources/js/Pages/Fees/fees.vue"
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (component.exports);
+
+/***/ }),
+
+/***/ "./resources/js/Pages/Fees/fees.vue?vue&type=script&lang=js":
+/*!******************************************************************!*\
+  !*** ./resources/js/Pages/Fees/fees.vue?vue&type=script&lang=js ***!
+  \******************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fees_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./fees.vue?vue&type=script&lang=js */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Pages/Fees/fees.vue?vue&type=script&lang=js");
+ /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (_node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_index_js_vue_loader_options_fees_vue_vue_type_script_lang_js__WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./resources/js/Pages/Fees/fees.vue?vue&type=style&index=0&id=24c21414&scoped=true&lang=css":
+/*!**************************************************************************************************!*\
+  !*** ./resources/js/Pages/Fees/fees.vue?vue&type=style&index=0&id=24c21414&scoped=true&lang=css ***!
+  \**************************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _node_modules_style_loader_dist_cjs_js_node_modules_css_loader_dist_cjs_js_clonedRuleSet_9_use_1_node_modules_vue_loader_lib_loaders_stylePostLoader_js_node_modules_postcss_loader_dist_cjs_js_clonedRuleSet_9_use_2_node_modules_vue_loader_lib_index_js_vue_loader_options_fees_vue_vue_type_style_index_0_id_24c21414_scoped_true_lang_css__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/style-loader/dist/cjs.js!../../../../node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!../../../../node_modules/vue-loader/lib/loaders/stylePostLoader.js!../../../../node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!../../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./fees.vue?vue&type=style&index=0&id=24c21414&scoped=true&lang=css */ "./node_modules/style-loader/dist/cjs.js!./node_modules/css-loader/dist/cjs.js??clonedRuleSet-9.use[1]!./node_modules/vue-loader/lib/loaders/stylePostLoader.js!./node_modules/postcss-loader/dist/cjs.js??clonedRuleSet-9.use[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Pages/Fees/fees.vue?vue&type=style&index=0&id=24c21414&scoped=true&lang=css");
+
+
+/***/ }),
+
+/***/ "./resources/js/Pages/Fees/fees.vue?vue&type=template&id=24c21414&scoped=true":
+/*!************************************************************************************!*\
+  !*** ./resources/js/Pages/Fees/fees.vue?vue&type=template&id=24c21414&scoped=true ***!
+  \************************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   render: () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_loaders_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_lib_index_js_vue_loader_options_fees_vue_vue_type_template_id_24c21414_scoped_true__WEBPACK_IMPORTED_MODULE_0__.render),
+/* harmony export */   staticRenderFns: () => (/* reexport safe */ _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_loaders_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_lib_index_js_vue_loader_options_fees_vue_vue_type_template_id_24c21414_scoped_true__WEBPACK_IMPORTED_MODULE_0__.staticRenderFns)
+/* harmony export */ });
+/* harmony import */ var _node_modules_babel_loader_lib_index_js_clonedRuleSet_5_use_0_node_modules_vue_loader_lib_loaders_templateLoader_js_ruleSet_1_rules_2_node_modules_vue_loader_lib_index_js_vue_loader_options_fees_vue_vue_type_template_id_24c21414_scoped_true__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../../../node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!../../../../node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!../../../../node_modules/vue-loader/lib/index.js??vue-loader-options!./fees.vue?vue&type=template&id=24c21414&scoped=true */ "./node_modules/babel-loader/lib/index.js??clonedRuleSet-5.use[0]!./node_modules/vue-loader/lib/loaders/templateLoader.js??ruleSet[1].rules[2]!./node_modules/vue-loader/lib/index.js??vue-loader-options!./resources/js/Pages/Fees/fees.vue?vue&type=template&id=24c21414&scoped=true");
 
 
 /***/ }),

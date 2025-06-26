@@ -173,7 +173,7 @@ class Student extends Authenticatable
      */
     public function fees()
     {
-        return $this->belongsToMany(FeeConfiguration::class, 'student_fees', 'student_id', 'fee_configuration_id');
+        return $this->belongsToMany(FeeConfiguration::class, 'student_fees', 'student_id', 'fee_configuration_id')->withPivot('discount');
     }
 
     /**
@@ -196,4 +196,13 @@ class Student extends Authenticatable
         return $this->belongsTo(StudentQuestion::class, 'student_id', 'student_id');
     }
 
+    /**
+     * Get all of the studentFee for the Student
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function studentFee()
+    {
+        return $this->hasMany(Fee::class, 'student_id');
+    }
 }

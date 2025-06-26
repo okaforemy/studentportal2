@@ -16,14 +16,14 @@
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <select name="" v-model="grade" @change="setSelectedClass" class="form-control" id="">
+                        <select name="" v-model="grade" @change="setSelectedClass($event)" class="form-control" id="">
                             <option value="">Select Class</option>
                             <option :value="clas.id" v-for="clas in selectedClass">{{ clas.class_name }}</option>
                         </select>
                     </div>
                     <div class="col-md-4"
                         v-if="selected_class && selected_class.arms && selected_class.arms.length > 0">
-                        <select name="" v-model="arm" class="form-control" @change="getConfiguredFees" id="">
+                        <select name="" v-model="arm" class="form-control" @change="setSelectedArm" id="">
                             <option value="">Select Arm</option>
                             <option :value="arm.arm_name" v-for="arm in selected_class.arms">{{ arm.arm_name }}</option>
                         </select>
@@ -117,6 +117,7 @@ export default {
                 amount: '',
                 section: '',
                 class: '',
+                class_name: '',
                 class_id: '',
                 is_optional: 1,
                 arm: '',
@@ -126,12 +127,23 @@ export default {
         }
     },
     methods: {
-        setSelectedClass() {
+        setSelectedClass(event) {
+            const selectedText = event.target.options[event.target.selectedIndex].text;
+            this.form.class_name = selectedText
             let val = this.classes.filter((item) => item.id == this.grade)
             if (val && val.length > 0) {
                 this.selected_class = val[0]
             }
             this.resetArms()
+            this.getConfiguredFees()
+        },
+
+        setSelectedArm() {
+            let val = this.classes.filter((item) => item.id == this.grade)
+            if (val && val.length > 0) {
+                this.selected_class = val[0]
+            }
+            //this.resetArms()
             this.getConfiguredFees()
         },
 
@@ -174,9 +186,21 @@ export default {
             this.form.section = this.sect
             this.form.class_id = this.selected_class.id
 
+            //  description: '',
+            //     amount: '',
+            //     section: '',
+            //     class: '',
+            //     class_name: '',
+            //     class_id: '',
+            //     is_optional: 1,
+            //     arm: '',
+            //     id: null
+
             this.$inertia.post('/configure-fees', this.form, {
                 onSuccess: (response) => {
-                    this.form.reset()
+                    //this.form.reset()
+                    this.form.description = ''
+                    this.form.amount = ''
                     this.fetchConfiguredFees()
                 }
             })

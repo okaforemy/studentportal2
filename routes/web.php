@@ -148,7 +148,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/make-payment/{id}', [TransactionController::class, 'makePayment']);
     Route::post('/make-payment/{id}', [TransactionController::class, 'makeTransaction']);
     Route::post('/remove-transaction-entry/{id}', [TransactionController::class, 'removeTransactionEntry']);
+    Route::post('/add-discount', [StudentFeesController::class, 'addDiscount']);
    // Route::get('/get-all-transaction-for-student', [TransactionController::class, 'getAllTransactionsForStudent']);
+
+   //new fees
+   Route::get('/fees', [FeeController::class, 'fees']);
+   Route::get('/student-fees', [FeeController::class, 'getStudentFees']);
 });
 
 Route::middleware(['guest'])->group(function(){
