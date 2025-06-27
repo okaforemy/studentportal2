@@ -1,6 +1,6 @@
 <template>
     <div class="card px-2 py-2">
-       <table class="table table-sm table-sm-reponsive mt-4 table-stripe">
+       <table class="table table-sm table-reponsive-sm mt-4 table-stripe">
         <thead>
             <tr>
                 <th>#</th>

@@ -62,13 +62,38 @@ class FeeController extends Controller
         return inertia('Fees/fees', compact('feeStructures'));
     }
 
-    public function getStudentFees(){
+    public function getStudentFees(Request $request){
         $settings = Setting::first();
-        $classes = Classes::get();
-        $class = $classes->first();
+         $classes = Classes::get();
+        if($request->class_id){
+            $class_id = $request->class_id;
+            $class = $classes->where('id', $class_id)->first();
+        }else{
+            $class = $classes->first();
+            $class_id = $class->id;
+        }
+        
         $students = Student::with(['studentFee' =>function($query) use($settings){
             $query->where('term', $settings->term)->where('session', $settings->session);
-        }])->where('class_id', $class->id)->get();
+        }])->where('class_id', $class_id)->get();
+
+        $students = $students->map(function($student){
+            $student->studentFee = $student->studentFee->map(function($fee){
+                if($fee->outstanding == 0){
+                    $fee->status = 'Paid';
+                }elseif($fee->outstanding !==0 && $fee->total_paid !==0  && $fee->outstanding !== $fee->total_fee){
+                    $fee->status = "Partial";
+                }elseif($fee->total_paid == 0){
+                    $fee->status = "Unpaid";
+                }else{
+                    $fee->status = "Fees not found";
+                }
+
+                return $fee;
+            });
+            return $student;
+        });
+
         $data = [
             'classes' => $classes,
             'class' => $class,

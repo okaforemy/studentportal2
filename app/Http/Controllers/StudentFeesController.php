@@ -77,13 +77,15 @@ class StudentFeesController extends Controller
 
         if(is_null($fee_sumary)){
              $amount = $student->fees()->sum('amount');
+             $outstanding = Fee::where('student_id', $student->id)->sum('outstanding');
+              $outstanding = (is_null($outstanding) || $outstanding == 0)? $amount: $outstanding;
                 $fee = new Fee();
                 $fee->student_id = $student->id;
                 $fee->total_fee =    $amount;
-                $fee->outstanding = 0;
+                $fee->outstanding = $outstanding;
                 $fee->credit = 0;
                 $fee->total_paid = 0;
-                $fee->balance = $amount;
+                //$fee->balance = $amount;
                 $fee->term = $settings->term;
                 $fee->session = $settings->session;
                 $fee->save();
