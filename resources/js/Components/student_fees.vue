@@ -57,9 +57,33 @@
                         <td></td>
                         <td v-html="getStatus(student)"></td>
                         <td>{{ (student.student_fee && student.student_fee.length > 0)? formatDate(student.student_fee[0].updated_at):'' }}</td>
-                        <td></td>
+                        <td>
+                            <div class="dropdown">
+                            <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Options
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">    
+                                <Link class="dropdown-item" :href="'/add-student-fees/section/'+student.id">Add fees</Link>
+                                 <Link class="dropdown-item" :href="'/view-fees/'+student.id">View fees</Link>
+                                 <Link class="dropdown-item" :href="'/make-payment/'+student.id">Make payment</Link>
+                                   
+                            </div>
+                            </div>
+                        </td>
                     </tr>
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <td></td>
+                        <th>TOTAL</th>
+                        <td></td>
+                        <td><span style="font-weight: bold">{{ getTotalFee() }}</span></td>
+                        <td><span style="font-weight: bold">{{ getTotalPaid() }}</span></td>
+                        <td><span style="font-weight: bold">{{ getTotalOutstanding() }}</span></td>
+                        <td></td>
+                        <td colspan="3"></td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>
@@ -68,7 +92,12 @@
 <script>
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import { Link } from '@inertiajs/inertia-vue'
+
     export default{
+        components:{
+        Link
+    },
         data(){
             return{
                 classes: {},
@@ -176,6 +205,39 @@ import { saveAs } from 'file-saver';
                 saveAs(blob, "students.xlsx");
                 },
 
+            getTotalFee(){
+                let total = 0;
+                for(let index in this.filteredStudent){
+                    if(this.filteredStudent[index] && this.filteredStudent[index].student_fee && this.filteredStudent[index].student_fee.length > 0){
+                        total += this.filteredStudent[index].student_fee[0].total_fee
+                    }
+                }
+
+                return this.formatAmount(total)
+            },
+
+            getTotalPaid(){
+                let total = 0;
+                for(let index in this.filteredStudent){
+                    if(this.filteredStudent[index] && this.filteredStudent[index].student_fee && this.filteredStudent[index].student_fee.length > 0){
+                        total += this.filteredStudent[index].student_fee[0].total_paid
+                    }
+                }
+
+                return this.formatAmount(total)
+            },
+
+            getTotalOutstanding(){
+                let total = 0;
+                for(let index in this.filteredStudent){
+                    if(this.filteredStudent[index] && this.filteredStudent[index].student_fee && this.filteredStudent[index].student_fee.length > 0){
+                        total += this.filteredStudent[index].student_fee[0].outstanding
+                    }
+                }
+
+                return this.formatAmount(total)
+            },
+
         },
         computed:{
             filteredStudent(){
@@ -186,7 +248,10 @@ import { saveAs } from 'file-saver';
                        return this.students.filter(item => {
                             const matchesSearch = this.search === '' || (
                             item.fullname?.toLowerCase().includes(this.search.toLowerCase()) ||
-                            item.student_id?.toLowerCase().includes(this.search.toLowerCase())
+                            item.student_id?.toLowerCase().includes(this.search.toLowerCase()) || 
+                            item.grade?.toLowerCase().includes(this.search.toLowerCase()) ||
+                            item.arm?.toLowerCase().includes(this.search.toLowerCase()) 
+                           
                             );
 
                             const matchesStatus = this.status === '' || (

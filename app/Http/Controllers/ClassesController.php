@@ -167,6 +167,7 @@ class ClassesController extends Controller
             'junior secondary' => 'secondaryExam',
             default => 'seniorSecondaryExam',
         };
+        
          $settings = $this->getSettings();
 
         if($request->arm_id){

@@ -9,6 +9,7 @@ use App\Models\FeeConfiguration;
 use App\Models\Transaction;
 use App\Models\Fee;
 use App\Models\Setting;
+use App\Models\Classes;
 
 class StudentFeesController extends Controller
 {
@@ -17,9 +18,9 @@ class StudentFeesController extends Controller
         if($request->arm){
             $students = Student::where('class_id', $request->grade)->where('arm', $request->arm)->get();
             $fee_config = FeeConfiguration::where('class_id', $request->grade)->where('arm', $request->arm)->where('is_optional', 0)->pluck('id');
-            if($students->count() >  0){
-                $students->fees()->sync($fee_config);
-            }
+            // if($students->count() >  0){
+            //     $students->fees()->sync($fee_config);
+            // }
         }else{
             $students = Student::where('class_id', $request->grade)->whereNull('arm')->get();
             $fee_config = FeeConfiguration::where('class_id', $request->grade)->whereNull('arm')->where('is_optional', 0)->pluck('id');
@@ -43,7 +44,17 @@ class StudentFeesController extends Controller
     public function addStudentFees(Request $request){
         $student = Student::with(['fees'])->find($request->id);
         $studentFeeConfig = $student->fees;
-        $feeConfig = FeeConfiguration::where('section', $request->section)->get();
+        $section = $request->section;
+        if($request->section =='section'){
+            $class = Classes::find($student->class_id);
+            $section = $class->section;
+        }
+        $feeConfig = FeeConfiguration::where('section', $section)
+            ->where('class_id', $student->class_id)
+            ->when($request->arm, function($query) use($request){
+                $query->where('arm', $request->arm);
+            })
+            ->get();
        
         return inertia('Fee/addStudentFees', compact('student', 'studentFeeConfig', 'feeConfig'));
     }
@@ -75,8 +86,10 @@ class StudentFeesController extends Controller
                     ->where('session', $settings->session)
                     ->first();
 
+        $amount = $student->fees()->sum('amount');
+
         if(is_null($fee_sumary)){
-             $amount = $student->fees()->sum('amount');
+             
              $outstanding = Fee::where('student_id', $student->id)->sum('outstanding');
               $outstanding = (is_null($outstanding) || $outstanding == 0)? $amount: $outstanding;
                 $fee = new Fee();
@@ -96,10 +109,42 @@ class StudentFeesController extends Controller
                     ->first();
         }
        //should the school fees change, update the record
-            if($student->fees->sum('amount') !== $fee_sumary->total_fee){
-                $fee_sumary->update(['total_fee'=>$student->fees->sum('amount')]);
+            // if($amount !== $fee_sumary->total_fee){
+            //     $fee_sumary->update(['total_fee'=>$amount]);
 
-                $fee_sumary = Fee::where('student_id', $id)
+            //     $fee_sumary = Fee::where('student_id', $request->id)
+            //         ->where('term', $settings->term)
+            //         ->where('session', $settings->session)
+            //         ->first();
+            // }
+             $total_discount = $student->fees->sum('pivot.discount');
+            $outstanding = $amount - $fee_sumary->total_paid - $total_discount;
+            $credit = $outstanding < 0? -$outstanding: 0;
+            $outstanding = $outstanding < 0 ? 0: $outstanding;
+            if($amount !== $fee_sumary->total_fee){
+                $total_fee = $amount;
+                $fee_sumary->update([
+                    'discount'=> $total_discount, 
+                    'total_fee'=> ($fee_sumary->balance - $total_discount),
+                    'outstanding' => $outstanding,
+                    'credit' => $credit
+                ]);
+                  $is_update = true;
+            }
+
+            $is_update = false;
+            if($total_discount !== $fee_sumary->discount){
+                $fee_sumary->update([
+                    'discount'=> $total_discount, 
+                    'total_fee'=> ($fee_sumary->balance - $total_discount),
+                    'outstanding' => $outstanding,
+                    'credit' => $credit
+                ]);
+                $is_update =true;
+            }
+
+             if($is_update){
+                $fee_sumary = Fee::where('student_id', $request->id)
                     ->where('term', $settings->term)
                     ->where('session', $settings->session)
                     ->first();
@@ -108,10 +153,77 @@ class StudentFeesController extends Controller
     }
 
     public function addDiscount(Request $request){
-        DB::table('student_fees')
+       if($request->discount !==''){
+         DB::table('student_fees')
             ->where('student_id', $request->student_id)
             ->where('fee_configuration_id', $request->fee_configuration_id)
             ->update(['discount'=> $request->discount]);
-        return redirect()->back();
+
+        //edit the fee
+        // $settings= $this->getSettings();
+        // $fees = Fee::where('student_id', $request->student_id)
+        //         ->where('term', $settings->term)
+        //         ->where('session', $settings->session)
+        //         ->first();
+        // if($fees){
+        //     $fees->discount = $request->discount;
+        //     $fees->total_fee = ($fees->total_fee - $request->discount);
+        //     $fees->save();
+        // }
+       }
+       return redirect()->back();
+    }
+
+    public function studentFeesAnalytics(){
+        $settings = $this->getSettings();
+        $classes = Classes::with(['Arms', 'fees'=>function($query)use ($settings){
+            $query->where('term', $settings->term)->where('session', $settings->session);
+        }, 'students'])->get();
+
+        $classesCombination = $classes->flatMap(function($class){
+            if($class->Arms->isNotEmpty()){
+              
+                return $class->Arms->map(function($arm) use ($class){
+                    return [
+                        'id' => $class->id,
+                        'name' => "{$class->class_name} {$arm->arm_name}",
+                        'students' =>$class->students->where('arm', $arm->arm_name)->values(),
+                        'fees' => $class->fees->whereIn('student_id', $class->students->where('arm', $arm->arm_name)->pluck('id'))
+                    ];
+                });
+            }
+
+            return [
+                       [ 'id' => $class->id,
+                        'name' => "{$class->class_name}",
+                        'students' =>$class->students->where('arm', null)->values(),
+                        'fees' => $class->fees->whereIn('student_id', $class->students->where('arm', null)->pluck('id'))]
+                    ];
+
+        });
+
+        $bar_data = [];
+        $bar_label = $classesCombination->pluck('name');
+        $total_fee = 0;
+        $total_paid = 0;
+        $outstanding = 0;
+        $credit = 0;
+       
+        foreach($classesCombination as $class){
+            array_push($bar_data, $class['fees']->sum('total_paid'));
+            $total_fee +=  $class['fees']->sum('total_fee');
+            $total_paid +=  $class['fees']->sum('total_paid');
+            $outstanding +=  $class['fees']->sum('outstanding');
+            $credit +=  $class['fees']->sum('credit');
+        }
+        return response()->json([
+            'bar_label'=>$bar_label, 
+            'bar_data'=>$bar_data,
+            'total_fee' => $total_fee,
+            'total_paid' => $total_paid,
+            'outstanding' =>$outstanding,
+            'credit' => $credit
+        ]);
+        
     }
 }

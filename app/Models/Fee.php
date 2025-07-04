@@ -15,6 +15,7 @@ class Fee extends Model
         'outstanding',
         'credit',
         'term',
-        'session'
+        'session',
+        'discount'
     ];
 }

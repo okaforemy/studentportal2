@@ -13,37 +13,86 @@ class FeeController extends Controller
 {
     public function getConfigureFeePage(){
         $classes = Classes::with('Arms')->get();
+        $classes = $classes->flatMap(function($class){
+           if($class->Arms->isNotEmpty()){
+            return $class->Arms->map(function($arm) use($class){
+                return [
+                    'id' => $class->id,
+                    'class_name' => "{$class->class_name} {$arm->arm_name}",
+                    'arm'=> $arm->arm_name,
+                    'section' => $class->section,
+                    'created_at' => $class->created_at,
+                    'updated_at' => $class->updated_at
+                ];
+            });
+           }
+
+           return [
+                    ['id' => $class->id,
+                    'class_name' => "{$class->class_name}",
+                    'arm'=> '',
+                    'section' => $class->section,
+                    'created_at' => $class->created_at,
+                    'updated_at' => $class->updated_at]
+                ];
+        });
         $section = Section::get();
         return inertia('Fee/configureFees', compact('classes', 'section'));
     }
 
-    public function getFeesConfiguration(Request $request){
-        $fees = FeeConfiguration::where('section', $request->section)
-                ->where('class_id', $request->class_id)
-                ->when($request->arm, function($query) use($request){
-                    $query->where('arm', $request->arm);
-                })
-                ->get();
-        return response()->json($fees);
+    public function getFeesConfiguration(Request $request)
+{
+    $grades = $request->grades;
+    $class_ids = [];
+    $arms = [];
+
+    if(!$grades){
+        return [];
     }
+
+    foreach ($grades as $grade) {
+        $new_grade = json_decode($grade);
+        $class_ids[] = $new_grade->id;
+
+        if (!empty($new_grade->arm)) {
+            $arms[] = $new_grade->arm;
+        }
+    }
+
+    $class_ids = array_unique($class_ids);
+
+    $fees = FeeConfiguration::where('section', $request->section)
+        ->whereIn('class_id', $class_ids)
+        ->when(!empty($arms), function ($query) use ($arms) {
+            $query->whereIn('arm', $arms);
+        })
+        ->get();
+
+    return response()->json($fees);
+}
+
 
     public function configureFee(Request $request){
         $request->validate([
             'description' => 'required',
             'amount'=> 'required|numeric',
-            'section' =>'required',
-            'class_id' => 'required',
+            //'section' =>'required',
+            //'class_id' => 'required',
         ]);
 
-        $fee = $request->id? FeeConfiguration::find($request->id): new FeeConfiguration();
-        $fee->description = $request->description;
-        $fee->amount = $request->amount;
-        $fee->section = $request->section;
-        $fee->class = $request->class_name;
-        $fee->class_id = $request->class_id;
-        $fee->is_optional = $request->is_optional;
-        $fee->arm = $request->arm;
-        $fee->save();
+        $grades = $request->grades;
+        foreach($grades as $grade){
+             $fee = $request->id? FeeConfiguration::find($request->id): new FeeConfiguration();
+            $fee->description = $request->description;
+            $fee->amount = $request->amount;
+            $fee->section = $request->section;
+            $fee->class = $grade['class_name'];
+            $fee->class_id = $grade['id'];
+            $fee->is_optional = $request->is_optional;
+            $fee->arm = $grade['arm']? $grade['arm']: null;
+            $fee->save();
+        }
+       
 
         return redirect()->back();
     }
@@ -58,7 +107,7 @@ class FeeController extends Controller
 
     //new fees 
     public function fees(){
-        $feeStructures = FeeConfiguration::orderBy('class', 'ASC')->paginate(5);
+        $feeStructures = FeeConfiguration::orderBy('class', 'ASC')->paginate(20);
         return inertia('Fees/fees', compact('feeStructures'));
     }
 
@@ -79,11 +128,11 @@ class FeeController extends Controller
 
         $students = $students->map(function($student){
             $student->studentFee = $student->studentFee->map(function($fee){
-                if($fee->outstanding == 0){
+                if($fee->total_paid === $fee->total_fee || $fee->total_paid > $fee->total_fee){
                     $fee->status = 'Paid';
-                }elseif($fee->outstanding !==0 && $fee->total_paid !==0  && $fee->outstanding !== $fee->total_fee){
+                }elseif($fee->total_paid > 0 && $fee->total_paid < $fee->total_fee){
                     $fee->status = "Partial";
-                }elseif($fee->total_paid == 0){
+                }elseif($fee->outstanding == $fee->total_fee || $fee->total_paid == 0){
                     $fee->status = "Unpaid";
                 }else{
                     $fee->status = "Fees not found";

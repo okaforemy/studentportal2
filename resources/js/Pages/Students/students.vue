@@ -77,6 +77,10 @@
                                 <Link class="dropdown-item" :href="`/students-exam-scores?studentid=${student.id}&arm=${student.arm}&grade=${student.grade}&page=1&section=${student.student_grade.section}&singleStudent=true`">Add scores</Link>
                                 <a class="dropdown-item" :href="`get-result-page?singleResult=true&studentid=${student.id}&section=${student.student_grade.section}&grade=${student.grade}`">Check result</a>
                                 <div class="dropdown-divider"></div>
+                                <Link class="dropdown-item" :href="'/add-student-fees/section/'+student.id">Add fees</Link>
+                                 <Link class="dropdown-item" :href="'/view-fees/'+student.id">View fees</Link>
+                                 <Link class="dropdown-item" :href="'/make-payment/'+student.id">Make payment</Link>
+                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" :href="'/edit-student/'+student.id">Edit</a>
                                 <a class="dropdown-item" @click.prevent="deleteStudent(student.fullname, student.id)" href="/delete-student" > Delete </a>
                             </div>

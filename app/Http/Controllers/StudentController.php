@@ -886,12 +886,12 @@ class StudentController extends Controller
 
       public function uploadScores(Request $request){
         $section = $request->section;
-        $class= $request->grade;
+        $grade= $request->grade;
         $arm = $request->arm; 
         $class_id = $request->class_id;
         $arm_id = $request->arm_id;
 
-        return inertia('Students/uploadScores', compact('section', 'class', 'arm', 'class_id', 'arm_id'));
+        return inertia('Students/uploadScores', compact('section', 'grade', 'arm', 'class_id', 'arm_id'));
       }
 
       public function savePrimaryUploadedScores(Request $request){

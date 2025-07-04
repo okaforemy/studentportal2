@@ -154,6 +154,7 @@ Route::middleware(['auth'])->group(function () {
    //new fees
    Route::get('/fees', [FeeController::class, 'fees']);
    Route::get('/student-fees', [FeeController::class, 'getStudentFees']);
+   Route::get('/fee-analytics', [StudentFeesController::class, 'studentFeesAnalytics']);
 });
 
 Route::middleware(['guest'])->group(function(){

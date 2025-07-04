@@ -32,9 +32,9 @@
                 <h2 class=" font-weight-bold">School Fees Management</h2>
                 <p>Manage student fees, payments, and generate reports</p>
             </div>
-            <div class="col-md-6 text-right">
+            <!-- <div class="col-md-6 text-right">
                 <button class="btn btn-primary">+ New Payment</button>
-            </div>
+            </div> -->
         </div>
 
         <div class="row mt-4">
@@ -44,7 +44,7 @@
 
                     <div class="info-box-content">
                         <span class="info-box-text">Total Fees for the term</span>
-                        <span class="info-box-number">47774</span>
+                        <span class="info-box-number">{{formatAmount(data.total_fee)}}</span>
 
                         <div class="progress">
                             <div class="progress-bar" style="width: 100%"></div>
@@ -62,9 +62,10 @@
 
                     <div class="info-box-content">
                         <span class="info-box-text">Total fees collected for the term</span>
-                        <span class="info-box-number">38883</span>
+                        <span class="info-box-number">{{formatAmount(data.total_paid)}}</span>
 
                         <div class="progress">
+                            <div class="progress-bar" :style="'width:'+ ((data.total_paid/data.total_fee)*100)+'%'"></div>
                             <!-- <div v-if="fee_sumary && fee_sumary.total_paid"
                                         class="progress-bar"
                                         :style="'width:'+((fee_sumary.total_paid/fee_sumary.total_fee) * 100)+ '%'"
@@ -83,9 +84,10 @@
 
                     <div class="info-box-content">
                         <span class="info-box-text">Total outstanding fees</span>
-                        <span class="info-box-number">4888</span>
+                        <span class="info-box-number">{{formatAmount(data.outstanding)}}</span>
 
                         <div class="progress">
+                            <div class="progress-bar" :style="'width:'+ ((data.outstanding/data.total_fee)*100)+'%'"></div>
                             <!-- <div v-if="fee_sumary && fee_sumary.outstanding"
                                         class="progress-bar"
                                         :style="'width:'+(((fee_sumary.outstanding)/fee_sumary.total_fee) * 100)+ '%'"
@@ -108,14 +110,15 @@
 
                     <div class="info-box-content">
                         <span class="info-box-text">Total credit for the term</span>
-                        <span class="info-box-number">3778838</span>
+                        <span class="info-box-number">{{formatAmount(data.credit)}}</span>
 
-                        <!-- <div class="progress">
-                                    <div
+                        <div class="progress">
+                            <div class="progress-bar" :style="'width:'+ ((data.credit/data.total_fee)*100)+'%'"></div>
+                                    <!-- <div
                                         class="progress-bar"
                                         :style="'width:'+(fee_sumary && fee_sumary.credit? ((fee_sumary.credit)/fee_sumary.total_fee) * 100 : 0)+ '%'"
-                                    ></div>
-                                </div> -->
+                                    ></div> -->
+                                </div>
 
                     </div>
                     <!-- /.info-box-content -->
@@ -130,7 +133,7 @@
                 <ul>
                     <li class="flex-item" :class="active_btn == 'fee_structure'? 'active': ''" @click="setActiveBtn('fee_structure')">Fee Structure</li>
                     <li class="flex-item" :class="active_btn == 'student_fees'? 'active': ''" @click="setActiveBtn('student_fees')">Student Fees</li>
-                    <li class="flex-item" :class="active_btn == 'record_payment'? 'active': ''" @click="setActiveBtn('record_payment')">Record Payment</li>
+                    <!-- <li class="flex-item" :class="active_btn == 'record_payment'? 'active': ''" @click="setActiveBtn('record_payment')">Record Payment</li> -->
                     <li class="flex-item" :class="active_btn == 'analytics'? 'active': ''" @click="setActiveBtn('analytics')">Analytics</li>
                 </ul>
             </div>
@@ -142,30 +145,39 @@
         <div>
             <Fee_structure :data="feeStructures" @refresh="refershData" v-show="active_btn == 'fee_structure'"/>
             <student_fees  v-show="active_btn == 'student_fees'"/>
+            <feeAnalytics v-show="active_btn == 'analytics'" @data="setData"/>
         </div>
     </div>
 </template>
 <script>
     import Fee_structure from '../../Components/fee_structure.vue';
     import student_fees from '../../Components/student_fees.vue';
+    import feeAnalytics from '../../Components/feeAnalytics.vue';
     import { Link } from '@inertiajs/inertia-vue';
 
     export default{
-        components: {Fee_structure, Link, student_fees},
+        components: {Fee_structure, Link, student_fees, feeAnalytics},
         props:['feeStructures'],
         data(){
             return{
-                active_btn: 'fee_structure'
+                active_btn: 'fee_structure',
+                data: {}
             }
         },
         methods:{
             setActiveBtn(txt){
                 this.active_btn = txt
             },
+            setData(data){
+                this.data = data;
+            },
             refershData(){
                 this.$inertia.reload({
                     only:['feeStructures']
                 })
+            },
+            formatAmount(amount){
+                return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
             }
         }
     }

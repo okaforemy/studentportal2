@@ -28,12 +28,13 @@ class TransactionController extends Controller
                     ->where('term', $settings->term)
                     ->where('session', $settings->session)
                     ->first();
-          
+
+         $amount = $student->fees()->sum('amount');
+
             //check if there is change in term and pass on the outstanding fees
             if(is_null($fee_sumary)){
                  $outstanding = Fee::where('student_id', $id)->sum('outstanding');
- 
-                    $amount = $student->fees()->sum('amount');
+
                     $outstanding = (is_null($outstanding) || $outstanding == 0)? $amount: $outstanding;
                     $fee = new Fee();
                     $fee->student_id = $id;
@@ -54,10 +55,62 @@ class TransactionController extends Controller
             }
 
             //should the school fees change, update the record
-            if($student->fees->sum('amount') !== $fee_sumary->total_fee){
-                $fee_sumary->update(['total_fee'=>$student->fees->sum('amount')]);
-
+            $total_discount = $student->fees->sum('pivot.discount');
+            $outstanding = $amount - $fee_sumary->total_paid - $total_discount;
+            $credit = $outstanding < 0? -$outstanding: 0;
+            $outstanding = $outstanding < 0 ? 0: $outstanding;
+            if($amount !== $fee_sumary->total_fee){
+                $total_fee = $amount;
+                $fee_sumary->update([
+                    'discount'=> $total_discount, 
+                    'total_fee'=> ($fee_sumary->balance - $total_discount),
+                    'outstanding' => $outstanding,
+                    'credit' => $credit
+                ]);
+                  $is_update = true;
             }
+
+            $is_update = false;
+            if($total_discount !== $fee_sumary->discount){
+                $fee_sumary->update([
+                    'discount'=> $total_discount, 
+                    'total_fee'=> ($fee_sumary->balance - $total_discount),
+                    'outstanding' => $outstanding,
+                    'credit' => $credit
+                ]);
+                $is_update =true;
+            }
+
+             if($is_update){
+                $fee_sumary = Fee::where('student_id', $id)
+                    ->where('term', $settings->term)
+                    ->where('session', $settings->session)
+                    ->first();
+            }
+           // Update total_fee if changed
+            // $is_update = false;
+
+            // if ($fee_sumary->total_fee != $amount) {
+            //     $fee_sumary->total_fee = $amount;
+            //     $is_update = true;
+            // }
+
+            // // Handle discount (if on pivot)
+            // $total_discount = $fees->sum('pivot.discount');
+            // if ($fee_sumary->discount != $total_discount) {
+            //     $fee_sumary->discount = $total_discount;
+            //     $fee_sumary->total_fee = $amount - $total_discount;
+            //     $is_update = true;
+            // }
+
+            // if($is_update){
+            //     $fee_sumary = Fee::where('student_id', $id)
+            //         ->where('term', $settings->term)
+            //         ->where('session', $settings->session)
+            //         ->first();
+            // }
+
+            // $fee_sumary->save();
         return inertia('Fee/makePayment', compact('student', 'fees', 'fee_sumary'));
     }
 

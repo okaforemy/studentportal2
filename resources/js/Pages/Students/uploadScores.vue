@@ -66,7 +66,7 @@
     import { Link } from '@inertiajs/inertia-vue'
 import axios from 'axios'
     export default{
-        props:['section', 'class', 'arm', 'class_id', 'arm_id'],
+        props:['section', 'grade', 'arm', 'class_id', 'arm_id'],
         components: {Link},
         data(){
             return {
@@ -115,7 +115,7 @@ import axios from 'axios'
                             remark: this.getRemarks(total),
                             student_id: id,
                             student: row['STUDENTS'],
-                            grade: this.class,
+                            grade: this.grade,
                             arm: this.arm,
                             section: this.section
                         };

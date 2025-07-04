@@ -127,7 +127,8 @@ export default {
         let fee_length = this.studentFeeConfig.length;
         let data = {}
         for(let i=0; i < fee_length; i++){
-            data[this.studentFeeConfig[i].id] = this.studentFeeConfig[i].pivot.discount?this.studentFeeConfig[i].pivot.discount: 0.0
+            //data[this.studentFeeConfig[i].id] = this.studentFeeConfig[i].pivot.discount?this.studentFeeConfig[i].pivot.discount: 0.0
+            data[i+1] = this.studentFeeConfig[i].pivot.discount?this.studentFeeConfig[i].pivot.discount: 0.0
         }
         this.discount = data
     }

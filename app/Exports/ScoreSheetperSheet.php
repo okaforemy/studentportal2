@@ -36,6 +36,7 @@ class ScoreSheetperSheet implements FromCollection, WithHeadings, WithTitle, Wit
     {
          return $this->students->map(function ($student) {
             //$score = optional($student->subjects->firstWhere('id', $this->subject->id)->pivot->score);
+            $score = null;
             if($student->primaryExam->isNotEmpty()){
                 $score = $student->primaryExam->where('subject', $this->subject->subject)->first();
             }else if($student->secondaryExam->isNotEmpty()){

@@ -16,10 +16,13 @@
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <select name="" v-model="grade" @change="setSelectedClass($event)" class="form-control" id="">
+                        <!-- <select name="" v-model="grade" @change="setSelectedClass($event)" class="form-control" id="">
                             <option value="">Select Class</option>
                             <option :value="clas.id" v-for="clas in selectedClass">{{ clas.class_name }}</option>
-                        </select>
+                        </select> -->
+                        <multiselect @input="setSelectedClass($event)" v-model="form.grades" :options="selectedClass" :multiple="true" :close-on-select="false" :clear-on-select="false" :preserve-search="true" placeholder="Please select a Class" label="class_name" track-by="class_name" :preselect-first="false">
+                            <template slot="selection" slot-scope="{ values, search, isOpen }"><span class="multiselect__single" v-if="values.length &amp;&amp; !isOpen">{{ values.length }} selected</span></template>
+                        </multiselect>
                     </div>
                     <div class="col-md-4"
                         v-if="selected_class && selected_class.arms && selected_class.arms.length > 0">
@@ -62,7 +65,7 @@
                         </div>
                     </div>
                     <div class="mt-3"
-                        v-if="sect && grade && selected_class && (!selected_class.arms || selected_class.arms.length === 0 || arm !== '')">
+                        v-if="form.grades && form.grades.length > 0 && form.description !=='' && form.amount !==''">
                         <button class="btn btn-primary" @click.prevent="saveConfiguration">
                             Save configuration
                         </button>
@@ -75,6 +78,7 @@
                         <thead>
                             <tr>
                                 <th>#</th>
+                                <th>Class</th>
                                 <th>Description</th>
                                 <th>Optional?</th>
                                 <th>Amount</th>
@@ -84,6 +88,7 @@
                         <tbody>
                             <tr v-for="(fee, index) in fees">
                                 <td>{{ index + 1 }}</td>
+                                <td>{{fee.class }}</td>
                                 <td>{{ fee.description }}</td>
                                 <td>{{ fee.is_optional==1?'Yes':'No' }}</td>
                                 <td>{{ formatAmount(fee.amount) }}</td>
@@ -102,9 +107,10 @@
 
 <script>
 import { Head } from '@inertiajs/inertia-vue'
+import Multiselect from 'vue-multiselect'
 
 export default {
-    components: { Head },
+    components: { Head, Multiselect },
     props: ['section', 'classes', 'errors'],
     data() {
         return {
@@ -121,21 +127,23 @@ export default {
                 class_id: '',
                 is_optional: 1,
                 arm: '',
-                id: null
+                id: null,
+                grades:null
             }),
             fees:[]
         }
     },
     methods: {
         setSelectedClass(event) {
-            const selectedText = event.target.options[event.target.selectedIndex].text;
-            this.form.class_name = selectedText
-            let val = this.classes.filter((item) => item.id == this.grade)
-            if (val && val.length > 0) {
-                this.selected_class = val[0]
-            }
-            this.resetArms()
-            this.getConfiguredFees()
+            console.log(event)
+            // const selectedText = event.target.options[event.target.selectedIndex].text;
+            // this.form.class_name = selectedText
+            // let val = this.classes.filter((item) => item.id == this.grade)
+            // if (val && val.length > 0) {
+            //     this.selected_class = val[0]
+            // }
+            // this.resetArms()
+             this.fetchConfiguredFees()
         },
 
         setSelectedArm() {
@@ -151,11 +159,20 @@ export default {
            return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
         },
 
-        editFee(fee){
+        editFee(fee){console.log(fee)
             this.form.description = fee.description
             this.form.amount = fee.amount
             this.form.id = fee.id
             this.form.is_optional = fee.is_optional
+
+            //get the class
+            let grade = this.selectedClass.filter((item)=>{
+                return item.id == fee.class_id && item.arm == fee.arm
+            });
+            console.log('grade', grade)
+            if(grade){
+                this.form.grades = grade;
+            }
         },  
 
         resetArms() {
@@ -166,7 +183,7 @@ export default {
         },
 
         fetchConfiguredFees() {
-            axios.get('/get-configured-fees', { params: { section: this.sect, class_id: this.selected_class.id, arm: this.form.arm } })
+            axios.get('/get-configured-fees', { params: { section: this.sect, grades: this.form.grades } })
                 .then((response) => {
                     this.fees = response.data
                 })

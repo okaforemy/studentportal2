@@ -197,6 +197,14 @@
                 </ul>
           </li>
           <li class="nav-item">
+                <Link href="/fees" class="nav-link">
+                <i class="fas fa-money-check-alt"></i>
+                  <p>
+                    Fees
+                  </p>
+                </Link>
+              </li>
+          <li class="nav-item">
                 <Link href="/settings" class="nav-link">
                 <i class="fas fa-laptop-house"></i>
                   <p>
