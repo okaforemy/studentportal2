@@ -41,9 +41,9 @@
                            </select>
                        </div>
                    </div>
-                   <div class="col-md-6 pt-4 mx-auto no-print" v-if="is_reprint">
+                <div class="col-md-8 pt-4 mx-auto no-print" v-if="is_reprint">
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-5">
                         <select class="form-control" v-model="term" id="">
                             <option value="">Select term</option>
                             <option value="first_term">First term</option>
@@ -51,8 +51,11 @@
                             <option value="third_term">Third term</option>
                         </select>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-5">
                         <input type="text" v-model="session" name="" class="form-control" placeholder="Session" id="">
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-primary" @click="getResult">Check</button>
                     </div>
                 </div>
             </div>
@@ -188,7 +191,7 @@
                             </table>
                            
                             <!-- physical development table for pre_nursery---------->
-                            <table class="table table-sm table-bordered mt-2 report-table" v-if="student.physicaldevelopment">
+                            <table class="table table-sm table-bordered mt-2 report-table" v-if="student && student.physicaldevelopment">
                                 <thead>
                                     <tr>
                                         <th>Physical Development</th>
@@ -196,7 +199,7 @@
                                         <th>At the end of the term</th>
                                     </tr>
                                 </thead>
-                                <tbody class="physical_dev_tbody">
+                                <tbody class="physical_dev_tbody" >
                                     <tr>
                                         <th>Current Height</th>
                                         <td class="height_beg">{{ student.physicaldevelopment.initial_height }}</td>
@@ -349,12 +352,14 @@
                     session: this.session, 
                     is_reprint: this.is_reprint
                 }}).then((response)=>{
-                    this.student = response.data.student
+                   if(response.data){
+                     this.student = response.data.student
                     this.class_average = response.data.class_average.toFixed(2)
                     this.total_marks_obtainable = response.data.total_marks_obtainable.toFixed(2)
                     this.total_marks_obtained = response.data.total_marks_obtained.toFixed(2)
                     this.overall_percentage = response.data.overall_percentage.toFixed(2)
                     this.settings = response.data.settings
+                   }
                 })
             },
              getAge(birthDate) {

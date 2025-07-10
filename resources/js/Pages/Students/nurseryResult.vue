@@ -41,9 +41,9 @@
                            </select>
                        </div>
                    </div>
-                   <div class="col-md-6 pt-4 mx-auto no-print" v-if="is_reprint">
+                   <div class="col-md-8 pt-4 mx-auto no-print" v-if="is_reprint">
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-5">
                         <select class="form-control" v-model="term" id="">
                             <option value="">Select term</option>
                             <option value="first_term">First term</option>
@@ -51,8 +51,11 @@
                             <option value="third_term">Third term</option>
                         </select>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-5">
                         <input type="text" v-model="session" name="" class="form-control" placeholder="Session" id="">
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-primary" @click="getResult">Check</button>
                     </div>
                 </div>
             </div>

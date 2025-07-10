@@ -45,6 +45,10 @@ return [
             'driver' => 'session',
             'provider' => 'cbts',
         ],
+        'parents' => [
+            'driver' => 'session',
+            'provider' => 'parents',
+        ],
     ],
 
     /*
@@ -74,6 +78,10 @@ return [
             'driver' => 'eloquent',
             //'model' => App\Models\CBTStudents::class,
              'model' => App\Models\Student::class,
+        ],
+        'parents' => [
+            'driver' => 'eloquent',
+             'model' => App\Models\Parents::class,
         ],
 
         // 'users' => [

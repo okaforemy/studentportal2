@@ -315,7 +315,7 @@ export default {
             });
         },
         searchClasses(query) {
-            axios.get('/search-class', { params: { search: query } })
+            axios.get('/classes', { params: { search: query } })
                 .then((response) => {
                     this.allClasses.data = response.data.data
                     this.links = response.data.links

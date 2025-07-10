@@ -55,7 +55,6 @@ class StudentFeesController extends Controller
                 $query->where('arm', $request->arm);
             })
             ->get();
-       
         return inertia('Fee/addStudentFees', compact('student', 'studentFeeConfig', 'feeConfig'));
     }
 

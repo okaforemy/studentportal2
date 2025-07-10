@@ -3,7 +3,7 @@
    <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
-      <title>PHS | Log in</title>
+      <title>PHS parent | Log in</title>
       <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
       <link rel="stylesheet" href="{{asset('css/app.css')}}">
       <script type="text/javascript" src="https://ff.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=bhhT50AJpCC71JYrcb7a39MiKplDXrdpWHBxy80aQpMUGfQU7y2gD6fU5_E3nM7omyzy5hyxwlZcouKq1UDlTgoYFAlFhqxToeYYAAMW-cE" charset="UTF-8"></script>
@@ -70,9 +70,14 @@
    </head>
    <body class="hold-transition login-page">
       <div class="login-box container-center">
+        
         <div class="" style="width:90%; margin:0 auto;">
              <div class="login-logo">
-            <a href="{{route('home')}}"> PHS</a>
+                <div>
+                    <a href="{{route('home')}}" class="font-weight-bold mb-3"> Purplins School Parent's Portal</a>
+                </div>
+                <img src="{{asset('images/lion_final.png')}}" width="130" alt="">
+           
          </div>
          @if ($errors->any())
          <div class="alert alert-danger">
@@ -86,7 +91,7 @@
          <div>
             <div class=" login-card-body">
                <p class="login-box-msg">Sign in to start your session</p>
-               <form action="{{route('login-user')}}" method="post">
+               <form action="{{route('parents-login')}}" method="post">
                   <div class="input-group mb-3">
                      <input type="email" name="email" required class="form-control" placeholder="Email">
                      <div class="input-group-append">

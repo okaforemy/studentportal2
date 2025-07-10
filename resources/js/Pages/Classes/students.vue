@@ -1,3 +1,12 @@
+<style scoped>
+   td {
+    vertical-align: middle;
+    text-align: center;     /* optional: center text horizontally */
+    padding: 12px 8px;
+    height: 70px;           /* only needed if you want consistent height */
+    line-height: 1.4;
+  }
+</style>
 <template>
     <div class="pt-4">
         <div class="card">
@@ -56,7 +65,17 @@
                   <tbody>
                     <tr v-for="(student,index) in allStudents.data" :key="index">
                       <td>{{index+1+parseInt(page)}}</td>
-                      <td><input type="checkbox" v-model="selected_student" :value="student.id" v-if="is_promotion_started" class="mr-2" name="" id="">{{student.surname}}</td>
+                      <td style="display: flex;">
+                        <input type="checkbox" v-model="selected_student" :value="student.id" v-if="is_promotion_started" class="mr-2" name="" id="">
+                          <div style="display: flex; align-items: center;">
+                          <div v-if="student.picture" 
+                              style="height: 50px; width: 50px; overflow: hidden; border-radius: 50%; margin-right: 10px; flex-shrink: 0;">
+                            <img :src="student.picture.path" style="width: 100%; height: 100%; object-fit: cover;" alt="">
+                          </div>
+                          <span>{{ student.surname }}</span>
+                        </div>
+                        
+                      </td>
                       <td>{{student.othernames}}</td>
                       <td>{{student.dob}}</td>
                       <td>{{student.sex}}</td>
@@ -162,7 +181,7 @@ export default {
             }
         },
       searchClassesStudents(query) {
-            axios.get('/search-classes-students', { params: { search: query } })
+            axios.get('/class-list', { params: { search: query, class: this.grade, arm:this.arm } })
                 .then((response) => {
                     this.allStudents.data = response.data.data
                     this.links = response.data.links

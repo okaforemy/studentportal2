@@ -10,7 +10,7 @@
                     <div class="col-md-6">
                         <select name="" v-model="form.fee_config_id" class="form-control" id="">
                             <option value="">Select fee configuration</option>
-                            <option :value="fee.id" v-for="fee in fees">{{ fee.description }}</option>
+                            <option :value="fee.id" v-for="fee in fees">{{ fee.description }} ({{ formatAmount(fee.amount, 0) }})</option>
                         </select>
                     </div>
                     <div class="col-md-4">
@@ -89,7 +89,6 @@ export default {
                 total +=fee.amount
                 discount += fee.pivot?.discount
             }
-            console.log(discount)
             return this.formatAmount(total, discount)
         },
         addFee(){

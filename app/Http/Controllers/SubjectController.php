@@ -161,7 +161,20 @@ class SubjectController extends Controller
     }
 
     public function subjects(Request $request){
-        $subjects = Subjects::paginate(20);
+        //$subjects = Subjects::paginate(20);
+        $subjects = Subjects::query();
+        if($request->search){
+            $subjects->where(function($query) use($request){
+                $query->where('subject', 'LIKE', '%'.$request->search.'%')
+                    ->orWhere('section', 'LIKE', '%'.$request->search.'%' )
+                    ->orWhere('category', 'LIKE', '%'.$request->search.'%');
+            });
+        }   
+       
+        $subjects = $subjects->paginate(20)->withQueryString();
+        if($request->expectsJson()){
+            return response()->json($subjects);
+        }
         return inertia('Subjects/subjects', compact('subjects'));
     }
 

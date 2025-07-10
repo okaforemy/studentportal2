@@ -6,6 +6,16 @@ use Illuminate\Http\Request;
 use App\Models\Parents;
 use App\Models\Student;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use App\Models\Classes;
+use App\Models\PreNurseryExam;
+use App\Models\SeniorSecondaryExam;
+use App\Models\secondaryExam;
+use App\Models\PrimaryExam;
+use App\Models\Setting;
+use App\Models\Transaction;
+use App\Models\Fee;
+use Hash;
 
 class ParentsController extends Controller
 {
@@ -48,7 +58,7 @@ class ParentsController extends Controller
             'nationality'=>'required',
             'home_address'=>'required',
             'phone'=>'required',
-            'email'=>'sometimes|email',
+            'email'=>'nullable|email',
             'isparent'=>'required'
         ]);
         /* might need to validate the parents to avoid double entry should someone tamper with the frontend
@@ -99,7 +109,7 @@ class ParentsController extends Controller
             'nationality'=>'required',
             'home_address'=>'required',
             'phone'=>'required',
-            'email'=>'sometimes|email',
+            'email'=>'nullable|email',
             'isparent'=>'required'
         ]);
 
@@ -128,9 +138,11 @@ class ParentsController extends Controller
             'nationality'=>'required',
             'home_address'=>'required',
             'phone'=>'required|unique:parents',
-            'email'=>'sometimes|email|unique:parents',
+            'email'=>'nullable|email|unique:parents',
             'isparent'=>'required'
         ]);
+
+        $request->merge(['password' => Hash::make('password')]);
 
         Parents::create($request->all());
         return redirect()->back();
@@ -180,7 +192,7 @@ class ParentsController extends Controller
             'nationality'=>'required',
             'home_address'=>'required',
             'phone'=>'required|unique:parents,phone,'.$request->id,
-            'email'=>'sometimes|email|unique:parents,email, '.$request->id,
+            'email'=>'nullable|email|unique:parents,email, '.$request->id,
             'isparent'=>'required'
         ]);
         $parent = Parents::find($request->id);
@@ -205,6 +217,121 @@ class ParentsController extends Controller
             })->paginate(20);
 
             return response()->json($parents);
+    }
+
+    public function home(){
+        $parent = auth()->user()->with(['students'=>function($query){
+            $query->with('picture');
+        }])->first();
+        $students = $parent->students;
+        return inertia('Parents/home', compact('students'));
+    }
+
+    public function parentLogin(){
+        return view('parentLogin');
+    }
+
+    public function authenticate(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+ 
+        if (Auth::guard('parents')->attempt($credentials)) {
+            $request->session()->regenerate();
+ 
+            return redirect()->intended('/parents/home');
+        }
+ 
+        return back()->withErrors([
+            'email' => 'The provided credentials do not match our records.',
+        ]);
+    }
+
+    public function getSingleChild(Request $request){
+        $parent = auth()->user();
+
+        // Ensure 'students' relationship is eager loaded
+        $student = $parent->Students()
+            ->with('picture')
+            ->where('students.id', $request->student)
+            ->first();
+
+        if (!$student) {
+            return redirect()->back()->with('error', 'Student not found or unauthorized.');
+        }
+
+        return inertia('Parents/singleChild', [
+            'student' => $student
+        ]);
+    }
+
+    public function checkResult(Request $request){
+        $class = Classes::find($request->class_id);
+         $result = 0;
+        if($class){
+            if($class->section == 'pre nursery'){
+                $result = PreNurseryExam::where('term', $request->term)
+                        ->where('student_id', $request->student_id)
+                        ->where('session', $request->session)
+                        ->where('is_approved', 0)
+                        ->count();
+            }
+
+            if($class->section == 'nursery' || $class->section =='primary'){
+                $result = PrimaryExam::where('term', $request->term)
+                        ->where('student_id', $request->student_id)
+                        ->where('session', $request->session)
+                        ->where('is_approved', 0)
+                        ->count(); 
+            }
+
+            if($class->section == 'junior secondary'){
+                $result = secondaryExam::where('term', $request->term)
+                        ->where('student_id', $request->student_id)
+                        ->where('session', $request->session)
+                        ->where('is_approved', 0)
+                        ->count();
+            }
+
+            if($class->section == 'senior secondary'){
+                $result = SeniorSecondaryExam::where('term', $request->term)
+                        ->where('student_id', $request->student_id)
+                        ->where('session', $request->session)
+                        ->where('is_approved', 0)
+                        ->count();
+            }
+        }
+
+        $settings = Setting::where('term', $request->term)->where('session', $request->session)->first();
+
+        return response()->json([
+            'result' => $result,
+            'term' => $request->term,
+            'session' => $request->session,
+            'section' => $class->section,
+            'settings' =>$settings
+        ]);
+    }
+
+    public function getFees(Request $request){
+        $student = Student::with('fees')->find($request->student_id);
+        return response()->json($student->fees);
+    }
+
+    public function getTransactions(Request $request){
+      $settings = Setting::latest()->first();
+        $transactions = Transaction::where('student_id', $request->student_id)->latest()->get();
+
+                    $fee_sumary = Fee::where('student_id', $request->student_id)
+                        ->where('term', $settings->term)
+                        ->where('session', $settings->session)
+                        ->first();
+        return response()->json([
+            'transactions' => $transactions,
+            'fee_sumary' => $fee_sumary
+        ]);
     }
 
 }

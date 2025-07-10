@@ -149,8 +149,24 @@ class StudentController extends Controller
     /**
      * fetch all students
      */
-    public function Students(){
-        $students = Student::with('studentGrade')->orderBy('fullname', 'ASC')->paginate(20);
+    public function Students(Request $request){
+        $students = Student::query();
+        $students = $students->with(['studentGrade', 'picture']);
+        if($request->search){
+            $students->where(function($query)use($request){
+                $query->where('fullname', 'LIKE', '%'.$request->search.'%')
+                ->orWhere('dob', 'LIKE', '%'.$request->search.'%')
+                ->orWhere('sex', $request->search)
+                ->orWhere('student_id', 'LIKE', '%'.$request->search.'%')
+                ->orWhere('grade', 'LIKE', '%'.$request->search.'%')
+                ->orWhere('arm', 'LIKE', '%'.$request->search.'%');
+            });
+        }
+        $students = $students->orderBy('fullname', 'ASC')->paginate(20)->withQueryString();
+        if($request->expectsJson()){
+            return response()->json($students);
+        }
+        //$students = Student::with(['studentGrade', 'picture'])->orderBy('fullname', 'ASC')->paginate(20);
         return inertia('Students/students',compact('students'));
     }
 

@@ -1,5 +1,31 @@
 <template>
-    <div class="card px-2 py-2">
+    <div>
+        <div class="card px-3 py-4">
+            <h4>Filter Fee Structures</h4>
+            <div class="mt-2 row">
+                <div class="col-md-3">
+                    <input type="text" v-model="search" name="" placeholder="Search fee structure" class="form-control" id="">
+                </div>
+
+                <div class="col-md-3">
+                    <select name="" @change="getSelectedClass" class="form-control" id="" v-model="current_grade">
+                        <option value="">Select class</option>
+                        <option :value="grade.class_name" v-for="grade in classes">{{ grade.class_name }}</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <select name="" @change="getIsOptional" v-model="is_optional" class="form-control" id="">
+                        <option value="">Optional?</option>
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+            </div>
+    </div>
+
+    <div class="card px-3 py-3">
+        <h4>Fee Structures</h4>
        <table class="table table-sm table-reponsive-sm mt-4 table-stripe">
         <thead>
             <tr>
@@ -17,7 +43,7 @@
                 <td>{{ index + 1 }}</td>
                 <td>{{ fee.description }}</td>
                 <td>{{ fee.section }}</td>
-                <td>{{ fee.class }} {{ fee.arm? fee.arm: '' }}</td>
+                <td>{{ fee.class }} </td>
                 <td>{{ fee.is_optional? 'Yes':'No' }}</td>
                 <td>{{ formatAmount(fee.amount) }}</td>
                 <td>
@@ -34,7 +60,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="feeModalLabel">Modal title</h5>
+                <h5 class="modal-title" id="feeModalLabel">Edit {{form.description}}</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
                 </button>
@@ -67,19 +93,25 @@
         </div>
         </div>
     </div>
+    </div>
+    
 </template>
 
 <script>
     import Paginator from '../Shared/paginator.vue';
-    
+    import { debounce } from 'lodash';
+
     export default{
         components: {Paginator},
-        props:['data'],
+        props:['data', 'classes'],
         data(){
             return {
                 fee_structures: {},
                 links:null,
+                current_grade: '',
                 selected_class: '',
+                is_optional: '',
+                search: '',
                  form: this.$inertia.form({
                     description: '',
                     amount: '',
@@ -96,6 +128,9 @@
         methods:{
             formatAmount(amount){
                 return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
+            },
+            getSelectedClass(){
+                this.$emit('classChanges', this.current_grade)
             },
             setSelectedFee(fee){console.log(fee.class)
                 this.form.id = fee.id
@@ -119,32 +154,46 @@
             })
             },
              deleteFee(fee){
-            let that = this
-            $.confirm({
-            title: 'Delete!',
-            content: 'Do you want to delete '+fee.description+'?',
-            type: 'red',
-            buttons: {   
-                ok: {
-                    text: "ok!",
-                    btnClass: 'btn-primary',
-                    keys: ['enter'],
-                    action: function(){
-                      axios.get('/delete-fee/'+fee.id).then((response)=>{
-                           that.$emit('refresh')
-                        })
+                let that = this
+                $.confirm({
+                title: 'Delete!',
+                content: 'Do you want to delete '+fee.description+'?',
+                type: 'red',
+                buttons: {   
+                    ok: {
+                        text: "ok!",
+                        btnClass: 'btn-primary',
+                        keys: ['enter'],
+                        action: function(){
+                        axios.get('/delete-fee/'+fee.id).then((response)=>{
+                            that.$emit('refresh')
+                            })
+                        }
+                    },
+                    cancel: function(){
+                        
                     }
-                },
-                cancel: function(){
-                      
                 }
-            }
-        });
+            });
             
+        },
+
+        handleSearch(){
+            this.$emit('search', this.search)
+        },
+        getIsOptional(){
+            this.$emit('isOptinal', this.is_optional)
         }
             
         },
+        watch:{
+            search(newVal){
+                this.debouncedSearch()
+            },
+           
+        },
         created(){
+            this.debouncedSearch = debounce(this.handleSearch, 400);
             // axios.get('/fee-structures').then((response)=>{
             //     this.fee_structures = response.data.data
             //     this.links = response.data.links

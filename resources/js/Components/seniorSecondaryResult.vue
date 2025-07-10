@@ -35,35 +35,8 @@
    <div class="load_content">
    
    <div class="col-md-12">
-      <button class="btn btn-primary no-print mt-2 pr-2" style="position:absolute; right: 0;" @click.prevent="rePrint">Re-print result</button>
-      <div class="col-md-4 m-auto pt-2 mb-4 no-print">
-         <form>
-            <div class="text center">
-              <select name="" id="" class="form-control" v-model="selectedStudent">
-                <option value="">Select student</option>
-                <option :value="student.id" v-for="student in students">{{ student.fullname }}</option>
-              </select>
-            </div>
-         </form>
-      </div>
-      <div class="col-md-8 pt-4 mx-auto no-print" v-if="is_reprint">
-                <div class="row">
-                    <div class="col-md-5">
-                        <select class="form-control" v-model="term" id="">
-                            <option value="">Select term</option>
-                            <option value="first_term">First term</option>
-                            <option value="second_term">Second term</option>
-                            <option value="third_term">Third term</option>
-                        </select>
-                    </div>
-                    <div class="col-md-5">
-                        <input type="text" v-model="session" name="" class="form-control" placeholder="Session" id="">
-                    </div>
-                    <div class="col-md-2">
-                        <button class="btn btn-primary" @click="getResult">Check</button>
-                    </div>
-                </div>
-            </div>
+      
+      
       <div class="text-center py-4">
             <img src="/images/PHS.png"  alt="purplins">
       </div>
@@ -311,22 +284,11 @@
 
 <script>
     export default{
-        props: ['section','students', 'student_id'],
+        props: ['student', 'class_average', 'total_marks_obtainable', 'total_marks_obtained', 'settings', 'overall_percentage', 'exams', 'student_average'],
 
         data(){
             return{
-                selectedStudent:"",
-                student: [],
-                class_average:0,
-                total_marks_obtainable:0,
-                total_marks_obtained:0,
-                overall_percentage:0,
-                settings:null,
-                exams:[],
-                class_average: 0,
-                student_average: 0,
-                result_id:1,
-                is_reprint: false,
+                
                term:'',
                session:''
             }
@@ -336,21 +298,7 @@
             rePrint(){
                   this.is_reprint = !this.is_reprint
             },
-            getResult(){
-                axios.get('/get-result', {params:{
-                    student_id: this.selectedStudent,
-                    section: this.section,
-                    term: this.term, 
-                    session: this.session, 
-                    is_reprint: this.is_reprint
-                }}).then((response)=>{
-                    this.student = response.data.student
-                    this.settings = response.data.settings
-                    this.exams = response.data.exams
-                    this.student_average = response.data.student_average
-                    this.class_average = response.data.class_average
-                })
-            },
+           
              getAge(birthDate) {
                 const birth = new Date(birthDate);
                 const today = new Date();
@@ -444,18 +392,6 @@
             }
 
         },
-        watch:{
-            selectedStudent(newVal, oldVal){
-                this.getResult()
-            },
-            student_id: {
-                handler(newVal) {
-                    this.selectedStudent = newVal
-                    this.getResult()
-                },
-                //deep: true,
-                immediate: true
-            }
-        }
+       
     }
 </script>

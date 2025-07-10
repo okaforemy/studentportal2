@@ -155,6 +155,7 @@ Route::middleware(['auth'])->group(function () {
    Route::get('/fees', [FeeController::class, 'fees']);
    Route::get('/student-fees', [FeeController::class, 'getStudentFees']);
    Route::get('/fee-analytics', [StudentFeesController::class, 'studentFeesAnalytics']);
+   //Route::get('/fee-search', [FeeController::class, 'feeSearch']);
 });
 
 Route::middleware(['guest'])->group(function(){
@@ -172,5 +173,18 @@ Route::middleware(['auth:cbt', 'is_logged_in'])->group(function () {
     Route::post('/answer-question', [CBTController::class, 'answerQuestion']);
     Route::get('/log-out', [CBTController::class, 'logOutStudent']);
 });
+
+//parents
+Route::middleware(['auth:parents'])->prefix('parents')->group(function(){
+    Route::get('/home', [ParentsController::class, 'home'])->name('parents-home');
+    Route::get('/{student}', [ParentsController::class, 'getSingleChild']);
+    Route::post('/checkresult', [ParentsController::class, 'checkResult']);
+});
+
+Route::get('/parent/login', [ParentsController::class, 'parentLogin']);
+Route::post('/parent/login', [ParentsController::class, 'authenticate'])->name('parents-login');
+ Route::get('/checkresult', [ParentsController::class, 'checkResult']);
+ Route::get('/parent/fees', [ParentsController::class, 'getFees']);
+ Route::get('/parent/transactions', [ParentsController::class, 'getTransactions']);
 
 Route::get('/cbt-result', [CBTController::class, 'result'])->name('cbt-result');

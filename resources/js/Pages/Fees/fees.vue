@@ -143,7 +143,7 @@
         </div>
 
         <div>
-            <Fee_structure :data="feeStructures" @refresh="refershData" v-show="active_btn == 'fee_structure'"/>
+            <Fee_structure :data="fee_structures" @isOptinal="isOptinal" @classChanges="classChanged" :classes="classes" @search="searchFeeStructure" @refresh="refershData" v-show="active_btn == 'fee_structure'"/>
             <student_fees  v-show="active_btn == 'student_fees'"/>
             <feeAnalytics v-show="active_btn == 'analytics'" @data="setData"/>
         </div>
@@ -157,11 +157,12 @@
 
     export default{
         components: {Fee_structure, Link, student_fees, feeAnalytics},
-        props:['feeStructures'],
+        props:['feeStructures', 'classes'],
         data(){
             return{
                 active_btn: 'fee_structure',
-                data: {}
+                data: {},
+                fee_structures: this.feeStructures
             }
         },
         methods:{
@@ -178,7 +179,33 @@
             },
             formatAmount(amount){
                 return new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
+            },
+            classChanged(grade){
+                axios.get('/fees', {params: {grade:grade}}).then((response)=>{
+                    this.fee_structures = response.data
+                })
+            },
+            searchFeeStructure(search){
+                axios.get('/fees', {params: {search:search}}).then((response)=>{
+                    this.fee_structures = response.data
+                })
+                // this.$inertia.get('/fee-search', {search: search}, {onSuccess:page=>{
+                //     console.log(page)
+                // }})
+            },
+            isOptinal(option){
+                axios.get('/fees', {params: {option:option}}).then((response)=>{
+                    this.fee_structures = response.data
+                })
             }
-        }
+        },
+        watch: {
+            feeStructures: {
+                handler(newVal) {
+                this.fee_structures = newVal; // force update internal data
+                },
+                deep: true,
+            },
+        },
     }
 </script>

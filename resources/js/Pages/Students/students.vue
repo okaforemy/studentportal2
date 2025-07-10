@@ -5,6 +5,13 @@
     .table-responsive{
       overflow: visible;
     }
+    td {
+    vertical-align: middle;
+    text-align: center;     /* optional: center text horizontally */
+    padding: 12px 8px;
+    height: 70px;           /* only needed if you want consistent height */
+    line-height: 1.4;
+  }
 </style>
 <template>
     <div class="pt-4 pb-4 px-3">
@@ -44,7 +51,16 @@
                   <tbody>
                     <tr v-for="(student,index) in allStudents" :key="index">
                       <td>{{index+1}}</td>
-                      <td>{{student.fullname}}</td>
+                     <td style="height: 70px; padding: 10px;">
+                        <div style="display: flex; align-items: center;">
+                          <div v-if="student.picture" 
+                              style="height: 50px; width: 50px; overflow: hidden; border-radius: 50%; margin-right: 10px; flex-shrink: 0;">
+                            <img :src="student.picture.path" style="width: 100%; height: 100%; object-fit: cover;" alt="">
+                          </div>
+                          <span>{{ student.fullname }}</span>
+                        </div>
+                      </td>
+
                       <!-- <td>{{student.othernames}}</td> -->
                       <td>{{student.dob | date}}</td>
                       <td>{{student.sex}}</td>
@@ -148,7 +164,7 @@ export default {
        
        fetchData(query) {
         //if (query) { // Ensure query is checked correctly
-            axios.get('/filter-students', { params: { search: query } })
+            axios.get('/students', { params: { search: query } })
                 .then((response) => {
                     this.allStudents = response.data.data
                     this.links = response.data.links

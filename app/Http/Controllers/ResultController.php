@@ -239,11 +239,14 @@ class ResultController extends Controller
     }
 
     public function getResult(Request $request){
+        if(!$request->student_id){
+            return;
+        }
         $settings = $this->getSettings();
         if(!$settings){
             return redirect()->back();
         }
-       // dd($request->all());
+        
         $term = $request->is_reprint && $request->is_reprint !=='false'? $request->term: $settings->term;
         $session = $request->is_reprint && $request->is_reprint !=='false'? $request->session: $settings->session;
 

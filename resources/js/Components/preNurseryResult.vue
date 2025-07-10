@@ -11,35 +11,6 @@
 </style>
 <template>
     <div class="col-md-12" style="font-size: 0.9rem;">
-        <button class="btn btn-primary no-print mt-2 pr-2" style="position:absolute; right: 0;" @click.prevent="rePrint">Re-print result</button>
-        <div class="mx-auto no-print">
-            <div class="col-md-4 pt-4 mx-auto">
-                <label for="">Students:</label>
-                <select name="" id="" v-model="student_id" @change="getResult" class="form-control"
-                    v-if="students && students.length > 0">
-                    <option v-for="student in students" :value="student.id">{{ student.fullname }}</option>
-                </select>
-            </div>
-            <div class="col-md-8 pt-4 mx-auto no-print" v-if="is_reprint">
-                <div class="row">
-                    <div class="col-md-5">
-                        <select class="form-control" v-model="term" id="">
-                            <option value="">Select term</option>
-                            <option value="first_term">First term</option>
-                            <option value="second_term">Second term</option>
-                            <option value="third_term">Third term</option>
-                        </select>
-                    </div>
-                    <div class="col-md-5">
-                        <input type="text" v-model="session" name="" class="form-control" placeholder="Session" id="">
-                    </div>
-                    <div class="col-md-2">
-                        <button class="btn btn-primary" @click="getResult">Check</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
 
         <div class="col-md-12">
 
@@ -100,26 +71,26 @@
                             <div class="pre_nursery_remarks report-table-hide-p " style="">
                                 <table class="table table-bordered table-sm report-table-hide-p reducedTable"
                                     style="font-size: 12px;">
-                                    <tbody v-if="student && student.behaviour">
+                                    <tbody v-if="result.student && result.student.behaviour">
                                         <tr>
                                             <th>BEHAVIOUR AND ATTITUDE TO LEARNING</th>
-                                            <td id="behaviour">{{student.behaviour.behaviour}}</td>
+                                            <td id="behaviour">{{result.student.behaviour.behaviour}}</td>
                                         </tr>
                                         <tr>
                                             <th>HOMEWORK</th>
-                                            <td id="homework">{{ student.behaviour.homework }}</td>
+                                            <td id="homework">{{ result.student.behaviour.homework }}</td>
                                         </tr>
-                                        <tr v-if="student && student.remarks && student.remarks.length > 0">
+                                        <tr v-if="result.student && result.student.remarks && result.student.remarks.length > 0">
                                             <th>CLASS TEARCHER'S REMARK</th>
-                                            <td class="remarks_com">{{ student.remarks[0].CT_remarks }}</td>
+                                            <td class="remarks_com">{{ result.student.remarks[0].CT_remarks }}</td>
                                         </tr>
                                         <tr>
                                             <th>CLASS TEACHER'S SIGNATURE</th>
                                             <td></td>
                                         </tr>
-                                        <tr v-if="student && student.remarks && student.remarks.length > 0">
+                                        <tr v-if="result.student && result.student.remarks && result.student.remarks.length > 0">
                                             <th>HEAD TEACHER'S REMARK</th>
-                                            <td class="htremarks"> {{ student.remarks[0].HT_remarks }}</td>
+                                            <td class="htremarks"> {{ result.student.remarks[0].HT_remarks }}</td>
                                         </tr>
                                         <tr>
                                             <th>HEAD TEACHER'S SIGNATURE</th>
@@ -139,16 +110,16 @@
                                         <th>At the end of the term</th>
                                     </tr>
                                 </thead>
-                                <tbody class="physical_dev_tbody" v-if="student && student.physicaldevelopment">
+                                <tbody class="physical_dev_tbody" v-if="result.student && result.student.physicaldevelopment">
                                     <tr>
                                         <th>Current Height</th>
-                                        <td class="height_beg">{{ student.physicaldevelopment.initial_height }} cm</td>
-                                        <td class="height_end">{{student.physicaldevelopment.current_height}} cm</td>
+                                        <td class="height_beg">{{ result.student.physicaldevelopment.initial_height }} cm</td>
+                                        <td class="height_end">{{result.student.physicaldevelopment.current_height}} cm</td>
                                     </tr>
                                     <tr>
                                         <th>Current Weight</th>
-                                        <td class="weight_beg">{{ student.physicaldevelopment.initial_weight }} kg</td>
-                                        <td class="weight_end">{{student.physicaldevelopment.current_weight}} kg</td>
+                                        <td class="weight_beg">{{ result.student.physicaldevelopment.initial_weight }} kg</td>
+                                        <td class="weight_end">{{result.student.physicaldevelopment.current_weight}} kg</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -259,24 +230,7 @@
 
             </div>
             <div>
-                <!-- <div class="row">
-                    <div class="col-md-12">
-                        <div class="remarks report-table-hide" style="display: none;">
-                            <div class="row">
-                                <div class="col-md-6 col-sm-6 col-lg-6">
-                                    <p>Head Teacher's Remark:</p>
-                                    <p class="htremarks" style="text-decoration: none"></p>
-                                    <p>Head Teacher's Signature:</p>
-                                </div>
-                                <div class="col-md-6 col-sm-6 col-lg-6">
-                                    <p>Class Teacher's Remark:</p>
-                                    <p class="remarks_com" style="text-decoration: none"></p>
-                                    <p>Class Teacher's Signature:</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div> -->
+                
                 <div class="pre_nursery_table col-md-12 stop-break">
 
                     <div class="col-md-12 row  load-nursery-report stop-break" style="" v-if="prenurseryexam">
@@ -310,38 +264,21 @@
 </template>
 <script>
 export default {
-    props: ['section', 'students', 'studentid'],
+    props: ['section', 'student', 'result', 'prenurseryexam'],
     data() {
         return {
-            result: [],
-            student_id: "",
-            student: [],
-            prenurseryexam: [],
+            student_id: this.student?.id,
             class_avg: 0,
-            picture: [],
-            settings:[],
-            is_reprint: false,
+            picture: this.student?.picture?.path,
+            settings:this.student.settings,
             term:'',
             session:''
 
         }
     },
     methods: {
-        rePrint(){
-            this.is_reprint = !this.is_reprint
-        },
-        getResult() {
-            axios.get('/get-result', { params: { student_id: this.student_id, 
-                section: this.section, term: this.term, session: this.session, is_reprint: this.is_reprint } }).then((response) => {
-                this.result = response.data
-                this.prenurseryexam = response.data.prenurseryexam
-                this.student = response.data.student
-                this.picture = response.data.picture
-                //this.calculatePercentage();
-                this.settings = response.data.settings
-                this.class_avg = ((this.result.class_avg / 20) * 100).toFixed(2)
-            })
-        },
+       
+      
         formatDate(dateString) {
                 const date = new Date(dateString);
                 const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -375,10 +312,11 @@ export default {
         }
     },
     watch:{
-            studentid: {
+            student: {
                 handler(newVal) {
-                    this.student_id = newVal
-                    this.getResult()
+                    // this.student_id = newVal
+                    // this.getResult()
+                    this.class_avg = ((this.result.class_avg / 20) * 100).toFixed(2)
                 },
                 //deep: true,
                 immediate: true

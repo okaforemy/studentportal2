@@ -310,9 +310,9 @@
                                                             <span class="fw-semibold text-dark">Amount Paid:</span>
                                                             <span class="fw-bold text-success">{{totalReceiptPaymemt()}}</span>
                                                         </div>
-                                                        <div
+                                                        <div v-if="fee_sumary && fee_sumary.credit > 0"
                                                             class="d-flex justify-content-between align-items-center fs-5 border-top pt-2 mb-2">
-                                                            <span class="fw-semibold text-dark" v-if="fee_sumary && fee_sumary.credit > 0">Credit:</span>
+                                                            <span class="fw-semibold text-dark">Credit:</span>
                                                             <span class="fw-bold text-success">{{(fee_sumary && fee_sumary.credit)?formatAmount(fee_sumary.credit): 0}}</span>
                                                         </div>
                                                         <div

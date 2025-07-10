@@ -120,7 +120,7 @@ export default {
        
        fetchData(query) {
         //if (query) { // Ensure query is checked correctly
-            axios.get('/search-subjects', { params: { search: query } })
+            axios.get('/subjects', { params: { search: query } })
                 .then((response) => {
                     this.allSubjects = response.data.data
                     this.links = response.data.links

@@ -330,6 +330,7 @@ export default {
         assign(index, id) {
             this.current_parent = id
             this.index = index
+            this.tags = []
             $('#assign').modal('show');
             this.reassign = false;
             this.$nextTick(function () {
@@ -372,7 +373,9 @@ export default {
                 this.search = ""
                 this.isprocessing = false;
                 $('#assign').modal('hide');
-                Inertia.reload({ only: ['parents'] })
+                // Inertia.reload({ only: ['parents'] })
+                // this.allParents = this.parents
+                window.location.href = window.location.href
             })
         },
         closeModal() {
@@ -418,21 +421,21 @@ export default {
     },
 
     watch: {
-        // search: _.debounce(function () {
-        //     if (this.search != "") {
-        //         axios.get('/search-parents', { params: { search: this.search } }).then((response) => {
-        //             this.students = response.data
-        //             if (response.data.length > 0) {
-        //                 this.isfound = true
-        //             } else {
-        //                 this.isfound = false
-        //             }
-        //         })
-        //     } else if (this.search == "") {
-        //         this.students.splice(0, (this.students.length))
-        //         this.isfound = true
-        //     }
-        // }, 400),
+        search: _.debounce(function () {
+            if (this.search != "") {
+                axios.get('/search-students', { params: { search: this.search } }).then((response) => {
+                    this.students = response.data
+                    if (response.data.length > 0) {
+                        this.isfound = true
+                    } else {
+                        this.isfound = false
+                    }
+                })
+            } else if (this.search == "") {
+                this.students.splice(0, (this.students.length))
+                this.isfound = true
+            }
+        }, 400),
 
         temp: function () {
             // this.parents.data[this.index] = this.temp

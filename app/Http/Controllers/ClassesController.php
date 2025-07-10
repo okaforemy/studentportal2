@@ -39,10 +39,28 @@ class ClassesController extends Controller
     /**
      * Get all classes
      */
-    public function Classes(){
-        $classes = Classes::with(['arms'=>function($query){
+    public function Classes(Request $request){
+        $classes = Classes::query();
+        $classes = $classes->with(['arms'=>function($query){
             $query->withCount('subjects');
-        }])->withCount(['subjects', 'arms'])->paginate(20);
+        }])->withCount(['subjects', 'arms']);
+
+        if ($request->search) {
+            $search = $request->search;
+            $classes->where(function ($query) use ($search) {
+                $query->where('class_name', 'LIKE', "%$search%")
+                    ->orWhere('section', 'LIKE', "%$search%")
+                    ->orWhereHas('arms', fn($q) => $q->where('arm_name', 'LIKE', "%$search%"));
+            });
+        }
+
+        $classes = $classes->paginate(20)->withQueryString();
+        if($request->expectsJson()){
+            return response()->json($classes);
+        }
+        // $classes = Classes::with(['arms'=>function($query){
+        //     $query->withCount('subjects');
+        // }])->withCount(['subjects', 'arms'])->paginate(5);
         return inertia('Classes/classes',compact('classes'));
     }
 
@@ -126,11 +144,25 @@ class ClassesController extends Controller
      * Get the class student's page
      */
     public function getStudentsClass(Request $request){
+        $students = Student::query();
+        $students = $students->with(['studentGrade', 'picture']);
         if($request->arm){
-            $students = Student::with('studentGrade')->where('grade',$request->class)->where('arm',$request->arm)->paginate(25)->withQueryString();
+            $students = $students->where('grade',$request->class)->where('arm',$request->arm);
         }else{
-            $students = Student::with('studentGrade')->where('grade',$request->class)->paginate(25)->withQueryString();
+            $students = $students->where('grade',$request->class);
         }
+
+        if($request->search){
+            $students->where(function($query)use($request){
+                $query->where('surname','LIKE', '%'.$request->search.'%')
+                    ->orWhere('othernames','LIKE', '%'.$request->search.'%')
+                    ->orWhere('fullname','LIKE', '%'.$request->search.'%')
+                    ->orWhere('dob','LIKE', '%'.$request->search.'%')
+                    ->orWhere('sex', $request->search)
+                    ->orWhere('student_id','LIKE', '%'.$request->search.'%');
+            });
+        }
+        $students = $students->paginate(20)->withQueryString();
         $page= 0;
       
         if(request()->page > 1){
@@ -139,6 +171,9 @@ class ClassesController extends Controller
         $grade=$request->class;
         $arm = $request->arm? $request->arm: "";
         $section = $request->section;
+        if($request->expectsJson()){
+            return response()->json($students);
+        }
         return inertia('Classes/students',compact('students','grade','page','arm','section'));
     }
 

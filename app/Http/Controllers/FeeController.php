@@ -8,6 +8,7 @@ use App\Models\Section;
 use App\Models\FeeConfiguration;
 use App\Models\Student;
 use App\Models\Setting;
+use Inertia\Inertia;
 
 class FeeController extends Controller
 {
@@ -81,18 +82,29 @@ class FeeController extends Controller
         ]);
 
         $grades = $request->grades;
-        foreach($grades as $grade){
+        if($grades){
+            foreach($grades as $grade){
              $fee = $request->id? FeeConfiguration::find($request->id): new FeeConfiguration();
-            $fee->description = $request->description;
-            $fee->amount = $request->amount;
-            $fee->section = $request->section;
-            $fee->class = $grade['class_name'];
-            $fee->class_id = $grade['id'];
-            $fee->is_optional = $request->is_optional;
-            $fee->arm = $grade['arm']? $grade['arm']: null;
-            $fee->save();
+                $fee->description = $request->description;
+                $fee->amount = $request->amount;
+                $fee->section = $request->section;
+                $fee->class = $grade['class_name'];
+                $fee->class_id = $grade['id'];
+                $fee->is_optional = $request->is_optional;
+                $fee->arm = $grade['arm']? $grade['arm']: null;
+                $fee->save();
+            }
+        }else{
+             $fee = $request->id? FeeConfiguration::find($request->id): new FeeConfiguration();
+                $fee->description = $request->description;
+                $fee->amount = $request->amount;
+                $fee->section = $request->section;
+                $fee->class = $request->class_name;
+                $fee->class_id = $request->class_id;
+                $fee->is_optional = $request->is_optional;
+                $fee->arm = $request->arm;
+                $fee->save();
         }
-       
 
         return redirect()->back();
     }
@@ -106,10 +118,70 @@ class FeeController extends Controller
     }
 
     //new fees 
-    public function fees(){
-        $feeStructures = FeeConfiguration::orderBy('class', 'ASC')->paginate(20);
-        return inertia('Fees/fees', compact('feeStructures'));
+    public function fees(Request $request){
+        $feeStructures = FeeConfiguration::query();
+        if($request->search){
+            $search = $request->search;
+            $feeStructures->where(function($query)use($search){
+                $query->where('class', 'LIKE', '%'.$search.'%')
+                    ->orWhere('arm', 'LIKE', '%'.$search.'%')
+                    ->orWhere('description', 'LIKE', '%'.$search.'%')
+                    ->orWhere('amount', 'LIKE', '%'.$search.'%');
+            });
+        }
+
+        if($request->grade){
+            $feeStructures->where('class', $request->grade);
+        }
+
+        if(!is_null($request->option)){
+            $feeStructures->where('is_optional', $request->option);
+        }
+        $feeStructures = $feeStructures->orderBy('class', 'ASC')->paginate(20)->withQueryString();
+        $classes = Classes::with('Arms')->get();
+        $classes = $classes->flatMap(function ($class) {
+        if ($class->Arms->isNotEmpty()) {
+            return $class->Arms->map(function ($arm) use ($class) {
+                return [
+                    'id' => $class->id,
+                    'section' => $class->section,
+                    'class_name' => $class->class_name . ' ' . $arm->arm_name,
+                    'arm' => $arm->arm_name,
+                ];
+            });
+        }
+
+        return [[
+            'id' => $class->id,
+            'section' => $class->section,
+            'class_name' => $class->class_name,
+            'arm' => null,
+        ]];
+    });
+
+      if($request->expectsJson()){
+            return response()->json($feeStructures);
+        }
+        return inertia('Fees/fees', compact('feeStructures', 'classes'));
     }
+
+    // public function feeSearch(Request $request){
+    //      $feeStructures = FeeConfiguration::query();
+    //     if($request->search){
+    //         $search = $request->search;
+    //         $feeStructures->where(function($query)use($search){
+    //             $query->where('class', 'LIKE', '%'.$search.'%')
+    //                 ->orWhere('arm', 'LIKE', '%'.$search.'%')
+    //                 ->orWhere('description', 'LIKE', '%'.$search.'%')
+    //                 ->orWhere('amount', 'LIKE', '%'.$search.'%');
+    //         });
+    //     }
+    //     $feeStructures = $feeStructures->orderBy('class', 'ASC')->paginate(20);
+    //     if($request->expectsJson()){
+    //         return response()->json($feeStructures);
+    //     }
+    //     return Inertia::render('Fees/fees', $feeStructures);
+    // }
 
     public function getStudentFees(Request $request){
         $settings = Setting::first();
