@@ -1,313 +1,389 @@
-
-<style scoped>
-    .badge{
-        font-size: 18px;
-        cursor: pointer;
-    }
-
-    .form-control:disabled, .form-control[readonly] {
-        background-color: #fff;
-        cursor: default;
-    }
-</style>
 <template>
-    <div>
-       <div v-if="total == 0">
-            <div class="col-md-8 pt-4 pl-2">
-                <h4>Welcome to purplins' School CBT Exam/Text, <span class="font-weight-bold">{{ fullname }}</span>, Please click the button below to start the test.</h4>
+    <main class="exam-page container-fluid py-3">
+        <section class="exam-header card">
+            <div class="card-body d-flex flex-wrap justify-content-between align-items-center">
+                <div>
+                    <p class="text-muted mb-1">Purplins School CBT</p>
+                    <h1 class="h4 mb-1">{{ fullname }}</h1>
+                    <p class="mb-0">{{ answeredCount }} of {{ questionsState.length }} questions answered</p>
+                </div>
+                <div class="exam-actions d-flex align-items-center">
+                    <div class="timer mr-3" :class="{ 'timer-warning': secondsLeft <= 300 }" role="timer" aria-live="off">
+                        {{ formattedTime }}
+                        <span class="sr-only">remaining</span>
+                    </div>
+                    <button class="btn btn-outline-danger" :disabled="submitting" @click="submitExam(false)">
+                        Submit exam
+                    </button>
+                </div>
             </div>
-            <!-- <div class="text-center pt-4">
-                <button class="btn  btn-success" @click.prevent="startExam" ref="start_btn">Start Exam/Test</button>
-            </div> -->
-       </div>
-       <div class="float-right">
-        <button class="mb-2 btn btn-success" @click="logOut">Log out</button>
-        <h2 class="font-weight-bold"><span id="timer" ref="timer"></span></h2>
-       </div>
-       <div class="my-4">
-        <h4 class="text-center my-3 font-weight-bold" v-if="total !=0">Welcome to Purplins School CBT</h4>
-        <h5 class="ml-4"><strong>Fullname:</strong> {{ fullname }}</h5>
-       </div>
-       <div class="my-2 ml-4">
-        <span class="badge mx-1" :class="{'badge-danger': ques.your_answer==null, 'badge-success': ques.your_answer != null}" 
-            v-for="(ques, index) in questions" :key="index" @click="selectQuestion(index)">
-            {{ index +1 }}</span>
-       </div>
-        <div class="pt-3">
-            <div class="col-md-10 px-4">
-                <div class="mt-2">
-                            
-                            <div class="card">
-                                <div class="card-body">
-                                    <span>{{ index+1 }}.</span><h5 v-html="question.question"></h5>
-                                </div>
-                            </div>
+        </section>
+
+        <section class="exam-workspace row mt-3">
+            <aside class="col-lg-3 mb-3">
+                <div class="card h-100">
+                    <div class="card-header font-weight-bold">Question navigator</div>
+                    <div class="card-body">
+                        <div class="question-grid" aria-label="Question navigator">
+                            <button
+                                v-for="(item, itemIndex) in questionsState"
+                                :key="item.id"
+                                type="button"
+                                class="question-number"
+                                :class="{
+                                    'is-current': itemIndex === index,
+                                    'is-answered': item.your_answer,
+                                }"
+                                :aria-label="'Question ' + (itemIndex + 1) + (item.your_answer ? ', answered' : ', unanswered')"
+                                :aria-current="itemIndex === index ? 'step' : null"
+                                @click="selectQuestion(itemIndex)"
+                            >
+                                {{ itemIndex + 1 }}
+                            </button>
                         </div>
-                        <div class="mt-3 ml-2 form-group row">
-                            <label for="">A.</label>
-                            <div class="col-md-8">
-                                <input type="text" readonly v-model="question.option_a" @click="answerQuestion" name="option_a" required id="" class="form-control">
-                            </div>
-                            <div class="col-md-2">
-                                <input type="radio" name="correct_option" disabled v-model="question.your_answer" value="option_a" id="" class="form-check-input ml-4 mt-3">
-                            </div>
+                        <div class="navigator-legend mt-3">
+                            <span><i class="legend-dot answered-dot"></i> Answered</span>
+                            <span><i class="legend-dot unanswered-dot"></i> Unanswered</span>
                         </div>
-                        <div class="mt-3 ml-2 form-group row">
-                            <label for="">B.</label>
-                            <div class="col-md-8">
-                                <input type="text" readonly v-model="question.option_b" @click="answerQuestion" name="option_b" class="form-control">
-                            </div>
-                            <div class="col-md-2">
-                                <input type="radio" disabled name="correct_option"  value="option_b" v-model="question.your_answer" id="" class="form-check-input ml-4 mt-3">
-                            </div>
-                        </div>
-                        <div class="mt-3 ml-2 form-group row">
-                            <label for="">C.</label>
-                            <div class="col-md-8">
-                                <input type="text" readonly v-model="question.option_c" @click="answerQuestion"  name="option_c" class="form-control">
-                            </div>
-                            <div class="col-md-2">
-                                <input type="radio" disabled name="correct_option" value="option_c" v-model="question.your_answer" id="" class="form-check-input ml-4 mt-3">
-                            </div>
-                        </div>
-                        <div class="mt-3 ml-2 form-group row">
-                            <label for="">D.</label>
-                            <div class="col-md-8">
-                                <input type="text" readonly v-model="question.option_d" @click="answerQuestion" name="option_d" class="form-control">
-                            </div>
-                            <div class="col-md-2">
-                                <input type="radio" disabled  name="correct_option" value="option_d" v-model="question.your_answer" id="" class="form-check-input ml-4 mt-3">
-                            </div>
-                        </div>
-                        <div class="mt-3 ml-2 form-group row" v-if="question.option_e">
-                            <label for="">E.</label>
-                            <div class="col-md-8">
-                                <input type="text" readonly v-model="question.option_e" name="option_e" @click="answerQuestion" class="form-control">
-                            </div>
-                            <div class="col-md-2">
-                                <input type="radio" disabled name="correct_option" value="option_e" v-model="question.your_answer" id="" class="form-check-input ml-4 mt-3">
-                            </div>
-                        </div>
-                        <div class="mt-3 text-center pb-4">
-                            <button class="btn btn-secondary mr-3" @click.prevent="previous" v-show="index > 0">Previous</button>
-                            <button class="btn btn-success" @click.prevent="next" v-if="is_next">Next</button>
-                            <button class="btn btn-success" @click="submitQuestion" v-if="isAnsweredAll">Submit</button>
-                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <div class="col-lg-9">
+                <section v-if="question" class="card question-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span class="font-weight-bold">Question {{ index + 1 }} <span class="text-muted">/ {{ questionsState.length }}</span></span>
+                        <span v-if="saving" class="text-muted" role="status">Saving answer…</span>
+                        <span v-else-if="saveError" class="text-danger" role="alert">{{ saveError }}</span>
+                        <span v-else-if="question.your_answer" class="text-success" role="status">Answer saved</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="question-content mb-4" v-html="question.question"></div>
+                        <fieldset class="answer-options" :disabled="saving || submitting || secondsLeft <= 0">
+                            <legend class="sr-only">Choose one answer</legend>
+                            <label
+                                v-for="option in options"
+                                :key="option.value"
+                                class="answer-option"
+                                :class="{ 'is-selected': question.your_answer === option.value }"
+                                :for="'answer-' + question.id + '-' + option.value"
+                            >
+                                <input
+                                    :id="'answer-' + question.id + '-' + option.value"
+                                    :checked="question.your_answer === option.value"
+                                    type="radio"
+                                    :name="'answer-' + question.id"
+                                    :value="option.value"
+                                    @change="saveAnswer(option.value)"
+                                >
+                                <span class="option-letter">{{ option.label }}</span>
+                                <span class="option-text">{{ question[option.value] }}</span>
+                            </label>
+                        </fieldset>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between">
+                        <button class="btn btn-outline-secondary" :disabled="index === 0 || saving" @click="selectQuestion(index - 1)">
+                            Previous
+                        </button>
+                        <button
+                            v-if="index < questionsState.length - 1"
+                            class="btn btn-primary"
+                            :disabled="saving"
+                            @click="selectQuestion(index + 1)"
+                        >
+                            Next
+                        </button>
+                        <button
+                            v-else
+                            class="btn btn-success"
+                            :disabled="saving || submitting"
+                            @click="submitExam(false)"
+                        >
+                            Finish exam
+                        </button>
+                    </div>
+                </section>
+                <div v-else class="alert alert-warning">No questions were found for this exam.</div>
+                <div v-if="submitError" class="alert alert-danger mt-3" role="alert">{{ submitError }}</div>
             </div>
-        </div>
-    </div>
+        </section>
+
+        <p class="keyboard-hint text-muted text-center mt-3 mb-0">
+            Keyboard shortcuts: 1–5 to choose an answer, ←/→ to move between questions.
+        </p>
+    </main>
 </template>
 
 <script>
 export default {
-    props: ['fullname','student_id','questions','duration'],
-    data(){
-        return{
-          //  questions: [],
-            question:[],
-            index:0,
-            total:0,
-            isAnsweredAll: false,
-            current_duration: null,
-        }
-    },
-    methods:{
-        startExam(){
-            this.$refs['start_btn'].textContent = "Please wait..."
-            this.getQuestions();
-        },
-
-        getQuestions(){
-            axios.get('/prepare-exam',{params:{student_id: this.student_id}}).then((response)=>{
-                if(response.data.length == 0){
-                    toastr.error('Question not found for this class!', 'Error')
-                }
-                this.questions = response.data;
-                this.total = this.questions.length;
-                this.question = this.questions[0];
-                this.$refs['start_btn'].textContent = "Start Exam/Test"
-            })
-        },
-
-        next(){
-            if(this.index <= this.total){
-                this.index++
-                this.question = this.questions[this.index];
-                this.unanswered()
-            }
-        },
-
-        previous(){
-            this.index--
-            this.question = this.questions[this.index];
-            this.unanswered()
-        },
-
-        saveSelectedAnswer(answer){
-            let question_id = this.question.id
-            let time_left = this.$refs['timer'].textContent
-            const [hours, minutes] = time_left.split(':');
-            let time = `${parseInt(hours, 10)}.${minutes}`;
-            
-            axios.post('/answer-question',{question_id: question_id, your_answer: answer, duration: time}).then((response)=>{
-               let found = this.questions.findIndex(val=>{
-                return val.id == this.question.id
-               });
-               this.questions[found].your_answer = answer
-               this.unanswered()
-            })
-        },
-
-        answerQuestion(event){
-            let clicked_option = event.target.name;
-            let answer = clicked_option?clicked_option: $('input[name="correct_option"]:checked').val()
-            this.saveSelectedAnswer(answer)
-           
-        },
-        unanswered(){
-            let unanswered = this.questions.filter(val=>{
-                return val.your_answer==null;
-            })
-    
-            if(unanswered.length > 0 && (this.index +1) != this.total){
-               this.isAnsweredAll = false;
-            }else if(unanswered.length == 0 && (this.index +1) === this.total){
-               this.isAnsweredAll = true;
-            }else{
-                this.isAnsweredAll = false;
-            }
-        },
-        submitQuestion(){
-            window.location.href = '/cbt-result';
-        },
-        selectQuestion(index){
-            this.question = this.questions[index];
-            this.index = index;
-            this.unanswered()
-        },
-
-         formatTime(minutes, seconds) {
-             return `${String(minutes).padStart(2, '0')}:${parseInt(String(seconds).padStart(2, '0'))}`;
-        },
-
-         updateTimer(minutes, seconds) {
-            document.getElementById('timer').innerText = this.formatTime(minutes, seconds);
-        },
-
-        //  saveToLocalStorage(minutes, seconds) {
-        //     if (seconds % 10 === 0) {
-        //         const timeObject = { minutes, seconds };
-        //         localStorage.setItem('timerData', JSON.stringify(timeObject));
-        //     }
-        // },
-
-         startCountdown(durationInMinutes) {
-            let totalSeconds = durationInMinutes * 60;
-            let that = this;
-            let first_warning = Math.floor(totalSeconds * 0.3);
-            let second_warning = Math.floor(totalSeconds * 0.2);
-            let last_warning = Math.floor(totalSeconds * 0.1);
-           
-            const countdownInterval = setInterval(function() {
-                const minutes = Math.floor(totalSeconds / 60);
-                const seconds = totalSeconds % 60;
-
-                let rounded_seconds = Math.floor(totalSeconds);
-
-                that.updateTimer(minutes, seconds);
-                //that.saveToLocalStorage(minutes, seconds);
-
-                if(rounded_seconds == first_warning){
-                    let minute = first_warning / 60;
-                    let seconds = first_warning % 60;
-                    toastr.error('You have '+Math.floor(minute)+' minutes and '+Math.floor(seconds)+' seconds remaining', 'Error')
-                }
-
-                if(rounded_seconds == second_warning){
-                    let minute = second_warning / 60;
-                    let seconds = second_warning % 60;
-                    toastr.error('You have '+Math.floor(minute)+' minutes and '+Math.floor(seconds)+' seconds remaining', 'Error')
-                }
-
-                if(rounded_seconds == last_warning){
-                    let minute = last_warning / 60;
-                    let seconds = last_warning % 60;
-                    toastr.error('You have '+Math.floor(minute)+' minutes and '+Math.floor(seconds)+' seconds remaining', 'Error')
-                }
-
-                if (totalSeconds <= 0) {
-                    that.submitQuestion()
-                clearInterval(countdownInterval);
-                } else {
-                totalSeconds--;
-                }
-            }, 1000);
-        },
-
-        checkUserInput(event){
-            let pressed = event.key
-            if(pressed == 'a'){
-                this.saveSelectedAnswer('option_a')
-            }
-            if(pressed == 'b'){
-                this.saveSelectedAnswer('option_b')
-            }
-            if(pressed == 'c'){
-                this.saveSelectedAnswer('option_c')
-            }
-            if(pressed == 'd'){
-                this.saveSelectedAnswer('option_d')
-            }
-            if(this.question.option_e && pressed == 'e'){
-                this.saveSelectedAnswer('option_e')
-            }
-            if(pressed == 'n'){
-                this.next()
-            }
-            if(pressed == 'p'){
-                this.previous()
-            }
-           
-        },
-
-        logOut(){
-            window.location.href = '/log-out'
-        }
-
+    props: ['fullname', 'student_id', 'subjectId', 'questions', 'remainingSeconds'],
+    data() {
+        return {
+            questionsState: this.questions.map(question => ({ ...question })),
+            index: 0,
+            secondsLeft: Math.max(0, Number(this.remainingSeconds) || 0),
+            saving: false,
+            submitting: false,
+            submitWhenSaved: false,
+            saveError: '',
+            submitError: '',
+            timerInterval: null,
+        };
     },
     computed: {
-        is_next() {
-            return (this.index+1) < this.total;
+        question() {
+            return this.questionsState[this.index] || null;
         },
-        // is_submit() {
-        //     let unanswered = this.unanswered()
-        //     if(!unanswered){
-        //         return (this.index +1) === this.total;
-        //     }
-            
-        // }
-    },
-    created(){
-        //this.getQuestions()
-        this.question = this.questions[0];
-        this.total = this.questions.length;
-    },
-    mounted(){
-    //     let current_time = localStorage.getItem('timerData');
+        options() {
+            if (!this.question) {
+                return [];
+            }
 
-    //     let time = 0;
-    //    if(current_time != null && current_time != 0){
-    //      current_time = JSON.parse(current_time);
-    //         let mins = current_time.minutes;
-    //         let secs = current_time.seconds;
-    //         time = parseFloat(mins+"."+secs).toFixed(2);
-    //    }
-    //     this.current_duration = (time != null && time !=0.0)? time: this.duration ;
-    
-    //     this.startCountdown(this.current_duration)
-    this.startCountdown(this.duration)
+            return [
+                { label: 'A', value: 'option_a' },
+                { label: 'B', value: 'option_b' },
+                { label: 'C', value: 'option_c' },
+                { label: 'D', value: 'option_d' },
+                { label: 'E', value: 'option_e' },
+            ].filter(option => this.question[option.value]);
+        },
+        answeredCount() {
+            return this.questionsState.filter(question => question.your_answer).length;
+        },
+        formattedTime() {
+            const hours = Math.floor(this.secondsLeft / 3600);
+            const minutes = Math.floor((this.secondsLeft % 3600) / 60);
+            const seconds = this.secondsLeft % 60;
+            const parts = [minutes, seconds];
+            if (hours > 0) {
+                parts.unshift(hours);
+            }
+            return parts.map(value => String(value).padStart(2, '0')).join(':');
+        },
+    },
+    methods: {
+        async saveAnswer(answer) {
+            if (!this.question || this.saving || this.submitting) {
+                return;
+            }
 
-        window.addEventListener('keypress', this.checkUserInput)
+            const question = this.question;
+            const previousAnswer = question.your_answer;
+            question.your_answer = answer;
+            this.saving = true;
+            this.saveError = '';
+
+            try {
+                await axios.post('/answer-question', {
+                    question_id: question.id,
+                    subject_id: this.subjectId,
+                    your_answer: answer,
+                });
+            } catch (error) {
+                question.your_answer = previousAnswer;
+                this.saveError = error.response && error.response.status === 409
+                    ? 'Time expired. Submitting your exam…'
+                    : 'Could not save your answer. Please try again.';
+                if (error.response && error.response.status === 409) {
+                    this.secondsLeft = 0;
+                    this.submitWhenSaved = true;
+                }
+            } finally {
+                this.saving = false;
+                if (this.submitWhenSaved) {
+                    this.submitWhenSaved = false;
+                    this.submitExam(true);
+                }
+            }
+        },
+        selectQuestion(questionIndex) {
+            if (!this.saving && questionIndex >= 0 && questionIndex < this.questionsState.length) {
+                this.index = questionIndex;
+            }
+        },
+        submitExam(timeExpired) {
+            if (this.submitting) {
+                return;
+            }
+            if (this.saving) {
+                this.submitWhenSaved = true;
+                return;
+            }
+
+            const unanswered = this.questionsState.length - this.answeredCount;
+            if (!timeExpired && unanswered > 0 && !window.confirm(
+                `You still have ${unanswered} unanswered question${unanswered === 1 ? '' : 's'}. Submit anyway?`
+            )) {
+                return;
+            }
+
+            this.submitting = true;
+            this.submitError = '';
+            axios.post('/cbt-result', { subject_id: this.subjectId })
+                .then(() => window.location.assign('/cbt-login'))
+                .catch(() => {
+                    this.submitting = false;
+                    this.submitError = 'Could not submit the exam. Please try again.';
+                });
+        },
+        handleKeydown(event) {
+            if (event.altKey || event.ctrlKey || event.metaKey || event.target.closest('input, textarea, select')) {
+                return;
+            }
+
+            const optionIndex = Number(event.key) - 1;
+            if (optionIndex >= 0 && optionIndex < this.options.length) {
+                this.saveAnswer(this.options[optionIndex].value);
+            } else if (event.key === 'ArrowRight') {
+                this.selectQuestion(this.index + 1);
+            } else if (event.key === 'ArrowLeft') {
+                this.selectQuestion(this.index - 1);
+            }
+        },
+    },
+    mounted() {
+        this.timerInterval = window.setInterval(() => {
+            if (this.secondsLeft > 0) {
+                this.secondsLeft -= 1;
+            }
+            if (this.secondsLeft <= 0) {
+                window.clearInterval(this.timerInterval);
+                this.submitExam(true);
+            }
+        }, 1000);
+        window.addEventListener('keydown', this.handleKeydown);
+    },
+    beforeDestroy() {
+        window.clearInterval(this.timerInterval);
+        window.removeEventListener('keydown', this.handleKeydown);
+    },
+};
+</script>
+
+<style scoped>
+.exam-page {
+    max-width: 1440px;
+}
+
+.timer {
+    min-width: 110px;
+    color: #155724;
+    font-size: 1.6rem;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    text-align: center;
+}
+
+.timer-warning {
+    color: #b02a37;
+}
+
+.question-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+    gap: 0.5rem;
+}
+
+.question-number {
+    min-height: 42px;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    background: #fff;
+    color: #343a40;
+    font-weight: 700;
+}
+
+.question-number.is-answered {
+    border-color: #198754;
+    background: #198754;
+    color: #fff;
+}
+
+.question-number.is-current {
+    outline: 3px solid #0d6efd;
+    outline-offset: 2px;
+}
+
+.navigator-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+}
+
+.legend-dot {
+    display: inline-block;
+    width: 0.7rem;
+    height: 0.7rem;
+    margin-right: 0.25rem;
+    border-radius: 50%;
+}
+
+.answered-dot {
+    background: #198754;
+}
+
+.unanswered-dot {
+    border: 1px solid #adb5bd;
+    background: #fff;
+}
+
+.question-content {
+    font-size: 1.15rem;
+    line-height: 1.65;
+}
+
+.question-content img {
+    max-width: 100%;
+    height: auto;
+}
+
+.answer-options {
+    display: grid;
+    gap: 0.75rem;
+    border: 0;
+    padding: 0;
+}
+
+.answer-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+.answer-option:hover,
+.answer-option.is-selected {
+    border-color: #0d6efd;
+    background: #f2f7ff;
+}
+
+.answer-option input {
+    margin-top: 0.3rem;
+}
+
+.option-letter {
+    flex: 0 0 1.5rem;
+    font-weight: 700;
+}
+
+.keyboard-hint {
+    font-size: 0.875rem;
+}
+
+@media (max-width: 575px) {
+    .exam-actions {
+        width: 100%;
+        justify-content: space-between;
+        margin-top: 1rem;
+    }
+
+    .timer {
+        font-size: 1.35rem;
     }
 }
-</script>
+</style>

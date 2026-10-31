@@ -55,7 +55,7 @@
                     </thead>
                     <tbody>
                         <tr v-for="(student, index) in studentSubjects" :key="index">
-                            <td>{{ student && student.name? student.name.lastname +" "+ student.name.firstname:''}}</td>
+                            <td>{{ student.name }}</td>
                             <td>{{ student.mark_obtainable }}</td>
                             <td>{{ student.score }}</td>
                             <td>{{ selected_section == 'junior_secondary'? parseInt(student.score)/4 : (parseInt(student.score)/2) }}</td>

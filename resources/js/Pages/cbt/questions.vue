@@ -93,6 +93,9 @@
                             <label for="">Question</label>
                             <ckeditor :editor="editor" v-model="form.question" :config="editorConfig"></ckeditor>
                             <div v-if="errors.question" class="text-danger">{{ errors.question }}</div>
+                            <small v-if="form.isRichText" class="form-text text-muted">
+                                For each question, add an ordered list of four or five options and bold exactly one correct option.
+                            </small>
                         </div>
                        <div v-if="form.isRichText ==false">
                         <div class="mt-3 ml-2 form-group row">
@@ -107,7 +110,7 @@
                         <div class="mt-3 ml-2 form-group row">
                             <label for="">B.</label>
                             <div class="col-md-8">
-                                <input type="text" v-model="form.option_b" id="" class="form-control">
+                                <input type="text" v-model="form.option_b" required id="" class="form-control">
                             </div>
                             <div class="col-md-2">
                                 <input type="radio" name="correct_option" value="option_b" v-model="form.answer" id="" class="form-check-input ml-4 mt-3">
@@ -116,7 +119,7 @@
                         <div class="mt-3 ml-2 form-group row">
                             <label for="">C.</label>
                             <div class="col-md-8">
-                                <input type="text" v-model="form.option_c"  id="" class="form-control">
+                                <input type="text" v-model="form.option_c" required id="" class="form-control">
                             </div>
                             <div class="col-md-2">
                                 <input type="radio" name="correct_option" value="option_c" v-model="form.answer" id="" class="form-check-input ml-4 mt-3">
@@ -125,7 +128,7 @@
                         <div class="mt-3 ml-2 form-group row">
                             <label for="">D.</label>
                             <div class="col-md-8">
-                                <input type="text" v-model="form.option_d" id="" class="form-control">
+                                <input type="text" v-model="form.option_d" required id="" class="form-control">
                             </div>
                             <div class="col-md-2">
                                 <input type="radio" name="correct_option" value="option_d" v-model="form.answer" id="" class="form-check-input ml-4 mt-3">
@@ -164,8 +167,13 @@
 </template>
 
 <script>
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 import { Head } from "@inertiajs/inertia-vue";
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+//import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor';
+// import CKFinder from '@ckeditor/ckeditor5-ckfinder/src/ckfinder';
+// import Link from '@ckeditor/ckeditor5-link/src/link';
+// import CKFinderUploadAdapter from '@ckeditor/ckeditor5-adapter-ckfinder/src/uploadadapter';
+// import Image from '@ckeditor/ckeditor5-image/src/image';
 
 export default {
     props:['classes','errors','questions'],
@@ -173,10 +181,15 @@ export default {
     data(){
         return {
                 editor: ClassicEditor,
-                editorData: '',
+                editorData: 'My content',
                 editorConfig: {
-                    // The configuration of the editor.
+                   // plugins: [CKFinder,Link, CKFinderUploadAdapter, Image],
+                   ckfinder: {
+                    // Upload the images to the server using the CKFinder QuickUpload command.
+                    uploadUrl: '/upload-image?_token='+$('meta[name="csrf-token"]').attr('content')
                 },
+                },
+
                 subjects: [],
                 form: this.$inertia.form({
                    grade: '',
@@ -220,6 +233,18 @@ export default {
             alert(this.isRichText)
             return !this.isRichText;
         }
+    },
+    mounted(){
+        // ClassicEditor
+        // .create( document.querySelector( '#editor' ),{
+        //     ckfinder: {
+        //         // Upload the images to the server using the CKFinder QuickUpload command.
+        //         uploadUrl: '/upload-image?_token='+$('meta[name="csrf-token"]').attr('content')
+        //     }
+        // } )
+        // .catch( error => {
+        //     console.error( error );
+        // } );
     }
 
 }

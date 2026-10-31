@@ -1,3 +1,8 @@
+<style>
+    img {
+        width: 60%;
+    }
+</style>
 <template>
     <div>
         <div class="card">
@@ -186,7 +191,7 @@ export default {
             
             let question = this.questions[index];
             this.form.grade = question.grade;
-            this.form.subject = question.subject
+            this.form.subject = question.subject_id
             this.form.option_a = question.option_a;
             this.form.option_b = question.option_b;
             this.form.option_c = question.option_c;
@@ -216,9 +221,14 @@ export default {
             })
         },
 
-        deleteQuestion(ind){
-            axios.get('/delete-question',{params:{id:ind}}).then((response)=>{
+        deleteQuestion(id){
+            if (!window.confirm('Delete this question? This action cannot be undone.')) {
+                return;
+            }
+            axios.delete('/delete-question',{data:{id:id}}).then((response)=>{
                 this.getQuestion();
+            }).catch(() => {
+                toastr.error('Could not delete the question. Please try again.', 'Error')
             })
         }
     }

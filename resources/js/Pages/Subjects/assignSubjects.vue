@@ -25,6 +25,14 @@
     height: calc(2.15rem + 1px) !important;
     font-size: 1.1rem !important;
 }
+
+.hidden{
+  display: none;
+}
+
+.show{
+  display: block;
+}
  
 </style>
 <template>
@@ -38,8 +46,8 @@
                   <div v-if="section=='primary'">
                     <div class="same-line">
                         <label for="">Holiday Assessment</label>
-                        <input type="checkbox" name="holidayassessment" :ref="'holiday_'+index" :checked="isChecked(subj.subject, subj.holiday,index)" @click="selectSubject(subj, $event, true,index)">
-                        <input v-show="isChecked(subj.subject, subj.holiday,index)" :value="maxScoreValue(subj)" :ref="'max_score'+index" type="text" @keypress="isNumber" @keyup="maxScore(index)" name="max_score" id="" class="form-control ml-1 col-md-4 max-score" placeholder="max score">
+                        <input type="checkbox" name="holidayassessment" :ref="'holiday_'+index" :checked="isChecked(subj)" @click="selectSubject(subj, $event, true,index)">
+                        <input :value="maxScoreValue(subj)" :ref="'max_score'+index" type="text" @keypress="isNumber" @keyup="setValues($event,subj)" name="max_score" :id="'max_score'+index" class="form-control ml-1 col-md-4 max-score" placeholder="max score">
                     </div>
                         
                   </div>
@@ -82,6 +90,7 @@ export default {
            // grade:"",
             section:"",
             sectionStudentsTitle:"",
+            selectedCheckbox:[]
         }
     },
     methods: {
@@ -100,9 +109,13 @@ export default {
       return found? found.max_score:''
     },
 
-    isChecked(subject,holiday,ind){
+    isChecked(subject){
       let subjects = Object.values(this.selected_subj);
-      let index = this.selected_subj.findIndex(val => val.subject === subject && val.holiday == true)
+      let index = this.selected_subj.findIndex(val => val.id === subject.id && val.holiday == true)
+      console.log(index)
+      //let i =1;
+      //this.selectedCheckbox.push(i++)
+     
       if(index >= 0){
         return true;
       }else{
@@ -120,19 +133,25 @@ export default {
                 evt.preventDefault();
             }
         },
+    
+    setValues(event, subj){
+      let index = this.selectedsubjects.findIndex(element => element.id == subj.id)
+      this.selectedsubjects[index].max_score = event.target.value
+    },
 
     selectSubject(subj,event,holiday,ind){
       let index = this.selectedsubjects.findIndex(element => element.id == subj.id)
+      console.log(index)
+      console.log('checking')
       if(holiday===true){
         if(index >=0){
           
          if(this.$refs['holiday_'+ind][0].checked){
             this.selectedsubjects[index].holiday = true;
-
-            this.$refs['max_score'+index][0].style.display = "inline-block"
+            //this.$refs['max_score'+index][0].style.display = "inline-block"
           }else{
             delete this.selectedsubjects[index].holiday
-            this.$refs['max_score'+index][0].style.display = "none"
+           // this.$refs['max_score'+index][0].style.display = "none"
             this.selectedsubjects[index].max_score = 0
           }
         }
@@ -148,7 +167,8 @@ export default {
         }
       }
       
-    }
+    },
+  
   },
   created(){
     let params = new URL(location.href).searchParams;

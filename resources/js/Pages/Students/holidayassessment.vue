@@ -36,9 +36,9 @@
                         <template v-if="student.holiday_assessment && student.holiday_assessment.length ===0">
                             <td>{{ index+1 }}</td>
                             <td>{{ student.surname+' '+student.othernames }}</td>
-                            <td><input type="text" :data-val="student.id" :data-id="''" ref="score1" @keyup="validate($event,hollyday_subj[0],'')" @keypress="isNumber"   name="score1" class="form-control"></td>
-                            <td><input type="text" :data-val="student.id" :data-id="''" ref="score2" @keyup="validate($event,hollyday_subj[1],'')" @keypress="isNumber"    name="score2" class="form-control"></td>
-                            <td><input type="text" :data-val="student.id" :data-id="''" ref="score3" @keyup="validate($event,hollyday_subj[2],'')" @keypress="isNumber"  name="score3" class="form-control"></td>
+                            <td><input type="text" :data-val="student.id" :data-id="''" ref="score1" @keyup="validate($event,hollyday_subj[0],'')"  @keypress="isNumber"   name="score1" class="form-control"></td>
+                            <td><input type="text" :data-val="student.id" :data-id="''" ref="score2" @keyup="validate($event,hollyday_subj[1],'')"  @keypress="isNumber"    name="score2" class="form-control"></td>
+                            <td><input type="text" :data-val="student.id" :data-id="''" ref="score3" @keyup="validate($event,hollyday_subj[2],'')"  @keypress="isNumber"  name="score3" class="form-control"></td>
                             <input type="hidden" ref="student_id" name="student_id" :value="student.id">
                         </template>
                         <template v-else>
@@ -140,7 +140,7 @@ export default {
         },
         validate(event,val,oldval){
             let old_val = oldval
-                if(event.target.value > parseInt(val)){
+                if(event.target.value > parseInt(val.max_score)){
                     toastr.error('Maximum number entered!', 'Error')
                     event.target.value=old_val
                 }

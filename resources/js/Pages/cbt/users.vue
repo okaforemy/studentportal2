@@ -57,7 +57,7 @@
                                 <th>Option B</th>
                                 <th>Option C</th>
                                 <th>Option D</th>
-                                <th v-if="result.option_e">Option E</th>
+                                <th v-if="result.length && result[0].option_e">Option E</th>
                                 <th>Correct answer</th>
                                 <th>Your answer</th>
                                 <th>Score</th>
@@ -66,14 +66,14 @@
                         <tbody>
                             <tr v-for="(re, ind) in result" :key="ind" :class="{ 'text-success' :re.your_answer==re.correct_answer, 'text-danger': re.your_answer!=re.correct_answer}">
                                 <td>{{ ind+1 }}</td>
-                                <td>{{ re.question }}</td>
+                                <td v-html="re.question"></td>
                                 <td>{{ re.option_a }}</td>
                                 <td>{{ re.option_b }}</td>
                                 <td>{{ re.option_c }}</td>
                                 <td>{{ re.option_d }}</td>
-                                <td v-if="result.option_e">{{ re.option_e }}</td>
-                                <td>{{ re.correct_answer }}</td>
-                                <td>{{ re.your_answer }}</td>
+                                <td v-if="result.length && result[0].option_e">{{ re.option_e }}</td>
+                                <td>{{ re[re.correct_answer] }}</td>
+                                <td>{{ re.your_answer ? re[re.your_answer] : 'Not answered' }}</td>
                                 <td><h5>{{ re.your_answer==re.correct_answer? "2": "0" }}</h5></td>
                             </tr>
                         </tbody>
@@ -111,7 +111,7 @@ export default {
         deleteStudent(id){
             let userResponse = confirm('Do you want to proceed?');
             if(userResponse){
-                this.$inertia.get('/delete-cbt-student',{id:id})
+                this.$inertia.delete('/delete-cbt-student',{id:id})
             }
             
         },
@@ -127,7 +127,7 @@ export default {
                 this.keys = response.data.keys
             })
             $('#resultModal').modal('show')
-            this.$refs['student_name'].innerHTML = student.firstname+" "+student.lastname
+            this.$refs['student_name'].textContent = student.firstname+" "+student.lastname
         },
         setResult(){
             this.result = this.results[this.selected_subject];

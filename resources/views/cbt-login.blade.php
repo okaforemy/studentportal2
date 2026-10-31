@@ -96,6 +96,9 @@
         @if(Session::has('success'))
                 <div class="alert alert-success py-4">{{Session::get('success')}}</div>
         @endif
+        @if(Session::has('error'))
+                <div class="alert alert-danger py-3" role="alert">{{Session::get('error')}}</div>
+        @endif
 
         <div class="card">
             @if ($errors->any())

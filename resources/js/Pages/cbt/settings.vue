@@ -1,79 +1,82 @@
 <template>
-    <div>
-        <div class="col-md-10 pt-3">
-            <div class="card">
-                <div class="card-header">
-                    <span>Settings</span>
+    <div class="col-12 pt-3">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="card-title">CBT exam schedule</h1>
+            </div>
+            <div class="card-body">
+                <div v-if="errors.settings" class="alert alert-danger" role="alert">{{ errors.settings }}</div>
+                <div v-if="errors.subject" class="alert alert-danger" role="alert">{{ errors.subject }}</div>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">Subject</th>
+                                <th scope="col">Section</th>
+                                <th scope="col">Exam date</th>
+                                <th scope="col">Start time</th>
+                                <th scope="col">Duration (minutes)</th>
+                                <th scope="col">Availability</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(setting, index) in schedule" :key="setting.subject_id + '-' + setting.section">
+                                <td>
+                                    {{ setting.subject }}
+                                    <input type="hidden" :name="'subject[' + index + ']'" :value="setting.subject">
+                                    <input type="hidden" :name="'section[' + index + ']'" :value="setting.section">
+                                    <input type="hidden" :name="'subject_id[' + index + ']'" :value="setting.subject_id">
+                                </td>
+                                <td>{{ setting.section.split('_').join(' ') }}</td>
+                                <td>
+                                    <input
+                                        v-model="setting.date"
+                                        type="date"
+                                        class="form-control"
+                                        :aria-label="'Exam date for ' + setting.subject"
+                                    >
+                                </td>
+                                <td>
+                                    <input
+                                        v-model="setting.time"
+                                        type="time"
+                                        class="form-control"
+                                        :aria-label="'Start time for ' + setting.subject"
+                                    >
+                                </td>
+                                <td>
+                                    <input
+                                        v-model="setting.duration"
+                                        type="number"
+                                        min="1"
+                                        max="600"
+                                        class="form-control"
+                                        :aria-label="'Duration in minutes for ' + setting.subject"
+                                    >
+                                </td>
+                                <td>
+                                    <button
+                                        type="button"
+                                        class="btn"
+                                        :class="setting.is_started ? 'btn-danger' : 'btn-outline-primary'"
+                                        :disabled="!setting.id || !isScheduleReady(setting) || togglingId === setting.id"
+                                        @click="toggleExam(setting)"
+                                    >
+                                        {{ togglingId === setting.id ? 'Saving…' : (setting.is_started ? 'Stop exam' : 'Start exam') }}
+                                    </button>
+                                    <span v-if="!setting.id" class="d-block small text-muted mt-1">Save schedule to enable</span>
+                                </td>
+                            </tr>
+                            <tr v-if="schedule.length === 0">
+                                <td colspan="6" class="text-center text-muted">No subjects are available to schedule.</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                <div class="card-body">
-                   <form action="" id="settings_form" @submit.prevent="saveSettings">
-                    <table class="table" v-if="settings.length ==0">
-                        <thead>
-                            <tr>
-                            <th>S/N</th>
-                            <th>Subject</th>
-                            <th>Section</th>
-                            <th>Date</th>
-                            <th>Duration</th>
-                            
-                        </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(subject, index) in subjects" :key="index">
-                                <td>{{ index+1 }}</td>
-                                <td>{{ subject.subject }}
-                                    <input type="hidden" name="subject[]" :value="subject.subject">
-                                    <input type="hidden" name="section[]" :value="subject.section">
-                                    <input type="hidden" name="subject_id[]" :value="subject.id">
-                                </td>
-                                <td>{{ subject.section.split("_").join(" ") }}</td>
-                                <td><input type="date" name="date[]" class="form-control" id=""></td>
-                               
-                                <td><input type="text" name="duration[]" class="form-control" placeholder="duration" id=""></td>
-                                
-                            </tr>
-                        </tbody>
-                    </table>
-                    <table class="table" v-if="settings && settings.length > 0">
-                        <thead>
-                            <tr>
-                            <th>S/N</th>
-                            <th>Subject</th>
-                            <th>Section</th>
-                            <th>Date</th>
-                            <th>Duration</th>
-                            <th>Time</th>
-                            <!-- <th>Action</th> -->
-
-                        </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(setting, index) in settings" :key="index">
-                                <td>{{ index+1 }}</td>
-                                <td>{{ setting.subject }}
-                                    <input type="hidden" name="subject[]" :value="setting.subject">
-                                    <input type="hidden" name="id[]" :value="setting.id">
-                                    <input type="hidden" name="section[]" :value="setting.section">
-                                    <input type="hidden" name="subject_id[]" :value="setting.subject_id">
-                                </td>
-                                <td>{{ setting.section.split('_').join(" ") }}</td>
-                                <td><input type="date" :value="setting.date" name="date[]" class="form-control" :id="'date_'+setting.id"></td>
-                                <!-- <td>
-                                    <input type="time" id="" :value="setting.time" name="time[]" class="form-control">
-                                </td> -->
-                                <td><input type="text" :id="'duration_'+setting.id" :value="setting.duration" name="duration[]" class="form-control" placeholder="duration"></td>
-                                <td><input type="button" @click.prevent="startExam(setting)" :value="setting.is_started? 'Stop': 'Start'" class="btn " :class="{'btn-danger': setting.is_started, 'btn-primary': !setting.is_started}"></td>
-                                <!-- <td>
-                                    <a href="" v-if="setting.is_started ==1" class="btn btn-success btn-sm">Started</a>
-                                    <a href="" v-else class="btn btn-danger btn-sm" @click.prevent="startExam(setting.id)">Start</a>
-                                </td> -->
-                            </tr>
-                        </tbody>
-                    </table>
-                    <div class="text-center mt-2">
-                        <button class="btn btn-primary" type="submit">Save</button>
-                    </div>
-                   </form>
+                <div class="text-right">
+                    <button class="btn btn-primary" :disabled="saving || schedule.length === 0" @click="saveSettings">
+                        {{ saving ? 'Saving…' : 'Save schedule' }}
+                    </button>
                 </div>
             </div>
         </div>
@@ -81,45 +84,74 @@
 </template>
 
 <script>
-
 export default {
-    props: [ 'subjects','settings'],
-    data(){
-        return{
-            is_started: false,
-        }
+    props: {
+        subjects: { type: Array, default: () => [] },
+        settings: { type: Array, default: () => [] },
+        errors: { type: Object, default: () => ({}) },
     },
-    methods:{
-        saveSettings(){
-            let form = $('#settings_form').serialize();
-            this.$inertia.post('/cbt-settings', form, {
-                onSuccess: (response)=> {
-                    toastr.success('Settings saved successfully!', 'Success')
-                }
+    data() {
+        return {
+            schedule: this.settings.map(setting => ({
+                ...setting,
+                time: setting.time || '00:00',
+                duration: setting.duration === null ? '' : setting.duration,
+            })),
+            saving: false,
+            togglingId: null,
+        };
+    },
+    methods: {
+        isScheduleReady(setting) {
+            return Boolean(
+                setting.date
+                && setting.time
+                && Number.isInteger(Number(setting.duration))
+                && Number(setting.duration) >= 1
+                && Number(setting.duration) <= 600
+            );
+        },
+        saveSettings() {
+            this.saving = true;
+            this.$inertia.post('/cbt-settings', {
+                subject: this.schedule.map(setting => setting.subject),
+                section: this.schedule.map(setting => setting.section),
+                subject_id: this.schedule.map(setting => setting.subject_id),
+                date: this.schedule.map(setting => setting.date || null),
+                time: this.schedule.map(setting => setting.time || null),
+                duration: this.schedule.map(setting => setting.duration || null),
+            }, {
+                onSuccess: page => {
+                    this.schedule = page.props.settings.map(setting => ({
+                        ...setting,
+                        time: setting.time || '00:00',
+                        duration: setting.duration === null ? '' : setting.duration,
+                    }));
+                    toastr.success('Exam schedules saved successfully.', 'Success');
+                },
+                onError: () => toastr.error('Check the schedule fields and try again.', 'Unable to save'),
+                onFinish: () => { this.saving = false; },
             });
         },
-        startExam(setting){
-            let id = setting.id;
-            let start_date = setting.date
+        toggleExam(setting) {
+            if (!this.isScheduleReady(setting)) {
+                toastr.error('Set a valid date, start time, and duration first.', 'Incomplete schedule');
+                return;
+            }
 
-            if(setting.date == null){
-                let date = document.getElementById('date_'+id)
-                date.focus()
-                return false
-            }
-           
-            if(setting.duration == null){ 
-                let duration = document.getElementById('duration_'+id);
-                duration.focus()
-                return false;
-            }
-            this.$inertia.get('/start-exam-setting',{id: id, is_started:setting.is_started}, {
-                onSuccess: (response)=>{
-                    toastr.success('Exam started successfully!', 'Success')
-                }
-            })
+            this.togglingId = setting.id;
+            this.$inertia.post('/start-exam-setting', {
+                id: setting.id,
+                is_started: !setting.is_started,
+            }, {
+                onSuccess: () => {
+                    setting.is_started = !setting.is_started;
+                    toastr.success(setting.is_started ? 'Exam is now available.' : 'Exam stopped.', 'Schedule updated');
+                },
+                onError: () => toastr.error('The exam schedule could not be updated.', 'Unable to update'),
+                onFinish: () => { this.togglingId = null; },
+            });
         },
-        
-    }
-}
+    },
+};
 </script>

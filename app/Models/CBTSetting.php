@@ -9,6 +9,15 @@ class CBTSetting extends Model
 {
     use HasFactory;
 
-
     protected $table = 'cbt_settings';
+
+    protected $fillable = [
+        'subject',
+        'date',
+        'time',
+        'duration',
+        'is_started',
+        'section',
+        'subject_id',
+    ];
 }
